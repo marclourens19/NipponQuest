@@ -9,11 +9,10 @@
 
 <div class="text-center">
     <h1 class="display-4 fw-bold text-primary">Welcome to NipponQuest</h1>
-    <p class="lead">Track your journey, master your sets, and level up your brand.</p>
+    <p class="lead">Master the Japanese language, track your growth, and climb the ranks.</p>
 </div>
 
 @* 🛠 SECURE DEVELOPER CONSOLE *@
-@* This section only renders if YOU are the one logged in *@
 @if (currentUser != null && currentUser.GamerTag == "Yugenclad")
 {
     <div class="container mt-5">
@@ -24,17 +23,32 @@
                         <i class="bi bi-terminal-fill me-2"></i>
                         <span class="fw-bold text-uppercase" style="letter-spacing: 1px;">Developer Admin Tools</span>
                     </div>
-                    <div class="card-body text-center">
-                        <p class="text-white-50 small">Testing Level Up logic & HUD animations</p>
+                    <div class="card-body">
+                        <p class="text-white-50 small text-center mb-4">Manual override for HUD & logic testing</p>
                         
-                        <div class="d-grid gap-2">
+                        <div class="d-grid gap-2 mb-4">
                             <a asp-controller="Home" asp-action="AddTestXP" class="btn btn-outline-warning btn-lg">
                                 <i class="bi bi-plus-circle-fill"></i> Gain +25 XP
                             </a>
                         </div>
+
+                        <hr class="border-secondary" />
+
+                        <form asp-controller="Home" asp-action="SetTestLeague" method="post" class="mt-4">
+                            <label class="small text-white-50 mb-2">Switch League Visuals:</label>
+                            <div class="input-group">
+                                <select name="rank" class="form-select bg-dark text-white border-warning">
+                                    @foreach (var rank in Enum.GetValues(typeof(LeagueRank)))
+                                    {
+                                        <option value="@rank">@rank</option>
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-warning shadow">Apply Rank</button>
+                            </div>
+                        </form>
                         
-                        <div class="mt-3 small">
-                            <span class="badge bg-secondary">Security Active: GamerTag Check</span>
+                        <div class="mt-3 text-center small">
+                            <span class="badge bg-secondary">Admin Mode Active: @currentUser.GamerTag</span>
                         </div>
                     </div>
                 </div>
@@ -43,8 +57,7 @@
     </div>
 }
 
-
-<div class="row text-center mt-4">
+<div class="row text-center mt-5 pt-4">
     <div class="col-md-4">
         <div class="h1 text-primary"><i class="bi bi-translate"></i></div>
         <h3>Vocabulary</h3>

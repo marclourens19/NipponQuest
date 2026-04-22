@@ -11,27 +11,29 @@
         <li class="nav-item d-flex align-items-center">
             <div class="d-flex align-items-center bg-light-subtle rounded-pill px-3 py-1 border border-secondary-subtle shadow-sm">
                 
-                <div class="d-flex align-items-center gap-1 pe-3 border-end" style="border-color: rgba(0,0,0,0.1) !important;">
-                    <span class="badge rounded-pill bg-primary shadow-sm" style="font-size: 0.7rem; padding: 0.5em 0.8em; line-height: 1;">
+                <div class="d-flex align-items-center gap-2 pe-3 border-end" style="border-color: rgba(0,0,0,0.1) !important;">
+                    
+                    <span class="rank-text @(player?.LeagueIconClass ?? "sprout")"
+                          style="font-size: 0.8rem; min-width: 90px; text-align: center;">
+                        @(player?.CurrentLeague.ToString() ?? "SPROUT")
+                    </span>
+
+                    <span class="badge rounded-pill bg-primary shadow-sm" style="font-family: 'Nunito', sans-serif; font-size: 0.75rem; padding: 0.5em 0.9em;">
                         Lv. @(player?.Level ?? 1)
                     </span>
-                    <span class="badge rounded-pill bg-warning text-dark shadow-sm" style="font-size: 0.7rem; padding: 0.5em 0.8em; line-height: 1;">
+                    <span class="badge rounded-pill bg-warning text-dark shadow-sm" style="font-family: 'Nunito', sans-serif; font-size: 0.75rem; padding: 0.5em 0.9em;">
                         @(player?.Gold ?? 0) G
                     </span>
                 </div>
 
-                <div class="d-flex flex-column ms-3" style="width: 130px;">
-                    <div class="d-flex justify-content-between px-1" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 0.05em; line-height: 1.2;">
+                <div class="d-flex flex-column ms-3" style="width: 120px;">
+                    <div class="d-flex justify-content-between px-1" style="font-family: 'Nunito', sans-serif; font-size: 0.6rem; font-weight: 900;">
                         <span class="text-info">EXP</span>
-                        <span class="text-muted" style="font-weight: 600;">@(player?.CurrentXP ?? 0) / @(player?.RequiredXP ?? 100)</span>
+                        <span class="text-muted">@(player?.CurrentXP) / @(player?.RequiredXP)</span>
                     </div>
-                    <div class="progress shadow-sm" style="height: 10px; background-color: rgba(0,0,0,0.15); border-radius: 10px; margin-top: 1px; border: 1px solid rgba(0,0,0,0.05);">
+                    <div class="progress shadow-sm" style="height: 8px; background-color: rgba(0,0,0,0.1); border-radius: 10px;">
                         <div class="progress-bar bg-info progress-bar-striped progress-bar-animated"
-                             role="progressbar"
-                             style="width: @(player?.XPPercentage ?? 0)%; border-radius: 10px; box-shadow: 0 0 8px rgba(13, 202, 240, 0.4);"
-                             aria-valuenow="@(player?.CurrentXP ?? 0)"
-                             aria-valuemin="0"
-                             aria-valuemax="@(player?.RequiredXP ?? 100)">
+                             style="width: @(player?.XPPercentage ?? 0)%; border-radius: 10px;">
                         </div>
                     </div>
                 </div>
@@ -41,19 +43,16 @@
                 Welcome, <span class="text-primary">@(player?.GamerTag ?? "User")</span>!
             </a>
         </li>
+
         <li class="nav-item">
             <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+                <button type="submit" class="nav-link btn btn-link text-dark border-0">Logout</button>
             </form>
         </li>
     }
     else
     {
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
-        </li>
+        <li class="nav-item"><a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a></li>
     }
 </ul>

@@ -1,33 +1,113 @@
-﻿/* --- NipponQuest Custom HUD Styles --- */
+﻿/* --- NIPPONQUEST HUD BRANDING --- */
 
-/* Makes the EXP bar pulse and shimmer */
-.progress-bar-animated {
-    animation: 2s linear infinite progress-bar-stripes, 3s ease-in-out infinite pulse-glow;
+.rank-text {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    padding: 3px 12px;
+    border-radius: 8px;
+    display: inline-block;
+    line-height: 1.2;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-@keyframes pulse-glow {
+    /* Tier 1: Sprout - Wood - Iron */
+    .rank-text.sprout {
+        color: #28a745;
+        background: rgba(40, 167, 69, 0.08);
+        border-color: rgba(40, 167, 69, 0.2);
+    }
+
+    .rank-text.wood {
+        color: #8B4513;
+        background: rgba(139, 69, 19, 0.08);
+    }
+
+    .rank-text.iron {
+        color: #495057;
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Tier 2: Gold - Diamond - Emerald */
+    .rank-text.gold {
+        color: #ffc107;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        border-color: rgba(255, 193, 7, 0.3);
+    }
+
+    .rank-text.diamond {
+        color: #0dcaf0;
+        background: rgba(13, 202, 240, 0.1);
+        border-color: rgba(13, 202, 240, 0.3);
+    }
+
+    .rank-text.emerald {
+        color: #059669;
+    }
+
+    /* Tier 3: Master - Dragon */
+    .rank-text.master {
+        color: #0d6efd;
+        font-style: italic;
+    }
+
+    .rank-text.dragon {
+        color: #dc3545;
+        font-style: italic;
+        text-shadow: 0 0 12px rgba(220, 53, 69, 0.3);
+        animation: dragon-burn 2s infinite alternate;
+    }
+
+    /* Tier 4: LEGEND (Vibrant Rainbow Mix) */
+    .rank-text.legend {
+        background: linear-gradient( to right, #ff7eb3, #ff758c, #ffc371, #fbd72b, #a8e063, #56ab2f, #a1c4fd, #c2e9fb, #ff7eb3 );
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: rainbow-flow 5s linear infinite;
+        font-weight: 900 !important;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+@keyframes rainbow-flow {
+    to {
+        background-position: 200% center;
+    }
+}
+
+@keyframes dragon-burn {
+    from {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+
+    to {
+        transform: scale(1.05);
+        filter: brightness(1.2);
+    }
+}
+
+/* --- HUD POLISH --- */
+.bg-light-subtle:hover {
+    border-color: rgba(13, 202, 240, 0.5) !important;
+    background-color: #ffffff !important;
+}
+
+.progress-bar-animated {
+    animation: 2s linear infinite progress-bar-stripes, 3s ease-in-out infinite exp-glow;
+}
+
+@keyframes exp-glow {
     0%, 100% {
         filter: brightness(1);
-        box-shadow: 0 0 8px rgba(13, 202, 240, 0.4);
     }
 
     50% {
         filter: brightness(1.2);
-        box-shadow: 0 0 15px rgba(13, 202, 240, 0.7);
+        box-shadow: 0 0 10px rgba(13, 202, 240, 0.4);
     }
 }
-
-/* Typography polish */
-.text-muted {
-    letter-spacing: 0.05em;
-}
-
-/* Border glow on hover for the whole HUD */
-.bg-light-subtle {
-    transition: all 0.3s ease;
-}
-
-    .bg-light-subtle:hover {
-        border-color: rgba(13, 202, 240, 0.5) !important;
-        background-color: rgba(255, 255, 255, 0.95) !important;
-    }

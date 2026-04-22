@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Identity;
 
 namespace NipponQuest.Models
 {
-    /*
-     Creating our own ApplicationUser class that inherits from IdentityUser. 
-    */
+    public enum LeagueRank
+    {
+        Sprout, Wood, Iron, Gold, Diamond, Emerald, Master, Dragon, Legend
+    }
+
     public class ApplicationUser : IdentityUser
     {
         [Required]
@@ -14,25 +16,27 @@ namespace NipponQuest.Models
         public required string GamerTag { get; set; }
 
         public int TotalEXP { get; set; } = 0;
+        public int WeeklyXP { get; set; } = 0;
         public int Gold { get; set; } = 0;
         public int Level { get; set; } = 1;
         public int DailyStreak { get; set; } = 0;
-
-        // This is what the progress bar will track (0 to RequiredXP)
         public int CurrentXP { get; set; } = 0;
 
-        // Logic for the Next Level Goal
+        public LeagueRank CurrentLeague { get; set; } = LeagueRank.Sprout;
+
+        // Returns the rank name as a lowercase class (e.g., "legend", "sprout")
+        public string LeagueIconClass => CurrentLeague.ToString().ToLower();
+
         public int RequiredXP
         {
             get
             {
-                if (Level <= 10) return Level * 50 + 50;  // Lv1=100, Lv2=150...
-                if (Level <= 50) return Level * 100;      // Lv11=1100, Lv12=1200...
-                return Level * 250;                       // Infinite scaling
+                if (Level <= 10) return Level * 50 + 50;
+                if (Level <= 50) return Level * 100;
+                return Level * 250;
             }
         }
 
-        // Percentage for the Bootstrap width style
         public int XPPercentage => (int)((double)CurrentXP / RequiredXP * 100);
     }
-} 
+}
