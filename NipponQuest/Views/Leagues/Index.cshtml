@@ -1,0 +1,127 @@
+﻿@model NipponQuest.Models.ApplicationUser
+@{
+    ViewData["Title"] = "League Sanctuary";
+}
+
+<div class="container mt-4">
+    <div class="mb-5 border-bottom pb-3">
+        <h5 class="text-muted fw-black mb-1" style="letter-spacing: 2px; font-size: 0.75rem;">OPERATIVE DATA FOUND</h5>
+        <h1 class="fw-black m-0" style="font-size: 2.8rem; letter-spacing: -2px; color: #1a1a1a;">Welcome, @Model.GamerTag</h1>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-5 col-lg-6">
+            <h5 class="fw-black mb-3 text-uppercase small text-muted" style="letter-spacing: 1px;">League Hierarchy</h5>
+            <div class="d-flex flex-column gap-3" style="max-height: 75vh; overflow-y: auto; padding-right: 12px;">
+                @foreach (var rank in Enum.GetValues(typeof(LeagueRank)).Cast<LeagueRank>().Reverse())
+                {
+                    var isActive = (rank == Model.CurrentLeague);
+                    <div class="p-3 rounded-4 border @(isActive ? "border-primary shadow-sm" : "border-light") bg-white">
+                        <div class="league-row-grid">
+                            <div class="rank-badge-slot">
+                                <span class="rank-text @rank.ToString().ToLower()">@rank</span>
+                            </div>
+
+                            <div class="gold-reward-slot d-flex align-items-center gap-1">
+                                <span class="fw-black text-dark" style="font-size: 0.9rem;">@GetRewardAmount(rank)</span>
+                                <div class="gold-coin"></div>
+                                <span class="text-muted fw-bold ms-1" style="font-size: 0.55rem; letter-spacing: 0.05em;">WEEKLY</span>
+                            </div>
+
+                            <div class="rank-info-slot">
+                                <div class="rank-japanese-inline">
+                                    @GetRankJapanese(rank)
+                                </div>
+                                <div class="rank-quote">
+                                    "@GetRankQuote(rank)"
+                                </div>
+                            </div>
+
+                            <div class="active-status-slot text-end">
+                                @if (isActive)
+                                {
+                                    <span class="active-tag">ACTIVE</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-6">
+            <div class="bg-white rounded-5 border p-5 text-center shadow-sm h-100">
+                <h2 class="text-primary fw-black mb-1" style="font-size: 2rem;">@Model.CurrentLeague ARENA</h2>
+                <p class="text-muted small fw-bold mb-5 text-uppercase" style="letter-spacing: 2px;">Local Group Standing</p>
+
+                <div class="py-4 my-2">
+                    <span class="display-2 fw-black text-dark" style="letter-spacing: -4px;">#14</span>
+                    <p class="h6 text-muted fw-bold">out of 100 operatives</p>
+                </div>
+
+                <div class="mx-auto mt-5" style="max-width: 400px;">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-black text-primary small text-uppercase">Arena Progression</span>
+                        <span class="fw-black text-muted small">@Model.LessonsCompleted / 20</span>
+                    </div>
+                    <div class="progress" style="height: 12px; border-radius: 20px; background: #f1f5f9;">
+                        <div class="progress-bar bg-info" style="width: @(Math.Min(Model.LessonsCompleted * 5, 100))%; border-radius: 20px;"></div>
+                    </div>
+                </div>
+
+                <div class="mt-5 p-4 rounded-4 border-dashed mx-auto" style="max-width: 450px; background: #fffbeb; border: 2px dashed #fcd34d;">
+                    <div class="d-flex align-items-center justify-content-center gap-2">
+                        <span class="text-dark fw-black small">Maintain top 50 to claim 25</span>
+                        <div class="gold-coin"></div>
+                        <span class="text-dark fw-black small">weekly</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-12">
+            <div class="bg-white rounded-5 border p-4 shadow-sm text-center">
+                <h5 class="fw-black border-bottom pb-3 mb-4 text-uppercase small text-muted" style="letter-spacing: 1px;">Global Ranking</h5>
+                <h2 class="fw-black text-primary mb-0" style="font-size: 2.5rem; letter-spacing: -2px;">#1,402</h2>
+                <p class="text-muted small fw-bold text-uppercase mt-1">Top 5% Worldwide</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    public string GetRankJapanese(LeagueRank rank) => rank switch
+    {
+        LeagueRank.Legend => "伝説 (でんせつ / Densetsu)",
+        LeagueRank.Dragon => "龍 (りゅう / Ryū)",
+        LeagueRank.Master => "師匠 (ししょう / Shishō)",
+        LeagueRank.Emerald => "翡翠 (ひすい / Hisui)",
+        LeagueRank.Diamond => "金剛 (こんごう / Kongō)",
+        LeagueRank.Gold => "黄金 (おうごん / Ōgon)",
+        LeagueRank.Iron => "鉄 (てつ / Tetsu)",
+        LeagueRank.Wood => "木 (き / Ki)",
+        LeagueRank.Sprout => "芽 (め / Me)",
+        _ => "一歩 (いっぽ / Ippo)"
+    };
+
+    public string GetRankQuote(LeagueRank rank) => rank switch
+    {
+        LeagueRank.Legend => "The world bows to the 100% completionist.",
+        LeagueRank.Dragon => "Ascend above the clouds where only fire remains.",
+        LeagueRank.Master => "Perfect clarity is the edge of every victory.",
+        LeagueRank.Emerald => "A brilliance forged in the deepest shadows.",
+        LeagueRank.Diamond => "Hardened by pressure, unbreakable by time.",
+        LeagueRank.Gold => "Honor is the true wealth found within the work.",
+        LeagueRank.Iron => "Cold, hard, and ready for the forge of battle.",
+        LeagueRank.Wood => "To stand tall, one must first bend with the wind.",
+        LeagueRank.Sprout => "Even the tallest Sakura began as a tiny seed.",
+        _ => "The entire journey lies within this first step."
+    };
+
+    public int GetRewardAmount(LeagueRank rank) => rank switch
+    {
+        LeagueRank.Legend => 425,
+        LeagueRank.Dragon => 325,
+        _ => ((int)rank * 25) + 25
+    };
+}

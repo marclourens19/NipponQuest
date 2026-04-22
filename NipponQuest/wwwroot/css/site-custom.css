@@ -1,113 +1,250 @@
-﻿/* --- NIPPONQUEST HUD BRANDING --- */
+﻿/* --- NIPPONQUEST ULTIMATE COMMAND CENTER --- */
 
-.rank-text {
-    font-family: 'Nunito', sans-serif;
-    font-weight: 900;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    transition: all 0.3s ease;
-    padding: 3px 12px;
-    border-radius: 8px;
-    display: inline-block;
-    line-height: 1.2;
-    background: rgba(255, 255, 255, 0.7);
-    border: 1px solid rgba(0, 0, 0, 0.05);
+/* Force Nunito 900 Everywhere */
+body, .rank-text, .badge, h1, h2, h3, h4, h5, h6, p, span, a, button, .nav-link, .fw-black, .hud-text-bold, .exp-label {
+    font-family: 'Nunito', sans-serif !important;
+    font-weight: 900 !important;
 }
 
-    /* Tier 1: Sprout - Wood - Iron */
+body {
+    background-color: #f8fafc !important;
+}
+
+/* BRANDING KANA - CENTERED */
+.brand-link-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.kana-brand {
+    font-size: 0.65rem;
+    letter-spacing: 0.22em;
+    font-weight: 700 !important;
+    color: #94a3b8;
+    margin-top: -2px;
+    display: block;
+    width: 100%;
+}
+
+/* UNIFIED BUBBLE BASE - SUPER LIGHT GREY (#f1f5f9) */
+.hud-bubble, .welcome-user-card, .logout-bubble-wrapper, .auth-bubble {
+    background: #ffffff !important;
+    border: 2px solid #f1f5f9 !important;
+    border-radius: 50px;
+    padding: 6px 22px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    text-decoration: none !important;
+}
+
+/* THE ONE-LINE HUD GRID (Expanded for Quotes) */
+.league-row-grid {
+    display: grid;
+    /* Columns: Badge (110px) | Gold (105px) | Info (1fr) | Status (Auto) */
+    grid-template-columns: 110px 105px 1fr auto;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+}
+
+.rank-info-slot {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.rank-japanese-inline {
+    font-size: 0.8rem;
+    font-weight: 900 !important;
+    color: #1e293b;
+    white-space: nowrap;
+}
+
+.rank-quote {
+    font-size: 0.65rem;
+    font-weight: 700 !important;
+    font-style: italic;
+    color: #94a3b8;
+    margin-top: 2px;
+    letter-spacing: 0.3px;
+}
+
+/* AUTH & LABELS */
+.auth-text-blue {
+    color: #0ea5e9 !important;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.auth-text-dark {
+    color: #1e293b !important;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.logout-text {
+    color: #dc3545 !important;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+.hud-text-bold {
+    font-size: 0.85rem;
+    color: #1e293b;
+}
+
+.exp-label {
+    font-size: 0.65rem;
+    color: #64748b;
+}
+
+.active-tag {
+    background: #0ea5e9;
+    color: white;
+    font-size: 0.55rem;
+    padding: 3px 10px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+/* GOLD COIN */
+.gold-coin {
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFB900 50%, #E6B800 100%);
+    border-radius: 50%;
+    border: 1.5px solid #B45309;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1.5px 0 #B45309;
+}
+
+    .gold-coin::after {
+        content: "G";
+        color: #451a03;
+        font-weight: 900;
+        font-size: 0.65rem;
+    }
+
+/* RANK BADGES */
+.rank-text {
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 4px;
+    color: #fff !important;
+    font-size: 0.7rem;
+    min-width: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    /* RANK ANIMATIONS */
     .rank-text.sprout {
-        color: #28a745;
-        background: rgba(40, 167, 69, 0.08);
-        border-color: rgba(40, 167, 69, 0.2);
+        background-color: #16a34a !important;
     }
 
     .rank-text.wood {
-        color: #8B4513;
-        background: rgba(139, 69, 19, 0.08);
+        background-color: #8d6e63 !important;
     }
 
     .rank-text.iron {
-        color: #495057;
-        background: rgba(0, 0, 0, 0.05);
+        background-image: linear-gradient(90deg, #94a3b8, #fff, #94a3b8) !important;
+        color: #000 !important;
+        background-size: 200% 100%;
+        animation: shine 3s infinite linear;
     }
 
-    /* Tier 2: Gold - Diamond - Emerald */
     .rank-text.gold {
-        color: #ffc107;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        border-color: rgba(255, 193, 7, 0.3);
-    }
-
-    .rank-text.diamond {
-        color: #0dcaf0;
-        background: rgba(13, 202, 240, 0.1);
-        border-color: rgba(13, 202, 240, 0.3);
+        background-image: linear-gradient(90deg, #f59e0b, #fff, #f59e0b) !important;
+        color: #451a03 !important;
+        background-size: 200% 100%;
+        animation: shine 3s infinite linear;
     }
 
     .rank-text.emerald {
-        color: #059669;
+        background-image: linear-gradient(180deg, #064e3b, #10b981, #064e3b) !important;
+        background-size: 100% 200%;
+        animation: pulse 3s infinite linear;
     }
 
-    /* Tier 3: Master - Dragon */
+    .rank-text.diamond {
+        background-image: linear-gradient(180deg, #0c4a6e, #38bdf8, #0c4a6e) !important;
+        background-size: 100% 200%;
+        animation: pulse 3s infinite linear;
+    }
+
     .rank-text.master {
-        color: #0d6efd;
-        font-style: italic;
+        background-image: linear-gradient(135deg, #2e1065, #000, #8b5cf6) !important;
+        background-size: 200% 200%;
+        animation: swirl 5s infinite alternate;
     }
 
     .rank-text.dragon {
-        color: #dc3545;
-        font-style: italic;
-        text-shadow: 0 0 12px rgba(220, 53, 69, 0.3);
-        animation: dragon-burn 2s infinite alternate;
+        background-image: linear-gradient(-45deg, #7f1d1d, #ef4444, #7f1d1d, #000) !important;
+        background-size: 400% 400%;
+        animation: fire 4s ease infinite;
     }
 
-    /* Tier 4: LEGEND (Vibrant Rainbow Mix) */
     .rank-text.legend {
-        background: linear-gradient( to right, #ff7eb3, #ff758c, #ffc371, #fbd72b, #a8e063, #56ab2f, #a1c4fd, #c2e9fb, #ff7eb3 );
-        background-size: 200% auto;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: rainbow-flow 5s linear infinite;
-        font-weight: 900 !important;
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        background-image: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+        background-size: 400% 400%;
+        animation: rainbow-flow 8s linear infinite;
     }
 
 @keyframes rainbow-flow {
-    to {
-        background-position: 200% center;
+    0% {
+        background-position: 0% 50%;
+    }
+
+    100% {
+        background-position: 100% 50%;
     }
 }
 
-@keyframes dragon-burn {
-    from {
-        transform: scale(1);
-        filter: brightness(1);
+@keyframes shine {
+    0% {
+        background-position: 100% 0%;
     }
 
-    to {
-        transform: scale(1.05);
-        filter: brightness(1.2);
+    100% {
+        background-position: -100% 0%;
     }
 }
 
-/* --- HUD POLISH --- */
-.bg-light-subtle:hover {
-    border-color: rgba(13, 202, 240, 0.5) !important;
-    background-color: #ffffff !important;
+@keyframes pulse {
+    0% {
+        background-position: center 0%;
+    }
+
+    100% {
+        background-position: center 200%;
+    }
 }
 
-.progress-bar-animated {
-    animation: 2s linear infinite progress-bar-stripes, 3s ease-in-out infinite exp-glow;
+@keyframes swirl {
+    0% {
+        background-position: 0% 0%;
+    }
+
+    100% {
+        background-position: 100% 100%;
+    }
 }
 
-@keyframes exp-glow {
+@keyframes fire {
     0%, 100% {
-        filter: brightness(1);
+        background-position: 0% 50%;
     }
 
     50% {
-        filter: brightness(1.2);
-        box-shadow: 0 0 10px rgba(13, 202, 240, 0.4);
+        background-position: 100% 50%;
     }
 }

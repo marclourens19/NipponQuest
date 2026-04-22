@@ -22,9 +22,10 @@ namespace NipponQuest.Models
         public int DailyStreak { get; set; } = 0;
         public int CurrentXP { get; set; } = 0;
 
+        public int LessonsCompleted { get; set; } = 0;
+
         public LeagueRank CurrentLeague { get; set; } = LeagueRank.Sprout;
 
-        // Returns the rank name as a lowercase class (e.g., "legend", "sprout")
         public string LeagueIconClass => CurrentLeague.ToString().ToLower();
 
         public int RequiredXP
