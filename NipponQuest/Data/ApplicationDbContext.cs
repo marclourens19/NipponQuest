@@ -11,5 +11,9 @@ namespace NipponQuest.Data
             : base(options)
         {
         }
+
+        // Blueprint for the Hiragana table in the database.
+        // This will allow us to perform CRUD operations on Hiragana records using Entity Framework Core.
+        public DbSet<Hiragana> Hiraganas { get; set; }
     }
 }
