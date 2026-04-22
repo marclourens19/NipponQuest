@@ -1,4 +1,5 @@
 ﻿// Imported the Identity library so NipponQuest can use Google/Microsoft's built-in security features.
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 
 namespace NipponQuest.Models
@@ -15,6 +16,13 @@ namespace NipponQuest.Models
          the user's total experience points (EXP), gold, level, and daily streak for
          the gamification features of NipponQuest.
         */
+
+        // Adding your specific constraints
+        [Required]
+        [StringLength(12, MinimumLength = 4, ErrorMessage = "Your Username must be 4-12 characters.")]
+        [RegularExpression(@"^[a-zA-Z0-9]*$", ErrorMessage = "No special characters allowed!")]
+        public required string GamerTag { get; set; }
+
         public int TotalEXP { get; set; } = 0;
         public int Gold { get; set; } = 0;
         public int Level { get; set; } = 1;
