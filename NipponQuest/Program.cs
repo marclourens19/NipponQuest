@@ -49,6 +49,14 @@ namespace NipponQuest
             app.MapRazorPages()
                .WithStaticAssets();
 
+            // Seed the database with initial data.
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                // This calls the static method.
+                SeedData.Initialize(services);
+            }
+
             app.Run();
         }
     }
