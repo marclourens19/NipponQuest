@@ -1,0 +1,33 @@
+﻿/* --- NipponQuest Custom HUD Styles --- */
+
+/* Makes the EXP bar pulse and shimmer */
+.progress-bar-animated {
+    animation: 2s linear infinite progress-bar-stripes, 3s ease-in-out infinite pulse-glow;
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        filter: brightness(1);
+        box-shadow: 0 0 8px rgba(13, 202, 240, 0.4);
+    }
+
+    50% {
+        filter: brightness(1.2);
+        box-shadow: 0 0 15px rgba(13, 202, 240, 0.7);
+    }
+}
+
+/* Typography polish */
+.text-muted {
+    letter-spacing: 0.05em;
+}
+
+/* Border glow on hover for the whole HUD */
+.bg-light-subtle {
+    transition: all 0.3s ease;
+}
+
+    .bg-light-subtle:hover {
+        border-color: rgba(13, 202, 240, 0.5) !important;
+        background-color: rgba(255, 255, 255, 0.95) !important;
+    }
