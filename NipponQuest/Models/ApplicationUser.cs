@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Identity;
 namespace NipponQuest.Models
 {
     /*
-     Creating our own ApplicationUser class that inherits from IdentityUser. 
+     Creating our own ApplicationUser class that inherits from ApplicationUser. 
      This allows us to extend the default user properties provided by 
-     IdentityUser with our own custom properties in the future if needed.  
+     Identity with our own custom properties in the future if needed.  
     */
     public class ApplicationUser : IdentityUser
     {
