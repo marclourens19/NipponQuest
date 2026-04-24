@@ -1,18 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
 
-/* --- NIPPONQUEST MASTER ENGINE V18.0 --- */
+/* --- NIPPONQUEST MASTER ENGINE UNPUBLISHED --- */
 body {
     font-family: 'Nunito', sans-serif !important;
     background-color: #f8fafc !important;
     color: #334115;
+    transition: background-color 0.3s ease;
 }
 
-/* Global Font Utility for titles and bold labels */
 .fw-black {
     font-weight: 900 !important;
 }
 
-/* Hides browser scrollbars while allowing scrolling functionality */
 .hide-scrollbar::-webkit-scrollbar {
     display: none;
 }
@@ -22,31 +21,42 @@ body {
     scrollbar-width: none;
 }
 
-/* --- NAVIGATION & FONT CONSISTENCY --- */
-.nav-link, .welcome-text, .logout-text, h3, h5, .league-info-title {
-    font-family: 'Nunito', sans-serif !important;
-    font-weight: 800 !important;
-}
-
+/* --- NAVIGATION & INTERACTION --- */
 .nav-link {
-    transition: color 0.2s ease;
+    transition: all 0.2s ease-out;
+    letter-spacing: 0.5px;
 }
 
     .nav-link:hover {
         color: #0ea5e9 !important;
+        transform: translateY(-1px);
     }
 
 /* --- HUD BUBBLES --- */
 .hud-bubble, .logout-btn-wrapper {
     background: #ffffff !important;
     border-radius: 50px;
-    padding: 8px 20px;
+    padding: 8px 24px;
     display: flex;
     align-items: center;
-    border: 1px solid rgba(0,0,0,0.08) !important;
+    border: 1px solid rgba(0,0,0,0.06) !important;
     height: 52px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: all 0.25s ease;
 }
+
+    /* LOGOUT BUTTON HOVER EFFECT: Adds subtle depth and color shift */
+    .logout-btn-wrapper:hover {
+        background-color: #fff1f2 !important;
+        border-color: #fecaca !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+    }
+
+    .hud-bubble:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transform: translateY(-1px);
+    }
 
 .brand-japanese-sub {
     font-size: 0.65rem;
@@ -59,13 +69,13 @@ body {
     text-align: center;
 }
 
-/* --- EPIC RANK ENGINE --- */
+/* --- RANK BADGE ENGINE --- */
 .rank-text {
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 1px;
-    padding: 4px 12px;
-    border-radius: 8px;
+    padding: 4px 14px;
+    border-radius: 10px;
     font-size: 0.75rem;
     color: white;
     display: inline-block;
@@ -127,6 +137,7 @@ body {
 .rank-text.master {
     background: linear-gradient(135deg, #000, #6b21a8, #a855f7, #000);
     animation: lightning 1.5s infinite;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
 @keyframes shimmerEffect {
@@ -151,7 +162,7 @@ body {
         left: -100%;
         width: 50%;
         height: 100%;
-        background: linear-gradient(to right, transparent, rgba(255,255,255,0.5), transparent);
+        background: linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent);
         transform: skewX(-25deg);
         animation: shimmerEffect 3s infinite;
     }
@@ -180,7 +191,21 @@ body {
     background: #22c55e;
 }
 
-/* --- ARENA SYSTEM --- */
+/* --- ARENA SYSTEM POLISH --- */
+.static-card {
+    border-radius: 24px;
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .static-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    }
+
+/* Zone Indicators: Adds colored left border for feedback */
 .promote-zone {
     border-left: 5px solid #10b981 !important;
     background: #f0fdf4 !important;
@@ -191,19 +216,11 @@ body {
     background: #fef2f2 !important;
 }
 
-/* STREAK COLORS */
-.streak-flame-active {
-    color: #f97316 !important;
-    filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.8));
+.safe-zone {
+    border-left: 5px solid #e2e8f0 !important;
 }
 
-.streak-frozen {
-    color: #94a3b8 !important; /* Muted Gray for 0 streak */
-    filter: none !important;
-    opacity: 0.6;
-}
-
-/* GOLD ASSETS */
+/* --- HUD ASSETS --- */
 .gold-coin {
     width: 18px;
     height: 18px;
@@ -223,20 +240,35 @@ body {
         content: "G";
     }
 
-/* Force Logout text to stay red */
+.streak-flame-active {
+    color: #f97316 !important;
+    filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.6));
+}
+
+.streak-frozen {
+    color: #cbd5e1 !important;
+    opacity: 0.5;
+    filter: none !important;
+}
+
 .logout-text {
     color: #ef4444 !important;
     font-weight: 900;
+    transition: opacity 0.2s;
 }
 
-/* BRAND SYNC: Entire LV string matches the dark blue brand logo */
+    .logout-text:hover {
+        opacity: 0.8;
+    }
+
 .level-label-sync {
-    color: #0369a1 !important; /* Dark NipponQuest Blue */
+    color: #334115 !important;
     font-weight: 900 !important;
     opacity: 1 !important;
     text-decoration: none !important;
 }
 
 .ms-3 span {
-    font-weight: 800; /* Matches the weight of the EXP label */
+    font-weight: 800;
+    color: #64748b;
 }

@@ -8,14 +8,14 @@
     {
         var player = await UserManager.GetUserAsync(User);
         var currentRankClass = player?.CurrentLeague.ToString().ToLower() ?? "sprout";
-        bool hasStreak = player.LoginStreak > 0;
+        bool hasActiveStreak = player.LoginStreak > 0;
 
         <li class="nav-item">
-            <div class="hud-bubble shadow-sm">
+            <div class="hud-bubble">
                 <div class="d-flex align-items-center gap-3 pe-3 border-end border-secondary border-opacity-10">
                     <div class="d-flex align-items-center gap-1">
-                        <i class="bi bi-fire fs-5 @(hasStreak ? "streak-flame-active" : "streak-frozen")"></i>
-                        <span class="fw-black @(hasStreak ? "streak-flame-active" : "streak-frozen")" style="font-size: 0.9rem;">@player.LoginStreak</span>
+                        <i class="bi bi-fire fs-5 @(hasActiveStreak ? "streak-flame-active" : "streak-frozen")"></i>
+                        <span class="fw-black @(hasActiveStreak ? "streak-flame-active" : "streak-frozen")" style="font-size: 0.95rem;">@player.LoginStreak</span>
                     </div>
 
                     <a asp-controller="Leagues" asp-action="Index" class="text-decoration-none">
@@ -32,12 +32,12 @@
                     </div>
                 </div>
 
-                <div class="ms-3" style="width: 130px;">
-                    <div class="d-flex justify-content-between mb-1" style="font-size: 0.6rem;">
+                <div class="ms-3" style="width: 140px;">
+                    <div class="d-flex justify-content-between mb-1" style="font-size: 0.65rem;">
                         <span class="fw-black text-muted">EXP</span>
                         <span class="text-muted fw-bold">@player.XPPercentage%</span>
                     </div>
-                    <div class="progress" style="height: 7px; background: rgba(0,0,0,0.08); border-radius: 10px;">
+                    <div class="progress" style="height: 8px; background: rgba(0,0,0,0.06); border-radius: 10px;">
                         <div class="progress-bar bg-info progress-bar-striped progress-bar-animated" style="width: @player.XPPercentage%"></div>
                     </div>
                 </div>
@@ -45,7 +45,7 @@
         </li>
 
         <li class="nav-item">
-            <div class="hud-bubble px-4 shadow-sm">
+            <div class="hud-bubble px-4">
                 <span class="fw-bold text-muted small welcome-text">WELCOME, </span>
                 <a asp-area="Identity" asp-page="/Account/Manage/Index" class="fw-black text-primary text-decoration-none text-uppercase small ms-1 welcome-text">@player.GamerTag</a>
             </div>
@@ -61,7 +61,7 @@
     }
     else
     {
-        <li class="nav-item"><a class="hud-bubble text-decoration-none shadow-sm px-4 welcome-text" asp-area="Identity" asp-page="/Account/Login"><span class="fw-black text-primary small">LOGIN</span></a></li>
+        <li class="nav-item"><a class="hud-bubble text-decoration-none px-4 welcome-text" asp-area="Identity" asp-page="/Account/Login"><span class="fw-black text-primary small">LOGIN</span></a></li>
         <li class="nav-item"><a class="hud-bubble text-decoration-none bg-dark shadow-sm px-4 border-0 welcome-text" asp-area="Identity" asp-page="/Account/Register"><span class="fw-black text-white small">REGISTER</span></a></li>
     }
 </ul>

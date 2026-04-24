@@ -5,21 +5,17 @@ namespace NipponQuest.Models
     public class LeagueDashboardViewModel
     {
         public ApplicationUser CurrentUser { get; set; }
-
-        // Sidebar Lists (Matches your sketch)
         public List<RankedUserSB> LevelLeaderboard { get; set; }
         public List<RankedUserSB> StreakLeaderboard { get; set; }
-
-        // Arena Logic
         public List<RankedUserSB> ArenaRivals { get; set; }
         public int ArenaRank { get; set; }
         public int ArenaRankChange { get; set; }
-
-        // Global Stats
         public int GlobalLevelRank { get; set; }
         public int GlobalLevelChange { get; set; }
 
-        // Compatibility Properties to fix View Errors
+        // NEW: Total count of users in the system
+        public int TotalUserCount { get; set; }
+
         public int GlobalRank => GlobalLevelRank;
         public int GlobalRankChange => GlobalLevelChange;
         public List<RankedUserSB> TopGlobalPlayers => LevelLeaderboard;
