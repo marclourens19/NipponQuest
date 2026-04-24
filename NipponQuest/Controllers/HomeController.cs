@@ -19,7 +19,7 @@ namespace NipponQuest.Controllers
             return View();
         }
 
-        // --- DEV TOOL: ADD XP ---
+        // --- DEV TOOL: ADD 25 XP ---
         public async Task<IActionResult> AddTestXP()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -36,6 +36,58 @@ namespace NipponQuest.Controllers
                     user.Level++;
                 }
 
+                await _userManager.UpdateAsync(user);
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        // --- DEV TOOL: ADD 100 XP ---
+        public async Task<IActionResult> Add100TestXP()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user != null && user.GamerTag == "Yugenclad")
+            {
+                user.CurrentXP += 100;
+                user.TotalEXP += 100;
+                user.WeeklyXP += 100;
+
+                while (user.CurrentXP >= user.RequiredXP)
+                {
+                    user.CurrentXP -= user.RequiredXP;
+                    user.Level++;
+                }
+
+                await _userManager.UpdateAsync(user);
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        // --- DEV TOOL: ADD GOLD ---
+        public async Task<IActionResult> AddTestGold()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user != null && user.GamerTag == "Yugenclad")
+            {
+                user.Gold += 100; // Adds 100 gold per click
+                await _userManager.UpdateAsync(user);
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        // --- DEV TOOL: SET STREAK ---
+        [HttpPost]
+        public async Task<IActionResult> SetTestStreak(int streak)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user != null && user.GamerTag == "Yugenclad")
+            {
+                user.LoginStreak = streak;
                 await _userManager.UpdateAsync(user);
             }
 

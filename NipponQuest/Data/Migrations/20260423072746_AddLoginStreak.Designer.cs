@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NipponQuest.Data;
 
@@ -11,9 +12,11 @@ using NipponQuest.Data;
 namespace NipponQuest.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260423072746_AddLoginStreak")]
+    partial class AddLoginStreak
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -177,6 +180,9 @@ namespace NipponQuest.Data.Migrations
                     b.Property<int>("CurrentXP")
                         .HasColumnType("int");
 
+                    b.Property<int>("DailyStreak")
+                        .HasColumnType("int");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -186,19 +192,14 @@ namespace NipponQuest.Data.Migrations
 
                     b.Property<string>("GamerTag")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(12)
+                        .HasColumnType("nvarchar(12)");
 
                     b.Property<int>("Gold")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("LastLoginDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("LastWeekArenaRank")
-                        .HasColumnType("int");
-
-                    b.Property<int>("LastWeekGlobalRank")
-                        .HasColumnType("int");
 
                     b.Property<int>("LessonsCompleted")
                         .HasColumnType("int");
