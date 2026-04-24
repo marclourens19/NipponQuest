@@ -4,8 +4,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NipponQuest.Models
 {
-    // Keeping the Enum here inside the namespace fixes the CS0103 error
-    public enum LeagueRank { Sprout, Wood, Iron, Gold, Diamond, Emerald, Master, Dragon, Legend }
+    // ENUM for various ranks in the league system. This will help us easily manage and display league information.
+    public enum LeagueRank { Sprout, Wood, Iron, Gold, Diamond, Master, Challenger, Dragon, Legend }
 
     public class ApplicationUser : IdentityUser
     {

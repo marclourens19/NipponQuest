@@ -45,7 +45,6 @@ body {
     transition: all 0.25s ease;
 }
 
-    /* LOGOUT BUTTON HOVER EFFECT: Adds subtle depth and color shift */
     .logout-btn-wrapper:hover {
         background-color: #fff1f2 !important;
         border-color: #fecaca !important;
@@ -89,13 +88,42 @@ body {
         background-position: 0% 50%;
     }
 
-    50% {
+    100% {
         background-position: 100% 50%;
+    }
+}
+
+/* CHALLENGER: OCEAN GOD PULSE */
+@keyframes oceanGodPulse {
+    0% {
+        box-shadow: 0 0 5px #000033;
+        border: 1px solid #00008b;
+    }
+
+    50% {
+        box-shadow: 0 0 20px #ffffff;
+        border: 1px solid #ffffff;
     }
 
     100% {
-        background-position: 0% 50%;
+        box-shadow: 0 0 5px #000033;
+        border: 1px solid #000000;
     }
+}
+
+.rank-text.challenger {
+    background: linear-gradient(135deg, #000000, #000033, #00008b, #ffffff);
+    background-size: 200% 200%;
+    animation: oceanGodPulse 3s infinite ease-in-out, rainbowShimmer 8s linear infinite;
+}
+
+.text-rank-challenger {
+    background: linear-gradient(135deg, #000000, #00008b, #ffffff, #000033);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 8px rgba(0, 0, 139, 0.6));
+    animation: rainbowShimmer 5s linear infinite;
 }
 
 .rank-text.legend {
@@ -150,12 +178,12 @@ body {
     }
 }
 
-.rank-text.emerald, .rank-text.diamond, .rank-text.gold, .rank-text.iron {
+.rank-text.diamond, .rank-text.gold, .rank-text.iron {
     position: relative;
     overflow: hidden;
 }
 
-    .rank-text.emerald::after, .rank-text.diamond::after, .rank-text.gold::after, .rank-text.iron::after {
+    .rank-text.diamond::after, .rank-text.gold::after, .rank-text.iron::after {
         content: "";
         position: absolute;
         top: 0;
@@ -167,8 +195,46 @@ body {
         animation: shimmerEffect 3s infinite;
     }
 
-.rank-text.emerald {
-    background: #10b981;
+.text-rank-sprout {
+    color: #22c55e !important;
+}
+
+.text-rank-wood {
+    color: #92400e !important;
+}
+
+.text-rank-iron {
+    color: #64748b !important;
+}
+
+.text-rank-gold {
+    color: #fbbf24 !important;
+}
+
+.text-rank-diamond {
+    color: #0ea5e9 !important;
+}
+
+.text-rank-master {
+    background: linear-gradient(135deg, #6b21a8, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.3));
+}
+
+.text-rank-dragon {
+    background: linear-gradient(135deg, #ef4444, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.4));
+}
+
+.text-rank-legend {
+    background: linear-gradient(-45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #8b00ff);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: rainbowShimmer 5s ease infinite;
 }
 
 .rank-text.diamond {
@@ -200,12 +266,6 @@ body {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-    .static-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-    }
-
-/* Zone Indicators: Adds colored left border for feedback */
 .promote-zone {
     border-left: 5px solid #10b981 !important;
     background: #f0fdf4 !important;
@@ -220,7 +280,6 @@ body {
     border-left: 5px solid #e2e8f0 !important;
 }
 
-/* --- HUD ASSETS --- */
 .gold-coin {
     width: 18px;
     height: 18px;
@@ -248,7 +307,6 @@ body {
 .streak-frozen {
     color: #cbd5e1 !important;
     opacity: 0.5;
-    filter: none !important;
 }
 
 .logout-text {
@@ -264,7 +322,6 @@ body {
 .level-label-sync {
     color: #334115 !important;
     font-weight: 900 !important;
-    opacity: 1 !important;
     text-decoration: none !important;
 }
 

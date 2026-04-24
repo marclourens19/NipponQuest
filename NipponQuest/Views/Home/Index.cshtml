@@ -16,11 +16,15 @@
         <div class="d-flex justify-content-center gap-3">
             @if (currentUser != null)
             {
-                <a asp-controller="Leagues" asp-action="Index" class="btn btn-cta-main py-3 px-5">Enter the Arena</a>
+                <a asp-controller="Leagues" asp-action="Index" class="btn btn-primary btn-lg rounded-pill fw-black px-5 py-3 shadow-lg" style="background: linear-gradient(135deg, #1e3a8a, #0ea5e9); border:none;">
+                    ENTER THE ARENA
+                </a>
             }
             else
             {
-                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-cta-main py-3 px-5">Start Your Quest</a>
+                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg rounded-pill fw-black px-5 py-3 shadow-lg" style="background: linear-gradient(135deg, #1e3a8a, #0ea5e9); border:none;">
+                    START YOUR QUEST
+                </a>
             }
         </div>
     </div>
@@ -28,19 +32,63 @@
 
 @if (currentUser != null && currentUser.GamerTag == "Yugenclad")
 {
-    <div class="container mt-5">
-        <div class="game-card bg-dark text-warning border-warning">
+    <div class="container mt-5 mb-5 pt-5">
+        <div class="static-card bg-dark p-4 border-warning shadow-lg" style="border: 2px solid #ffc107 !important; border-radius: 24px;">
             <div class="d-flex align-items-center mb-4 border-bottom border-secondary pb-3">
-                <i class="bi bi-terminal-fill me-3 fs-4"></i>
-                <span class="fw-black text-uppercase">Dev Command Center</span>
+                <i class="bi bi-terminal-fill text-warning me-3 fs-4"></i>
+                <span class="fw-black text-warning text-uppercase" style="letter-spacing: 2px;">System God Mode</span>
             </div>
-            <div class="row g-3">
-                <div class="col-md-3"><a asp-action="AddTestXP" class="btn btn-outline-warning btn-sm w-100 fw-bold">+25 XP</a></div>
-                <div class="col-md-3"><a asp-action="AddTestGold" class="btn btn-outline-warning btn-sm w-100 fw-bold">+100 Gold</a></div>
-                <div class="col-md-6">
-                    <form asp-action="SetTestLeague" method="post" class="d-flex gap-2">
-                        <select name="rank" class="form-select bg-transparent text-warning border-warning btn-sm" asp-items="Html.GetEnumSelectList<LeagueRank>()"></select>
-                        <button type="submit" class="btn btn-warning btn-sm fw-black px-4">CHANGE RANK</button>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <label class="text-secondary small fw-black text-uppercase mb-2 d-block">XP Manipulation</label>
+                    <form asp-action="DevUpdateXP" method="post" class="input-group mb-2">
+                        <input type="number" name="amount" class="form-control bg-transparent text-white border-secondary" placeholder="e.g. 50 or -50">
+                        <button type="submit" class="btn btn-outline-warning fw-bold">APPLY</button>
+                    </form>
+                    <div class="d-flex gap-2">
+                        <form asp-action="DevUpdateXP" method="post" class="flex-grow-1">
+                            <input type="hidden" name="amount" value="100">
+                            <button type="submit" class="btn btn-dark border-secondary text-warning w-100 btn-sm fw-bold">+100</button>
+                        </form>
+                        <form asp-action="DevUpdateXP" method="post" class="flex-grow-1">
+                            <input type="hidden" name="amount" value="-100">
+                            <button type="submit" class="btn btn-dark border-secondary text-danger w-100 btn-sm fw-bold">-100</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="text-secondary small fw-black text-uppercase mb-2 d-block">Gold Reserves</label>
+                    <form asp-action="DevUpdateGold" method="post" class="input-group mb-2">
+                        <input type="number" name="amount" class="form-control bg-transparent text-white border-secondary" placeholder="e.g. 500 or -500">
+                        <button type="submit" class="btn btn-outline-warning fw-bold">APPLY</button>
+                    </form>
+                    <div class="d-flex gap-2">
+                        <form asp-action="DevUpdateGold" method="post" class="flex-grow-1">
+                            <input type="hidden" name="amount" value="1000">
+                            <button type="submit" class="btn btn-dark border-secondary text-warning w-100 btn-sm fw-bold">+1000G</button>
+                        </form>
+                        <form asp-action="DevUpdateGold" method="post" class="flex-grow-1">
+                            <input type="hidden" name="amount" value="-1000">
+                            <button type="submit" class="btn btn-dark border-secondary text-danger w-100 btn-sm fw-bold">-1000G</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="text-secondary small fw-black text-uppercase mb-2 d-block">Streak Override</label>
+                    <form asp-action="DevSetStreak" method="post" class="input-group">
+                        <input type="number" name="streak" class="form-control bg-transparent text-white border-secondary" placeholder="Set exact streak...">
+                        <button type="submit" class="btn btn-warning fw-black">FORCE SET</button>
+                    </form>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="text-secondary small fw-black text-uppercase mb-2 d-block">League Promotion/Demotion</label>
+                    <form asp-action="DevSetLeague" method="post" class="d-flex gap-2">
+                        <select name="rank" class="form-select bg-dark text-warning border-secondary fw-bold" asp-items="Html.GetEnumSelectList<LeagueRank>()"></select>
+                        <button type="submit" class="btn btn-warning fw-black px-5">UPDATE LEAGUE RANK</button>
                     </form>
                 </div>
             </div>

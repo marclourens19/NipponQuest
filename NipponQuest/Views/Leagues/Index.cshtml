@@ -43,7 +43,7 @@
         <div class="col-xl-5 col-lg-7">
             <div class="static-card h-100 d-flex flex-column border-0 arena-border-@player.CurrentLeague.ToString().ToLower()" style="background: #ffffff; padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.06);">
                 <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-4">
-                    <h2 class="text-dark fw-black m-0">@player.CurrentLeague.ToString().ToUpper() ARENA</h2>
+                    <h2 class="fw-black m-0 text-rank-@player.CurrentLeague.ToString().ToLower()">@player.CurrentLeague.ToString().ToUpper() ARENA</h2>
                     <div class="badge rounded-pill px-3 py-2 fw-bold text-dark bg-warning border-0 shadow-sm" style="font-size: 0.75rem;">
                         <i class="bi bi-clock-fill me-1"></i>
                         @{
@@ -60,28 +60,23 @@
                 <div class="p-4 rounded-4 text-center mb-5 bg-white border shadow-sm" style="border: 1px solid #f1f5f9 !important; transition: transform 0.2s ease;">
                     <div class="text-muted fw-bold small text-uppercase mb-2" style="letter-spacing: 2px; opacity: 0.6;">Your Current Standing</div>
                     <div class="fw-black text-dark" style="font-size: 6.5rem; line-height: 0.9; letter-spacing: -4px;">#@Model.ArenaRank</div>
-                    
                     <div class="mt-3">
                         @{
                             int movement = player.LastWeekArenaRank > 0 ? (player.LastWeekArenaRank - Model.ArenaRank) : 0;
                         }
                         @if (movement > 0)
                         {
-                            <div class="text-success fw-bold small text-uppercase" style="letter-spacing: 1px;">
-                                <i class="bi bi-caret-up-fill me-1"></i> @movement @(movement == 1 ? "PLACE" : "PLACES") CLIMBED
-                            </div>
+                            <div class="text-success fw-bold small text-uppercase"><i class="bi bi-caret-up-fill me-1"></i> @movement @(movement == 1 ? "PLACE" : "PLACES") CLIMBED</div>
                         }
                         else if (movement < 0)
                         {
-                            <div class="text-danger fw-bold small text-uppercase" style="letter-spacing: 1px;">
-                                <i class="bi bi-caret-down-fill me-1"></i> @Math.Abs(movement) @(Math.Abs(movement) == 1 ? "PLACE" : "PLACES") DROPPED
-                            </div>
+
+                            <div class="text-danger fw-bold small text-uppercase"><i class="bi bi-caret-down-fill me-1"></i> @Math.Abs(movement) @(Math.Abs(movement) == 1 ? "PLACE" : "PLACES") DROPPED</div>
                         }
                         else
                         {
-                            <div class="fw-bold small text-uppercase" style="color: #94a3b8; letter-spacing: 1px; opacity: 0.8;">
-                                <i class="bi bi-dash-lg me-1"></i> Position Unchanged
-                            </div>
+
+                            <div class="fw-bold small text-uppercase" style="color: #94a3b8; letter-spacing: 1px; opacity: 0.8;"><i class="bi bi-dash-lg me-1"></i> Position Unchanged</div>
                         }
                     </div>
                 </div>
@@ -89,16 +84,15 @@
                 <div class="w-100 mb-5 d-flex flex-column gap-2">
                     @foreach (var rival in Model.ArenaRivals)
                     {
-                        // Zone Logic: Rank #1 always promotes. Last player demotes if more than 3 players exist.
                         int totalInArena = Model.ArenaRivals.Count;
-                        string zoneClass = (rival.Rank == 1) ? "promote-zone" : (rival.Rank == totalInArena && totalInArena > 3 ? "demote-zone" : "safe-zone");
-
+                        int promoteLimit = Math.Max(1, (int)Math.Ceiling(totalInArena * 0.2));
+                        int demoteLimit = totalInArena - (int)Math.Floor(totalInArena * 0.2);
+                        string zoneClass = (rival.Rank <= promoteLimit) ? "promote-zone" : (rival.Rank > demoteLimit && totalInArena > 3 ? "demote-zone" : "safe-zone");
                         <div class="sb-player-row-static p-3 @zoneClass @(rival.IsCurrentUser ? "border-primary bg-light shadow-sm" : "")" style="border-radius:16px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; border: 1px solid #f1f5f9;">
                             <div class="d-flex align-items-center gap-3">
                                 <span class="fw-black text-muted" style="min-width: 30px; font-size: 0.9rem;">#@rival.Rank</span>
                                 <span class="fw-bold @(rival.IsCurrentUser ? "text-primary" : "text-dark")">@rival.User.GamerTag @(rival.IsCurrentUser ? "(YOU)" : "")</span>
-                                
-                                @if (rival.Rank == 1)
+                                @if (rival.Rank <= promoteLimit)
                                 {
                                     <span class="badge bg-success small" style="font-size: 0.6rem;">PROMOTION</span>
                                 }
@@ -128,12 +122,11 @@
 
             <div class="static-card shadow-sm border-light" style="background:#fff; border-radius:24px; padding:24px;">
                 <h5 class="fw-bold text-center text-uppercase small text-muted pb-3 border-bottom mb-3" style="letter-spacing: 1px;">Top 3 Highest Levels</h5>
-                @for (int i = 0; i < Model.LevelLeaderboard.Take(3).Count(); i++)
+                @foreach (var top in Model.LevelLeaderboard)
                 {
-                    var top = Model.LevelLeaderboard.ElementAt(i);
                     <div class="d-flex justify-content-between align-items-center p-2 mb-1 bg-light rounded-3">
                         <div class="d-flex align-items-center gap-2">
-                            <span class="fs-5">@(i == 0 ? "👑" : i == 1 ? "🥈" : "🥉")</span>
+                            <span class="fs-5">@(top.Rank == 1 ? "👑" : top.Rank == 2 ? "🥈" : "🥉")</span>
                             <span class="fw-bold text-dark small">@top.User.GamerTag</span>
                         </div>
                         <span class="level-label-sync small">LV.@top.User.Level</span>
@@ -143,12 +136,11 @@
 
             <div class="static-card shadow-sm border-light" style="background:#fff; border-radius:24px; padding:24px;">
                 <h5 class="fw-bold text-center text-uppercase small text-muted pb-3 border-bottom mb-3" style="letter-spacing: 1px;">Top 3 Longest Streaks</h5>
-                @for (int i = 0; i < Model.StreakLeaderboard.Count; i++)
+                @foreach (var top in Model.StreakLeaderboard)
                 {
-                    var top = Model.StreakLeaderboard[i];
                     <div class="d-flex justify-content-between align-items-center p-2 mb-1 bg-light rounded-3">
                         <div class="d-flex align-items-center gap-2">
-                            <span class="fs-5">@(i == 0 ? "👑" : i == 1 ? "🥈" : "🥉")</span>
+                            <span class="fs-5">@(top.Rank == 1 ? "👑" : top.Rank == 2 ? "🥈" : "🥉")</span>
                             <span class="fw-bold text-dark small">@top.User.GamerTag</span>
                         </div>
                         <div class="d-flex align-items-center gap-1">
@@ -169,13 +161,12 @@
 </div>
 
 @functions {
-    // Japanese Localization Helpers
     public string GetRankFullJapanese(LeagueRank rank) => rank switch
     {
         LeagueRank.Legend => "伝説 (でんせつ)",
         LeagueRank.Dragon => "龍 (りゅう)",
+        LeagueRank.Challenger => "チャレンジャー",
         LeagueRank.Master => "師匠 (ししょう)",
-        LeagueRank.Emerald => "翡翠 (ひすい)",
         LeagueRank.Diamond => "金剛 (こんごう)",
         LeagueRank.Gold => "黄金 (おうごん)",
         LeagueRank.Iron => "鉄 (てつ)",
@@ -187,8 +178,8 @@
     {
         LeagueRank.Legend => "Densetsu",
         LeagueRank.Dragon => "Ryū",
+        LeagueRank.Challenger => "Charenjā",
         LeagueRank.Master => "Shishō",
-        LeagueRank.Emerald => "Hisui",
         LeagueRank.Diamond => "Kongō",
         LeagueRank.Gold => "Ōgon",
         LeagueRank.Iron => "Tetsu",
@@ -200,41 +191,28 @@
     {
         LeagueRank.Legend => 425,
         LeagueRank.Dragon => 300,
-        LeagueRank.Sprout => 25,
+        LeagueRank.Challenger => 225,
+        LeagueRank.Master => 175,
         _ => ((int)rank) * 25 + 25
     };
 }
 
 @section Scripts {
     <script>
-        // Real-time Timer Script
         function updateCountdown() {
             const timerElement = document.getElementById('countdown-timer');
             if (!timerElement) return;
-
             const targetDate = new Date(timerElement.getAttribute('data-target'));
             const now = new Date();
             const diff = targetDate - now;
-
-            if (diff <= 0) {
-                timerElement.innerHTML = "0s";
-                return;
-            }
-
+            if (diff <= 0) { timerElement.innerHTML = "0s"; return; }
             const d = Math.floor(diff / (1000 * 60 * 60 * 24));
             const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const s = Math.floor((diff % (1000 * 60)) / 1000);
-
-            let display = "";
-            if (d > 0) { display = `${d}d ${h}h`; }
-            else if (h > 0) { display = `${h}h ${m}m`; }
-            else if (m > 0) { display = `${m}m ${s}s`; }
-            else { display = `${s}s`; }
-
+            let display = d > 0 ? `${d}d ${h}h` : h > 0 ? `${h}h ${m}m` : m > 0 ? `${m}m ${s}s` : `${s}s`;
             timerElement.innerHTML = display;
         }
-
         setInterval(updateCountdown, 1000);
         updateCountdown();
     </script>
