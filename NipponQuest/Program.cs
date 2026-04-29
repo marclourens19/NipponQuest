@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NipponQuest.Data;
-using NipponQuest.Models;
-using Quartz;
 using NipponQuest.Jobs;
+using NipponQuest.Models;
+using NipponQuest.Services;
+using Quartz;
 
 namespace NipponQuest
 {
@@ -47,6 +48,10 @@ namespace NipponQuest
             });
 
             builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+
+            // Add this line with the other service registrations
+            builder.Services.AddScoped<GithubService>();
+
             // ---------------------------------------------
 
             var app = builder.Build();

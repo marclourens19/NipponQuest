@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@model IReadOnlyList<Octokit.GitHubCommit>
 @inject UserManager<NipponQuest.Models.ApplicationUser> UserManager
 @{
     ViewData["Title"] = "Master Japanese - NipponQuest";
@@ -239,29 +240,30 @@
 </div>
 
 <!-- 7. THE QUEST LOG -->
-<div class="landing-section bg-white">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-5">
-                <h2 class="fw-black mb-4">The Quest Log</h2>
-                <p class="text-muted fw-bold">Real-time updates from YugenLabs HQ.</p>
-            </div>
-            <div class="col-lg-7">
-                <div class="timeline-item">
-                    <h5 class="fw-black text-dark">Build v2.4 Patch: UI Overhaul</h5>
-                    <p class="text-muted small fw-bold">Refined the horizontal tier track and integrated the Mastery Roadmap.</p>
+<div class="quest-timeline">
+    @if (Model != null && Model.Any())
+    {
+        @foreach (var commit in Model)
+        {
+            <div class="timeline-item d-flex gap-4 mb-4">
+                <div class="timeline-dot-wrapper">
+                    <div class="timeline-dot" style="background-color: #0d6efd;"></div>
                 </div>
-                <div class="timeline-item">
-                    <h5 class="fw-black text-dark">Build v2.2 Patch: .NET 10 Core</h5>
-                    <p class="text-muted small fw-bold">Migrated to .NET 10 for 40% faster quest loading times.</p>
-                </div>
-                <div class="timeline-item">
-                    <h5 class="fw-black text-dark">New Content: N5 Bestiary</h5>
-                    <p class="text-muted small fw-bold">Added 200 new Kanji entries to the starter curriculum.</p>
+                <div class="timeline-content">
+                    <h5 class="fw-black mb-1 text-dark">
+                        @commit.Commit.Message.Split('\n')[0]
+                    </h5>
+                    <p class="small text-muted fw-bold mb-0">
+                        QUEST COMPLETED • @commit.Commit.Author.Date.ToString("MMM dd, yyyy")
+                    </p>
                 </div>
             </div>
-        </div>
-    </div>
+        }
+    }
+    else
+    {
+        <p class="text-muted fw-bold">No recent quests found in the log.</p>
+    }
 </div>
 
 <!-- 8. FINAL CTA -->

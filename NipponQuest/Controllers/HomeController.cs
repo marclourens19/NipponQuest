@@ -3,34 +3,41 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NipponQuest.Models;
-using NipponQuest.Data; // Ensure this matches your Data folder namespace
+using NipponQuest.Services;
+using NipponQuest.Data;
 
 namespace NipponQuest.Controllers
 {
     public class HomeController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly ApplicationDbContext _context; // Added field for DB access
+        private readonly ApplicationDbContext _context;
+        private readonly GithubService _githubService; // Added service field
 
-        // Inject both UserManager and ApplicationDbContext
-        public HomeController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
+        // Inject UserManager, DbContext, and GithubService
+        public HomeController(
+            UserManager<ApplicationUser> userManager,
+            ApplicationDbContext context,
+            GithubService githubService)
         {
             _userManager = userManager;
             _context = context;
+            _githubService = githubService;
         }
 
-        // Single merged Index method to handle DB stats
+        // Updated Index method to handle DB stats AND GitHub Commits
         public async Task<IActionResult> Index()
         {
-            // Sum total XP from all users in the database
-            // Note: Use 'TotalEXP' or 'ExperiencePoints' depending on your actual ApplicationUser property name
+            // 1. Fetch Database Stats for the Dashboard
             ViewBag.TotalXP = await _context.Users.SumAsync(u => u.TotalEXP);
-
-            // Count users who have an active login streak
-            // Note: Use 'LoginStreak' to match your ApplicationUser property
             ViewBag.ActiveStreaks = await _context.Users.CountAsync(u => u.LoginStreak > 0);
 
-            return View();
+            // 2. Fetch GitHub Commits for the Quest Log
+            // Replace "marclourens19" and "NipponQuest" with your actual GitHub details
+            var commits = await _githubService.GetLatestCommitsAsync("marclourens19", "NipponQuest");
+
+            // Return the commits as the Model for the Index view
+            return View(commits);
         }
 
         // --- DEV TOOL ENGINE: GOD MODE COMMANDS ---
@@ -98,9 +105,7 @@ namespace NipponQuest.Controllers
         }
 
         public IActionResult Privacy() => View();
-
         public IActionResult Terms() => View();
-
         public IActionResult Cookies() => View();
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
