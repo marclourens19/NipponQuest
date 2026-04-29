@@ -263,15 +263,15 @@
                     @foreach (var commit in Model)
                     {
                         var msg = commit.Commit.Message.ToLower();
-                        var icon = "bi-journal-check";
-                        
-                        // Icons remain functional but the color is now strictly blue or dark
-                        if (msg.Contains("feat") || msg.Contains("add")) { icon = "bi-stars"; }
-                        else if (msg.Contains("fix") || msg.Contains("bug")) { icon = "bi-tools"; }
-                        else if (msg.Contains("ui") || msg.Contains("css")) { icon = "bi-palette-fill"; }
+    
+                        // Simplified Tool Icons
+                        var icon = "bi-hammer"; // Default tool
+    
+                        if (msg.Contains("feat") || msg.Contains("add")) { icon = "bi-hammer"; }
+                        else if (msg.Contains("fix") || msg.Contains("bug")) { icon = "bi-wrench-adjustable"; }
+                        else if (msg.Contains("ui") || msg.Contains("css") || msg.Contains("layout")) { icon = "bi-gear-wide-connected"; }
 
                         <div class="commit-item d-flex gap-3 pb-3 mb-3 border-bottom last-child-border-0">
-                            <!-- iconColor is set to text-primary (Blue) or text-dark -->
                             <div class="icon-box shadow-sm rounded-3 d-flex align-items-center justify-content-center bg-light" style="width: 42px; height: 42px; flex-shrink: 0;">
                                 <i class="bi @icon text-primary fs-5"></i>
                             </div>
