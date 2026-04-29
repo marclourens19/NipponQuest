@@ -240,34 +240,72 @@
 </div>
 
 <!-- 7. THE QUEST LOG -->
-<div class="quest-timeline">
-    @if (Model != null && Model.Any())
-    {
-        @foreach (var commit in Model)
-        {
-            <div class="timeline-item d-flex gap-4 mb-4">
-                <div class="timeline-dot-wrapper">
-                    <div class="timeline-dot" style="background-color: #0d6efd;"></div>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Centered Header -->
+            <div class="text-center mb-4">
+                <div class="d-inline-flex align-items-center gap-2 mb-2">
+                    <span class="badge rounded-pill bg-soft-blue text-primary px-3 fw-black">LIVE FEED</span>
+                    <div class="spinner-grow spinner-grow-sm text-primary" role="status"></div>
                 </div>
-                <div class="timeline-content">
-                    <h5 class="fw-black mb-1 text-dark">
-                        @commit.Commit.Message.Split('\n')[0]
-                    </h5>
-                    <p class="small text-muted fw-bold mb-0">
-                        QUEST COMPLETED • @commit.Commit.Author.Date.ToString("MMM dd, yyyy")
-                    </p>
-                </div>
+                <h2 class="fw-black display-6 mb-2">GitHub <span class="text-primary">Updates</span></h2>
+                <p class="text-muted fw-bold small mb-3">Real-time developer logs from the NipponQuest repository.</p>
+                <a href="https://github.com/marclourens19/NipponQuest" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill px-4 fw-black">
+                    <i class="bi bi-github me-2"></i>VIEW REPO
+                </a>
             </div>
-        }
-    }
-    else
-    {
-        <p class="text-muted fw-bold">No recent quests found in the log.</p>
-    }
+
+            <!-- Condensed Log Container -->
+            <div class="quest-log-container p-3 bg-white rounded-4 shadow-sm border">
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var commit in Model)
+                    {
+                        var msg = commit.Commit.Message.ToLower();
+                        var icon = "bi-journal-check";
+                        
+                        // Icons remain functional but the color is now strictly blue or dark
+                        if (msg.Contains("feat") || msg.Contains("add")) { icon = "bi-stars"; }
+                        else if (msg.Contains("fix") || msg.Contains("bug")) { icon = "bi-tools"; }
+                        else if (msg.Contains("ui") || msg.Contains("css")) { icon = "bi-palette-fill"; }
+
+                        <div class="commit-item d-flex gap-3 pb-3 mb-3 border-bottom last-child-border-0">
+                            <!-- iconColor is set to text-primary (Blue) or text-dark -->
+                            <div class="icon-box shadow-sm rounded-3 d-flex align-items-center justify-content-center bg-light" style="width: 42px; height: 42px; flex-shrink: 0;">
+                                <i class="bi @icon text-primary fs-5"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h6 class="fw-black mb-0 text-dark small" style="line-height: 1.4;">
+                                        @commit.Commit.Message.Split('\n')[0]
+                                    </h6>
+                                    <span class="badge bg-light text-muted border fw-bold ms-2" style="font-size: 0.6rem;">
+                                        @commit.Sha.Substring(0, 7).ToUpper()
+                                    </span>
+                                </div>
+                                <p class="small text-muted fw-bold mb-0" style="font-size: 0.7rem;">
+                                    <span class="text-primary">QUEST COMPLETED</span> • @commit.Commit.Author.Date.ToString("MMM dd, yyyy")
+                                </p>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="bi bi-cloud-slash fs-1 text-light"></i>
+                        <p class="text-muted fw-bold small">Connecting to HQ...</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- 8. FINAL CTA -->
-<div class="landing-section bg-white pt-0">
+<div class="landing-section bg-white py-5">
+    <!-- Changed pt-0 to py-5 -->
     <div class="container">
         <div class="cta-banner text-center text-white shadow-lg quest-pulse">
             <h2 class="fw-black mb-3" style="letter-spacing: -0.03em;">Ready to start your quest?</h2>
