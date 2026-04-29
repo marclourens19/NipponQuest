@@ -1,40 +1,89 @@
 ﻿@page
 @model RegisterModel
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Join NipponQuest";
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="auth-container">
+    <div class="auth-card shadow-lg">
+        <div class="text-center mb-5">
+            <h1 class="fw-black text-dark" style="letter-spacing: -2px; font-size: 2.8rem;">Create Profile</h1>
+            <p class="text-muted fw-bold">Your legendary journey begins here.</p>
+        </div>
 
-<div class="row">
-    <div class="col-md-4">
+        <div class="social-auth-providers">
+            <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                @* FIXED GOOGLE ICON *@
+                <button type="submit" name="provider" value="Google" class="btn-social">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 488 512"><path d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z" /></svg>
+                    Continue with Google
+                </button>
+            </form>
+        </div>
+
+        <div class="auth-divider">or use email</div>
+
         <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Create Profile</h2>
-            <hr />
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3" role="alert"></div>
 
-            <div class="form-floating mb-3">
-                <input asp-for="Input.GamerTag" class="form-control" aria-required="true" placeholder="GamerTag" />
-                <label asp-for="Input.GamerTag">GamerTag</label>
-                <span asp-validation-for="Input.GamerTag" class="text-danger"></span>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label asp-for="Input.GamerTag" class="form-label small fw-black text-uppercase opacity-75 mb-0" style="letter-spacing: 1px;">Username</label>
+                    <span class="badge bg-soft-blue text-primary border fw-bold" style="font-size: 0.65rem;">MAX 12 CHARACTERS</span>
+                </div>
+                <input asp-for="Input.GamerTag" class="form-control auth-input" placeholder="Choose your legend name..." aria-required="true" maxlength="12" />
+                <span asp-validation-for="Input.GamerTag" class="text-danger small"></span>
             </div>
 
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label asp-for="Input.Email">Email</label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            <div class="mb-3">
+                <label asp-for="Input.Email" class="form-label small fw-black text-uppercase opacity-75 mb-2" style="letter-spacing: 1px;">Email Address</label>
+                <input asp-for="Input.Email" class="form-control auth-input" placeholder="name@example.com" aria-required="true" />
+                <span asp-validation-for="Input.Email" class="text-danger small"></span>
             </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.Password">Password</label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Input.Password" class="form-label small fw-black text-uppercase opacity-75 mb-2" style="letter-spacing: 1px;">Password</label>
+                    <div class="position-relative">
+                        <input asp-for="Input.Password" type="password" class="form-control auth-input pe-5" placeholder="••••••••" aria-required="true" id="pwdMain" />
+                        <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y border-0 text-muted" onclick="togglePwd('pwdMain')">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Input.ConfirmPassword" class="form-label small fw-black text-uppercase opacity-75 mb-2" style="letter-spacing: 1px;">Confirm</label>
+                    <input asp-for="Input.ConfirmPassword" type="password" class="form-control auth-input" placeholder="••••••••" aria-required="true" />
+                </div>
             </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.ConfirmPassword">Confirm Password</label>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-            </div>
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Create Account</button>
+            <span asp-validation-for="Input.Password" class="text-danger small mb-3 d-block"></span>
+
+            <button id="registerSubmit" type="submit" class="btn btn-primary btn-lg rounded-pill fw-black w-100 py-3 mt-4 btn-cta-premium">
+                CREATE LEGEND PROFILE
+            </button>
         </form>
+
+        <div class="text-center mt-4 pt-3 border-top" style="border-top-color: rgba(0,0,0,0.05) !important;">
+            <p class="small fw-bold text-muted mb-0">
+                Already a legend? <a asp-page="./Login" class="text-primary text-decoration-none">Login to your account</a>
+            </p>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function togglePwd(id) {
+            const input = document.getElementById(id);
+            const icon = event.currentTarget.querySelector('i');
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                input.type = "password";
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        }
+    </script>
+}

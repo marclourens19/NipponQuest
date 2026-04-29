@@ -46,8 +46,8 @@
 
         <li class="nav-item">
             <div class="hud-bubble px-4">
-                <span class="fw-bold text-muted small welcome-text">WELCOME, </span>
-                <a asp-area="Identity" asp-page="/Account/Manage/Index" class="fw-black text-primary text-decoration-none text-uppercase small ms-1 welcome-text">@player.GamerTag</a>
+                <span class="fw-bold text-muted small">WELCOME, </span>
+                <a asp-area="Identity" asp-page="/Account/Manage/Index" class="fw-black text-primary text-decoration-none text-uppercase small ms-1">@player.GamerTag</a>
             </div>
         </li>
 
@@ -61,7 +61,17 @@
     }
     else
     {
-        <li class="nav-item"><a class="hud-bubble text-decoration-none px-4 welcome-text" asp-area="Identity" asp-page="/Account/Login"><span class="fw-black text-primary small">LOGIN</span></a></li>
-        <li class="nav-item"><a class="hud-bubble text-decoration-none bg-dark shadow-sm px-4 border-0 welcome-text" asp-area="Identity" asp-page="/Account/Register"><span class="fw-black text-white small">REGISTER</span></a></li>
+        <li class="nav-item">
+            <a class="hud-bubble text-decoration-none px-4" asp-area="Identity" asp-page="/Account/Login">
+                <span class="fw-black text-primary small">LOGIN</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="hud-bubble text-decoration-none shadow-sm px-4 border-0 d-flex align-items-center justify-content-center"
+                   style="background-color: #0d6efd !important; min-height: 40px;"
+                   asp-area="Identity" asp-page="/Account/Register">
+                <span class="fw-black small" style="color: #ffffff !important;">REGISTER</span>
+            </a>
+        </li>
     }
 </ul>

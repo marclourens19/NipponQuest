@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NipponQuest.Data;
 using NipponQuest.Models;
+using Quartz;
+using NipponQuest.Jobs;
 
 namespace NipponQuest
 {
@@ -17,10 +19,35 @@ namespace NipponQuest
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            // Configuring Identity services with our custom ApplicationUser class and setting
+            // Configuring Identity services with our custom ApplicationUser class
             builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            // --- GOOGLE AUTHENTICATION CONFIGURATION ---
+            // This pulls the ClientId and Secret from your User Secrets
+            builder.Services.AddAuthentication()
+                .AddGoogle(googleOptions =>
+                {
+                    googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+                    googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+                });
+
             builder.Services.AddControllersWithViews();
+
+            // --- QUARTZ.NET WEEKLY RESET CONFIGURATION ---
+            builder.Services.AddQuartz(q =>
+            {
+                var jobKey = new JobKey("WeeklyLeagueResetJob");
+                q.AddJob<WeeklyLeagueResetJob>(opts => opts.WithIdentity(jobKey));
+
+                q.AddTrigger(opts => opts
+                    .ForJob(jobKey)
+                    .WithIdentity("WeeklyLeagueResetTrigger")
+                    .WithCronSchedule("0 0 0 ? * SUN"));
+            });
+
+            builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+            // ---------------------------------------------
 
             var app = builder.Build();
 
@@ -32,13 +59,13 @@ namespace NipponQuest
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
             app.UseRouting();
 
+            app.UseAuthentication(); // Ensure Authentication is called before Authorization
             app.UseAuthorization();
 
             app.MapStaticAssets();
@@ -53,7 +80,6 @@ namespace NipponQuest
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-                // This calls the static method.
                 SeedData.Initialize(services);
             }
 

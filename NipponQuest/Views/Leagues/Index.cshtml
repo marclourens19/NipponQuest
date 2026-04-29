@@ -8,7 +8,9 @@
 <div class="container mt-4 mb-5">
     <div class="mb-5 pb-4 border-bottom text-center d-flex flex-column align-items-center">
         <h1 class="fw-black text-dark m-0" style="font-size: 4.5rem; letter-spacing: -3px; line-height: 1;">LEAGUES</h1>
-        <span class="brand-japanese-sub" style="font-size: 1.1rem; color: #0ea5e9; margin-top: 0;">リーグ (Rīgu)</span>
+        <span class="brand-japanese-sub" style="font-size: 1.1rem; color: #0ea5e9; margin-top: 0;">
+            リーグ (Rīgu)
+        </span>
     </div>
 
     <div class="row g-5">
@@ -41,7 +43,7 @@
         </div>
 
         <div class="col-xl-5 col-lg-7">
-            <div class="static-card h-100 d-flex flex-column border-0 arena-border-@player.CurrentLeague.ToString().ToLower()" style="background: #ffffff; padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.06);">
+            <div class="static-card arena-card-main h-100 d-flex flex-column border-0 arena-border-@player.CurrentLeague.ToString().ToLower()" style="background: #ffffff; padding: 32px;">
                 <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-4">
                     <h2 class="fw-black m-0 text-rank-@player.CurrentLeague.ToString().ToLower()">@player.CurrentLeague.ToString().ToUpper() ARENA</h2>
                     <div class="badge rounded-pill px-3 py-2 fw-bold text-dark bg-warning border-0 shadow-sm" style="font-size: 0.75rem;">
@@ -51,14 +53,13 @@
                             int daysUntilMonday = ((int)DayOfWeek.Monday - (int)now.DayOfWeek + 7) % 7;
                             if (daysUntilMonday == 0 && now.Hour >= 0) daysUntilMonday = 7;
                             DateTime targetDate = now.Date.AddDays(daysUntilMonday);
-                            string targetIso = targetDate.ToString("yyyy-MM-ddTHH:mm:ss");
                         }
-                        <span id="countdown-timer" data-target="@targetIso">Calculating...</span> REMAINING
+                        <span id="countdown-timer" data-target="@targetDate.ToString("yyyy-MM-ddTHH:mm:ss")">...</span> REMAINING
                     </div>
                 </div>
 
-                <div class="p-4 rounded-4 text-center mb-5 bg-white border shadow-sm" style="border: 1px solid #f1f5f9 !important; transition: transform 0.2s ease;">
-                    <div class="text-muted fw-bold small text-uppercase mb-2" style="letter-spacing: 2px; opacity: 0.6;">Your Current Standing</div>
+                <div class="p-4 rounded-4 text-center mb-5 bg-white border shadow-sm" style="border: 1px solid #f1f5f9 !important;">
+                    <div class="text-muted fw-bold small text-uppercase mb-2" style="letter-spacing: 2px; opacity: 0.5;">Your Current Standing</div>
                     <div class="fw-black text-dark" style="font-size: 6.5rem; line-height: 0.9; letter-spacing: -4px;">#@Model.ArenaRank</div>
                     <div class="mt-3">
                         @{
@@ -66,12 +67,12 @@
                         }
                         @if (movement > 0)
                         {
-                            <div class="text-success fw-bold small text-uppercase"><i class="bi bi-caret-up-fill me-1"></i> @movement @(movement == 1 ? "PLACE" : "PLACES") CLIMBED</div>
+                            <div class="text-success fw-bold small text-uppercase"><i class="bi bi-caret-up-fill me-1"></i> @movement PLACES CLIMBED</div>
                         }
                         else if (movement < 0)
                         {
 
-                            <div class="text-danger fw-bold small text-uppercase"><i class="bi bi-caret-down-fill me-1"></i> @Math.Abs(movement) @(Math.Abs(movement) == 1 ? "PLACE" : "PLACES") DROPPED</div>
+                            <div class="text-danger fw-bold small text-uppercase"><i class="bi bi-caret-down-fill me-1"></i> @Math.Abs(movement) PLACES DROPPED</div>
                         }
                         else
                         {
@@ -84,30 +85,33 @@
                 <div class="w-100 mb-5 d-flex flex-column gap-2">
                     @foreach (var rival in Model.ArenaRivals)
                     {
-                        int totalInArena = Model.ArenaRivals.Count;
-                        int promoteLimit = Math.Max(1, (int)Math.Ceiling(totalInArena * 0.2));
-                        int demoteLimit = totalInArena - (int)Math.Floor(totalInArena * 0.2);
-                        string zoneClass = (rival.Rank <= promoteLimit) ? "promote-zone" : (rival.Rank > demoteLimit && totalInArena > 3 ? "demote-zone" : "safe-zone");
-                        <div class="sb-player-row-static p-3 @zoneClass @(rival.IsCurrentUser ? "border-primary bg-light shadow-sm" : "")" style="border-radius:16px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; border: 1px solid #f1f5f9;">
+                        int total = Model.ArenaRivals.Count;
+                        int promoteLimit = Math.Max(1, (int)Math.Ceiling(total * 0.2));
+                        int demoteLimit = total - (int)Math.Floor(total * 0.2);
+                        string zoneClass = (rival.Rank <= promoteLimit) ? "promote-zone" : (rival.Rank > demoteLimit && total > 3 ? "demote-zone" : "safe-zone");
+
+                        <div class="sb-player-row-static p-3 @zoneClass @(rival.IsCurrentUser ? "border-primary bg-light shadow-sm" : "")"
+                             style="border-radius:16px; display:flex; justify-content:space-between; align-items:center;">
                             <div class="d-flex align-items-center gap-3">
                                 <span class="fw-black text-muted" style="min-width: 30px; font-size: 0.9rem;">#@rival.Rank</span>
                                 <span class="fw-bold @(rival.IsCurrentUser ? "text-primary" : "text-dark")">@rival.User.GamerTag @(rival.IsCurrentUser ? "(YOU)" : "")</span>
+                                
                                 @if (rival.Rank <= promoteLimit)
                                 {
-                                    <span class="badge bg-success small" style="font-size: 0.6rem;">PROMOTION</span>
+                                    <span class="badge bg-success small" style="font-size: 0.6rem;">RANK UP AVAILABLE</span>
                                 }
                                 @if (zoneClass == "demote-zone")
                                 {
-                                    <span class="badge bg-danger small" style="font-size: 0.6rem;">DEMOTION</span>
+                                    <span class="badge bg-danger small" style="font-size: 0.6rem;">EARN XP TO SECURE RANK</span>
                                 }
                             </div>
-                            <span class="fw-black" style="font-size: 0.9rem;">@rival.User.WeeklyXP <span class="text-muted fw-bold small">XP</span></span>
+                            <span class="fw-black" style="font-size: 0.9rem;">@rival.User.WeeklyXP <span class="text-muted fw-bold small" style="opacity: 0.6;">XP</span></span>
                         </div>
                     }
                 </div>
 
                 <div class="mt-auto">
-                    <button class="btn btn-primary btn-lg w-100 rounded-pill fw-black py-3 shadow-lg" style="background: linear-gradient(135deg, #1e3a8a, #0ea5e9); border:none; letter-spacing: 1px;">
+                    <button class="btn btn-primary btn-lg w-100 rounded-pill fw-black py-3 shadow-lg" style="background: linear-gradient(135deg, #1e3a8a, #0ea5e9); border:none; letter-spacing: 1px; transition: transform 0.2s ease;">
                         <i class="bi bi-lightning-charge-fill me-2" style="color: #fbbf24;"></i> EARN MORE XP!
                     </button>
                 </div>
@@ -145,13 +149,13 @@
                         </div>
                         <div class="d-flex align-items-center gap-1">
                             <i class="bi bi-fire @(top.User.LoginStreak > 0 ? "streak-flame-active" : "streak-frozen")"></i>
-                            <span class="fw-black small @(top.User.LoginStreak > 0 ? "streak-flame-active" : "streak-frozen")">@top.User.LoginStreak</span>
+                            <span class="fw-black small">@top.User.LoginStreak</span>
                         </div>
                     </div>
                 }
             </div>
 
-            <div class="static-card text-white shadow-lg border-0 p-4" style="background: linear-gradient(135deg, #1e3a8a, #0ea5e9); border-radius: 24px;">
+            <div class="static-card text-white shadow-lg border-0 p-4" style="background: linear-gradient(135deg, #1e3a8a, #0ea5e9); border-radius: 24px; opacity: 0.95;">
                 <h6 class="fw-black text-uppercase small opacity-75 mb-3" style="letter-spacing: 1px;">What are Leagues?</h6>
                 <p class="fw-black m-0" style="font-size: 1.15rem; line-height: 1.3;">Do lessons. Earn XP. Compete.</p>
                 <p class="small mt-2 mb-0 opacity-80" style="line-height: 1.5;">Climb your weekly Arena. Top players promote to higher ranks every Sunday!</p>
@@ -161,6 +165,7 @@
 </div>
 
 @functions {
+    /* Localization Helpers: Managing DISPLAY NAMES and GOLD rewards logic */
     public string GetRankFullJapanese(LeagueRank rank) => rank switch
     {
         LeagueRank.Legend => "伝説 (でんせつ)",
@@ -199,6 +204,7 @@
 
 @section Scripts {
     <script>
+        /* TIMER ENGINE: Countdown logic for Arena reset */
         function updateCountdown() {
             const timerElement = document.getElementById('countdown-timer');
             if (!timerElement) return;
