@@ -10,9 +10,8 @@ namespace NipponQuest.Services
 
         public GithubService()
         {
-            // The product header identifies your app to the GitHub API
-            // Using a unique name prevents '403 Forbidden' errors from the GitHub API
-            _client = new GitHubClient(new ProductHeaderValue("NipponQuest-App-v2"));
+            // Explicitly using Octokit namespace to resolve CS0104 ambiguity
+            _client = new GitHubClient(new Octokit.ProductHeaderValue("NipponQuest-App-v2"));
         }
 
         public async Task<List<GitHubCommit>> GetLatestCommitsAsync(string owner, string repo)
