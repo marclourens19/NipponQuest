@@ -29,7 +29,7 @@
 
                         <div class="mb-4">
                             <label asp-for="Description" class="form-label fw-bold text-dark">DESCRIPTION</label>
-                            <textarea asp-for="Description" class="form-control border-2 rounded-4 fw-bold" style="min-height: 120px;" placeholder="What are you studying in this deck?"></textarea>
+                            <textarea asp-for="Description" class="form-control border-2 rounded-4 fw-bold" style="min-height: 120px;" placeholder="What is this deck for?"></textarea>
                             <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
 
@@ -47,9 +47,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}

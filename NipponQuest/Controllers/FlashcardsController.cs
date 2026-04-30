@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using NipponQuest.Data;
 using NipponQuest.Models;
 using NipponQuest.Services;
+using Microsoft.Data.Sqlite;
 using System.Diagnostics;
 using System.Security.Claims;
 
@@ -41,119 +42,82 @@ namespace NipponQuest.Controllers
                 });
 
             if (!string.IsNullOrEmpty(searchString))
-            {
-                query = query.Where(s =>
-                    s.Title.Contains(searchString) ||
-                    s.Description.Contains(searchString));
-            }
+                query = query.Where(s => s.Title.Contains(searchString) || s.Description.Contains(searchString));
 
             return View(await query.ToListAsync());
         }
 
+        // GET: Flashcards/Create
+        public IActionResult Create() => View();
+
+        // POST: Flashcards/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create([Bind("Title,Description")] Deck deck)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrEmpty(userId))
+            {
+                deck.ApplicationUserId = userId;
+                ModelState.Remove("ApplicationUserId");
+
+                if (ModelState.IsValid)
+                {
+                    _context.Decks.Add(deck);
+                    _context.SaveChanges();
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+            return View(deck);
+        }
+
         [HttpPost]
         [IgnoreAntiforgeryToken]
-        public async Task<IActionResult> ImportAnki(IFormFile ankiFile)
+        public IActionResult ImportAnki(IFormFile ankiFile)
         {
-            DeepLog(">>> ImportAnki Started.");
-
-            if (ankiFile == null || ankiFile.Length == 0)
-            {
-                DeepLog("ERROR: No file uploaded.");
-                return RedirectToAction(nameof(Index));
-            }
+            if (ankiFile == null || ankiFile.Length == 0) return RedirectToAction(nameof(Index));
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            string baseTemp = Path.Combine(Path.GetTempPath(), "Anki_Handoff");
-            string workDir = Path.Combine(baseTemp, Guid.NewGuid().ToString("N"));
-
+            string workDir = Path.Combine(Directory.GetCurrentDirectory(), "Anki_Handoff", userId);
             string packagePath = Path.Combine(workDir, "upload.apkg");
 
             try
             {
+                if (Directory.Exists(workDir)) Directory.Delete(workDir, true);
                 Directory.CreateDirectory(workDir);
 
-                DeepLog("Saving uploaded file...");
-
-                await using (var fs = new FileStream(packagePath, FileMode.Create, FileAccess.Write, FileShare.None))
-                await using (var inputStream = ankiFile.OpenReadStream())
+                using (var stream = new FileStream(packagePath, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    await inputStream.CopyToAsync(fs);
+                    ankiFile.CopyTo(stream);
+                    stream.Flush();
                 }
 
-                DeepLog("STAGE 1 COMPLETE - FILE SAVED");
-
-                if (!System.IO.File.Exists(packagePath))
-                    throw new Exception("File not saved correctly.");
-
-                var fileSize = new FileInfo(packagePath).Length;
-                DeepLog($"File size: {fileSize}");
-
-                if (fileSize == 0)
-                    throw new Exception("Uploaded file is empty.");
-
-                DeepLog("STAGE 2: Processing Anki file...");
-
-                var cards = AnkiProcessor.GetCardsFromPackage(packagePath, workDir);
-
-                if (cards == null || cards.Count == 0)
-                {
-                    DeepLog("No cards extracted.");
-                    return RedirectToAction(nameof(Index));
-                }
-
-                DeepLog($"STAGE 2 SUCCESS: {cards.Count} cards");
+                // Call the cleaned service
+                var cardBuffer = AnkiProcessor.GetCardsFromPackage(packagePath, workDir);
 
                 ViewBag.DeckName = Path.GetFileNameWithoutExtension(ankiFile.FileName);
-                return View("~/Views/Flashcards/ConfirmImport.cshtml", cards);
+                return View("~/Views/Flashcards/ConfirmImport.cshtml", cardBuffer);
             }
             catch (Exception ex)
             {
-                DeepLog("CRITICAL IMPORT ERROR: " + ex);
+                Debug.WriteLine($"[CRASH]: {ex.Message}");
                 return RedirectToAction(nameof(Index));
-            }
-            finally
-            {
-                try
-                {
-                    if (Directory.Exists(workDir))
-                        Directory.Delete(workDir, true);
-                }
-                catch (Exception ex)
-                {
-                    DeepLog("Cleanup error: " + ex.Message);
-                }
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> FinalizeImport(string deckTitle, List<Flashcard> cards)
+        public IActionResult FinalizeImport(string deckTitle, List<Flashcard> cards)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId) || cards == null || !cards.Any()) return RedirectToAction(nameof(Index));
 
-            if (string.IsNullOrEmpty(userId) || cards == null || !cards.Any())
-                return RedirectToAction(nameof(Index));
-
-            var newDeck = new Deck
-            {
-                Title = deckTitle ?? "Imported Deck",
-                Description = "Imported from Anki",
-                ApplicationUserId = userId
-            };
-
+            var newDeck = new Deck { Title = deckTitle, Description = "Imported from Anki", ApplicationUserId = userId };
             _context.Decks.Add(newDeck);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
-            foreach (var card in cards)
-            {
-                card.DeckId = newDeck.Id;
-                card.Deck = null;
-            }
-
+            foreach (var card in cards) { card.DeckId = newDeck.Id; card.Deck = null; }
             _context.Flashcards.AddRange(cards);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
             return RedirectToAction(nameof(Index));
         }
@@ -163,42 +127,11 @@ namespace NipponQuest.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var deck = await _context.Decks.FirstOrDefaultAsync(d => d.Id == id && d.ApplicationUserId == userId);
 
-            var deck = await _context.Decks
-                .FirstOrDefaultAsync(d => d.Id == id && d.ApplicationUserId == userId);
-
-            if (deck != null)
-                _context.Decks.Remove(deck);
-
+            if (deck != null) _context.Decks.Remove(deck);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Description")] Deck deck)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (!string.IsNullOrEmpty(userId))
-            {
-                deck.ApplicationUserId = userId;
-                ModelState.Remove("ApplicationUserId");
-
-                if (ModelState.IsValid)
-                {
-                    _context.Add(deck);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
-                }
-            }
-
-            return View(deck);
         }
     }
 }
