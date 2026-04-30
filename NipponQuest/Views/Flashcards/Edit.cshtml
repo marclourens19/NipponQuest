@@ -1,0 +1,56 @@
+﻿@model NipponQuest.Models.Deck
+
+@{
+    ViewData["Title"] = "Edit Deck";
+}
+
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <a asp-action="Index" class="text-decoration-none text-muted fw-bold mb-4 d-inline-block">
+                <i class="bi bi-arrow-left me-1"></i> Back to Decks
+            </a>
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="bg-primary p-4 text-center text-white">
+                    <i class="bi bi-pencil-square display-4 mb-2"></i>
+                    <h3 class="fw-black m-0">Edit Deck Details</h3>
+                </div>
+
+                <div class="card-body p-5 bg-white">
+                    <form asp-action="Edit" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="mb-4">
+                            <label asp-for="Title" class="form-label fw-bold text-dark">DECK TITLE</label>
+                            <input asp-for="Title" class="form-control form-control-lg border-2 rounded-4 fw-bold" placeholder="e.g. JLPT N5 Vocabulary" />
+                            <span asp-validation-for="Title" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label fw-bold text-dark">DESCRIPTION</label>
+                            <textarea asp-for="Description" class="form-control border-2 rounded-4 fw-bold" style="min-height: 120px;" placeholder="What is this deck for?"></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm py-3">
+                                SAVE CHANGES
+                            </button>
+                            <a asp-action="Index" class="btn btn-light btn-lg rounded-pill fw-bold border py-3">
+                                CANCEL
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

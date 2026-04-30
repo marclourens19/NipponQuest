@@ -229,13 +229,48 @@
         <h2 class="fw-black mb-5">The Roadmap to 100% Mastery</h2>
         <div class="roadmap-container d-flex justify-content-between align-items-center px-md-5">
             <div class="roadmap-line"></div>
-            <div class="roadmap-node" title="N5: The Basics">N5</div>
-            <div class="roadmap-node node-locked" title="N4: Conversation">N4</div>
-            <div class="roadmap-node node-locked" title="N3: Intermediate">N3</div>
-            <div class="roadmap-node node-locked" title="N2: Business">N2</div>
-            <div class="roadmap-node node-locked" title="N1: Native Legend">N1</div>
+            <div class="roadmap-node active pointer" onclick="showLevelInfo('N5')" title="N5: The Basics">N5</div>
+            <div class="roadmap-node node-locked pointer" onclick="showLevelInfo('N4')" title="N4: Conversation">N4</div>
+            <div class="roadmap-node node-locked pointer" onclick="showLevelInfo('N3')" title="N3: Intermediate">N3</div>
+            <div class="roadmap-node node-locked pointer" onclick="showLevelInfo('N2')" title="N2: Business">N2</div>
+            <div class="roadmap-node node-locked pointer" onclick="showLevelInfo('N1')" title="N1: Native Legend">N1</div>
         </div>
-        <p class="mt-5 text-muted fw-bold">Unlock new JLPT modules as you climb the competitive ranks.</p>
+        <p class="mt-5 text-muted fw-bold">Click a mastery level to reveal the required curriculum and certification goals.</p>
+
+        <!-- Dynamic Requirement Card -->
+        <div id="quest-requirement-card" class="static-card p-5 mx-auto mt-5 text-start shadow-lg border-0" style="max-width: 850px; display: none; border-radius: 32px;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 id="quest-title" class="fw-black mb-1" style="font-size: 2.2rem; letter-spacing: -0.03em;"></h2>
+                    <div id="rank-badge-container"></div>
+                </div>
+                <div class="quest-icon-hex bg-light d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; border-radius: 18px;">
+                    <i class="bi bi-hammer fs-3 text-primary"></i>
+                </div>
+            </div>
+            
+            <div class="row g-5">
+                <!-- Vertical Study Path -->
+                <div class="col-md-7">
+                    <h6 class="fw-black small text-muted mb-4 text-uppercase" style="letter-spacing: 0.1em;">
+                        <i class="bi bi-map me-2"></i>Learning Path
+                    </h6>
+                    <div id="quest-curriculum" class="study-path-line">
+                        <!-- Steps injected here via JS -->
+                    </div>
+                </div>
+
+                <!-- Mastery Objectives -->
+                <div class="col-md-5">
+                    <h6 class="fw-black small text-muted mb-4 text-uppercase" style="letter-spacing: 0.1em;">
+                        <i class="bi bi-trophy me-2"></i>Mastery Goals
+                    </h6>
+                    <div id="quest-goals" class="d-flex flex-column gap-3">
+                        <!-- Goals injected here via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -305,7 +340,6 @@
 
 <!-- 8. FINAL CTA -->
 <div class="landing-section bg-white py-5">
-    <!-- Changed pt-0 to py-5 -->
     <div class="container">
         <div class="cta-banner text-center text-white shadow-lg quest-pulse">
             <h2 class="fw-black mb-3" style="letter-spacing: -0.03em;">Ready to start your quest?</h2>
@@ -333,10 +367,14 @@
 
         function initQuiz() {
             const quest = quizData[currentQuest];
-            document.getElementById('quiz-progress').innerText = `QUEST ${currentQuest + 1} / 5`;
-            document.getElementById('hiragana-display').innerText = quest.q;
+            const progress = document.getElementById('quiz-progress');
+            if(progress) progress.innerText = `QUEST ${currentQuest + 1} / 5`;
+            
+            const display = document.getElementById('hiragana-display');
+            if(display) display.innerText = quest.q;
         
             const btnContainer = document.getElementById('answer-buttons');
+            if(!btnContainer) return;
             btnContainer.innerHTML = '';
         
             quest.options.forEach(opt => {
@@ -368,6 +406,7 @@
 
         function showFeedback() {
             const feedback = document.getElementById('feedback-check');
+            if(!feedback) return;
             feedback.classList.remove('d-none');
             
             setTimeout(() => {
@@ -392,17 +431,112 @@
         }
 
         function showResults() {
-            document.getElementById('quiz-game').classList.add('d-none');
-            document.getElementById('quiz-result').classList.remove('d-none');
-            document.getElementById('final-score').innerText = `${score} / 5`;
+            const game = document.getElementById('quiz-game');
+            const result = document.getElementById('quiz-result');
+            const finalScore = document.getElementById('final-score');
+            if(game) game.classList.add('d-none');
+            if(result) result.classList.remove('d-none');
+            if(finalScore) finalScore.innerText = `${score} / 5`;
         }
 
         function resetQuiz() {
             currentQuest = 0;
             score = 0;
-            document.getElementById('quiz-game').classList.remove('d-none');
-            document.getElementById('quiz-result').classList.add('d-none');
+            const game = document.getElementById('quiz-game');
+            const result = document.getElementById('quiz-result');
+            if(game) game.classList.remove('d-none');
+            if(result) result.classList.add('d-none');
             initQuiz();
+        }
+
+        function showLevelInfo(level) {
+            const card = document.getElementById('quest-requirement-card');
+            const title = document.getElementById('quest-title');
+            const badgeContainer = document.getElementById('rank-badge-container');
+            const curriculum = document.getElementById('quest-curriculum');
+            const goals = document.getElementById('quest-goals');
+
+            const requirements = {
+                'N5': {
+                    color: '#22c55e',
+                    rankClass: 'sprout',
+                    rankName: 'Beginner Mastery',
+                    path: [
+                        { step: 'KANA ORIGINS', desc: 'Master Hiragana & Katakana stroke order and phonetics.' },
+                        { step: 'GENKI I: PHASE 1', desc: 'Complete Lessons 1-6: Greetings, shopping, and daily time.' },
+                        { step: 'GENKI I: PHASE 2', desc: 'Complete Lessons 7-12: Te-form, physical descriptions, and past tense.' },
+                        { step: 'PARTICLE SYNC', desc: 'Internalize WA, GA, O, NI, and DE usage in basic sentences.' }
+                    ],
+                    goals: ['100 Kanji (The Foundation)', '800 Vocabulary Words', 'N5 Mock Exam (90%+ Accuracy)']
+                },
+                'N4': {
+                    color: '#0ea5e9',
+                    rankClass: 'diamond',
+                    rankName: 'Elementary Mastery',
+                    path: [
+                        { step: 'GENKI II: CORE', desc: 'Complete Lessons 13-23: Potential, Volitional, and Passive forms.' },
+                        { step: 'KEIGO BASICS', desc: 'Understand the hierarchy of polite and humble Japanese.' },
+                        { step: 'CONJUNCTION MASTERY', desc: 'Connect complex thoughts using NNODE, TAME, and SHI.' }
+                    ],
+                    goals: ['300 Kanji (Standard Set)', '1,500 Vocabulary Words', 'Understand 70% of Children\'s Media']
+                },
+                'N3': {
+                    color: '#a855f7',
+                    rankClass: 'master',
+                    rankName: 'Intermediate Mastery',
+                    path: [
+                        { step: 'THE TOBIRA BRIDGE', desc: 'Transition from textbook Japanese to natural phrasing.' },
+                        { step: 'CASUAL NUANCE', desc: 'Master gender-neutral vs. masculine/feminine casual speech.' },
+                        { step: 'TRANSITIVE SYNC', desc: 'Perfect the Transitive vs. Intransitive verb pairings.' }
+                    ],
+                    goals: ['650 Kanji (Intermediate Set)', '3,750 Vocabulary Words', 'Read basic NHK News Web Easy']
+                },
+                'N2': {
+                    color: '#ef4444',
+                    rankClass: 'dragon',
+                    rankName: 'Advanced Mastery',
+                    path: [
+                        { step: 'LITERARY FLOW', desc: 'Understand formal written Japanese used in essays and news.' },
+                        { step: 'BUSINESS PROTOCOL', desc: 'Master Sonkeigo and Kenjougo for professional environments.' },
+                        { step: 'SOCIAL CONTEXT', desc: 'Detect sarcasm, irony, and cultural subtext in conversation.' }
+                    ],
+                    goals: ['1,000 Kanji (Advanced Set)', '6,000 Vocabulary Words', 'Work in a Japanese Environment']
+                },
+                'N1': {
+                    color: '#fbbf24',
+                    rankClass: 'legend',
+                    rankName: 'Legendary Mastery',
+                    path: [
+                        { step: 'NATIVE IMMERSION', desc: 'Read complex literature and philosophical essays.' },
+                        { step: 'CLASSICAL BASICS', desc: 'Understand the roots of modern grammar and archaic kanji.' },
+                        { step: 'DIALECT FLUENCY', desc: 'Recognize major regional dialects (Kansai-ben, etc.).' }
+                    ],
+                    goals: ['2,000+ Kanji (Total Master Set)', '10,000+ Vocabulary Words', '100% Native Fluency']
+                }
+            };
+
+            const data = requirements[level];
+            
+            card.style.borderTop = `8px solid ${data.color}`;
+            title.innerText = level + " Certification Quest";
+            badgeContainer.innerHTML = `<span class="rank-text ${data.rankClass}">${data.rankName}</span>`;
+            
+            curriculum.innerHTML = data.path.map((p, i) => `
+                <div class="path-step mb-4" style="--step-color: ${data.color}">
+                    <div class="fw-black text-uppercase mb-1" style="font-size: 0.7rem; color: ${data.color}; letter-spacing: 0.05em;">Step 0${i+1}: ${p.step}</div>
+                    <div class="fw-bold text-dark small" style="line-height: 1.4;">${p.desc}</div>
+                </div>
+            `).join('');
+
+            goals.innerHTML = data.goals.map(g => `
+                <div class="p-3 rounded-4 bg-light d-flex align-items-center gap-3 border border-white shadow-sm">
+                    <i class="bi bi-check-circle-fill fs-5" style="color: ${data.color}"></i>
+                    <span class="fw-black text-dark small">${g}</span>
+                </div>
+            `).join('');
+
+            card.style.display = 'block';
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
         document.addEventListener('DOMContentLoaded', initQuiz);

@@ -1,0 +1,67 @@
+﻿@model IEnumerable<NipponQuest.Models.DeckViewModel>
+@{
+    ViewData["Title"] = "Flashcards";
+}
+
+<div class="container py-5 mt-3">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center mb-5 border-bottom pb-4 gap-4">
+        <div>
+            <h1 class="fw-black display-5 mb-1 text-dark">Flash<span class="text-primary">cards</span></h1>
+            <p class="text-muted fw-bold lead mb-0">Manage and study your vocabulary.</p>
+        </div>
+        
+        <div class="d-flex flex-column flex-md-row gap-3 align-items-md-center">
+            <!-- Search -->
+            <form asp-action="Index" method="get" class="input-group shadow-sm" style="max-width: 350px;">
+                <span class="input-group-text bg-white border-end-0 border-2" style="border-radius: 14px 0 0 14px;"><i class="bi bi-search"></i></span>
+                <input type="text" name="searchString" class="form-control border-start-0 border-2" placeholder="Search...">
+            </form>
+
+            <!-- Import Form -->
+            <form asp-action="ImportAnki" method="post" enctype="multipart/form-data" id="ankiForm">
+                <input type="file" name="ankiFile" id="ankiUpload" accept=".apkg" class="d-none" onchange="submitImport()">
+                <button type="button" id="importBtn" onclick="document.getElementById('ankiUpload').click()" class="btn btn-light border-2 rounded-pill fw-bold">
+                    <span id="importSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    <i id="importIcon" class="bi bi-file-earmark-arrow-up-fill text-primary"></i> Import Anki
+                </button>
+            </form>
+
+            <a asp-action="Create" class="btn btn-primary rounded-pill fw-black px-4">NEW DECK</a>
+        </div>
+    </div>
+
+    <!-- Deck Grid -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var deck in Model)
+        {
+            <div class="col">
+                <div class="card h-100 border-0 shadow-sm rounded-4 position-relative">
+                    <!-- Dropdown ... -->
+                    <div class="card-body p-4">
+                        <h4 class="fw-black">@deck.Title</h4>
+                        <p class="text-muted small">@deck.Description</p>
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <span class="badge bg-light text-primary rounded-pill">@deck.CardCount Cards</span>
+                            <a asp-action="Study" asp-route-id="@deck.Id" class="btn btn-primary btn-sm rounded-pill px-3">OPEN</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function submitImport() {
+            // UI Feedback
+            document.getElementById('importBtn').disabled = true;
+            document.getElementById('importIcon').classList.add('d-none');
+            document.getElementById('importSpinner').classList.remove('d-none');
+            
+            // Submit
+            document.getElementById('ankiForm').submit();
+        }
+    </script>
+}

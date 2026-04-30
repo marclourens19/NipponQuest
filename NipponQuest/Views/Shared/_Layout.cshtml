@@ -26,9 +26,9 @@
                                 <a class="nav-link fw-black text-dark small" asp-controller="Home" asp-action="Index">HOME</a>
                             </li>
 
-                            <!-- Japanese Dropdown with Updated Icons -->
+                            <!-- Japanese Dropdown with Flash Cards Added -->
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle fw-black text-dark small" href="#" id="jpDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle fw-black text-dark small nav-link-glow" href="#" id="jpDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     JAPANESE
                                 </a>
                                 <ul class="dropdown-menu border-0 shadow-lg rounded-4 p-2 mt-2" aria-labelledby="jpDropdown">
@@ -40,6 +40,12 @@
                                     <li>
                                         <a class="dropdown-item fw-bold py-2 rounded-3 d-flex align-items-center" asp-controller="Learning" asp-action="Katakana">
                                             <span class="text-primary me-2 fw-black" style="font-size: 1.1rem; width: 20px; text-align: center;">ア</span>Katakana
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider my-1 opacity-25"></li>
+                                    <li>
+                                        <a class="dropdown-item fw-bold py-2 rounded-3 d-flex align-items-center" asp-controller="Flashcards" asp-action="Index">
+                                            <i class="bi bi-stack text-primary me-2 fw-black" style="font-size: 1.1rem; width: 20px; text-align: center;"></i>Flash Cards
                                         </a>
                                     </li>
                                 </ul>

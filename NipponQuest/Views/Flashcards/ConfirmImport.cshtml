@@ -1,0 +1,35 @@
+﻿@model List<NipponQuest.Models.Flashcard>
+
+<div class="container py-5">
+    <h2 class="fw-black">Confirm Import: <span class="text-primary">@ViewBag.DeckName</span></h2>
+    <p class="lead">We found <strong>@Model.Count</strong> cards. Review the first 10 below:</p>
+
+    <form asp-action="FinalizeImport" method="post">
+        <input type="hidden" name="deckTitle" value="@ViewBag.DeckName" />
+        
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            <input type="hidden" name="cards[@i].FrontText" value="@Model[i].FrontText" />
+            <input type="hidden" name="cards[@i].BackText" value="@Model[i].BackText" />
+        }
+
+        <div class="table-responsive rounded-4 shadow-sm mb-4">
+            <table class="table table-hover bg-white m-0">
+                <thead class="table-light">
+                    <tr><th>Front (Question)</th><th>Back (Answer)</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var card in Model.Take(10))
+                    {
+                        <tr><td>@card.FrontText</td><td>@card.BackText</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex gap-3">
+            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 fw-bold">SAVE TO MY ACCOUNT</button>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-lg rounded-pill px-5">CANCEL</a>
+        </div>
+    </form>
+</div>
