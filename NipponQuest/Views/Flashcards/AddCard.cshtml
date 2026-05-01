@@ -1,0 +1,35 @@
+﻿@model NipponQuest.Models.Flashcard
+
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-dark text-white border-secondary" style="border: 1px solid #333 !important;">
+                <div class="bg-primary p-4 text-center text-white">
+                    <i class="bi bi-plus-square-fill display-4 mb-2"></i>
+                    <h3 class="fw-black m-0">Add Individual Card</h3>
+                </div>
+
+                <div class="card-body p-5">
+                    <form asp-action="AddCard" method="post">
+                        <input type="hidden" asp-for="DeckId" />
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">FRONT (JAPANESE)</label>
+                            <input asp-for="FrontText" class="form-control form-control-lg bg-dark text-white border-secondary rounded-3 fw-bold" placeholder="あ" required />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">BACK (ENGLISH/ROMAJI)</label>
+                            <input asp-for="BackText" class="form-control form-control-lg bg-dark text-white border-secondary rounded-3 fw-bold" placeholder="a" required />
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-black py-3">SAVE CARD</button>
+                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill fw-bold py-3">CANCEL</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using NipponQuest.Data;
 using NipponQuest.Models;
 using NipponQuest.Services;
-using Microsoft.Data.Sqlite;
 using System.Diagnostics;
 using System.Security.Claims;
 
@@ -16,14 +15,6 @@ namespace NipponQuest.Controllers
         public FlashcardsController(ApplicationDbContext context)
         {
             _context = context;
-        }
-
-        private void DeepLog(string message)
-        {
-            string log = $"[DEBUG-DEEP][{DateTime.Now:HH:mm:ss.fff}] {message}";
-            Debug.WriteLine(log);
-            Console.WriteLine(log);
-            Console.Out.Flush();
         }
 
         public async Task<IActionResult> Index(string searchString)
@@ -47,10 +38,8 @@ namespace NipponQuest.Controllers
             return View(await query.ToListAsync());
         }
 
-        // GET: Flashcards/Create
         public IActionResult Create() => View();
 
-        // POST: Flashcards/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create([Bind("Title,Description")] Deck deck)
@@ -60,7 +49,6 @@ namespace NipponQuest.Controllers
             {
                 deck.ApplicationUserId = userId;
                 ModelState.Remove("ApplicationUserId");
-
                 if (ModelState.IsValid)
                 {
                     _context.Decks.Add(deck);
@@ -71,55 +59,55 @@ namespace NipponQuest.Controllers
             return View(deck);
         }
 
-        [HttpPost]
-        [IgnoreAntiforgeryToken]
-        public IActionResult ImportAnki(IFormFile ankiFile)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (ankiFile == null || ankiFile.Length == 0) return RedirectToAction(nameof(Index));
-
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            string workDir = Path.Combine(Directory.GetCurrentDirectory(), "Anki_Handoff", userId);
-            string packagePath = Path.Combine(workDir, "upload.apkg");
-
-            try
-            {
-                if (Directory.Exists(workDir)) Directory.Delete(workDir, true);
-                Directory.CreateDirectory(workDir);
-
-                using (var stream = new FileStream(packagePath, FileMode.Create, FileAccess.Write, FileShare.None))
-                {
-                    ankiFile.CopyTo(stream);
-                    stream.Flush();
-                }
-
-                // Call the cleaned service
-                var cardBuffer = AnkiProcessor.GetCardsFromPackage(packagePath, workDir);
-
-                ViewBag.DeckName = Path.GetFileNameWithoutExtension(ankiFile.FileName);
-                return View("~/Views/Flashcards/ConfirmImport.cshtml", cardBuffer);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[CRASH]: {ex.Message}");
-                return RedirectToAction(nameof(Index));
-            }
+            var deck = await _context.Decks.FirstOrDefaultAsync(d => d.Id == id && d.ApplicationUserId == userId);
+            if (deck == null) return NotFound();
+            return View(deck);
         }
 
         [HttpPost]
-        public IActionResult FinalizeImport(string deckTitle, List<Flashcard> cards)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description")] Deck deck)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId) || cards == null || !cards.Any()) return RedirectToAction(nameof(Index));
+            if (id != deck.Id) return NotFound();
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    deck.ApplicationUserId = userId!;
+                    _context.Update(deck);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.Decks.Any(e => e.Id == deck.Id)) return NotFound();
+                    else throw;
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(deck);
+        }
 
-            var newDeck = new Deck { Title = deckTitle, Description = "Imported from Anki", ApplicationUserId = userId };
-            _context.Decks.Add(newDeck);
-            _context.SaveChanges();
+        [HttpGet]
+        public IActionResult AddCard(int deckId)
+        {
+            return View(new Flashcard { DeckId = deckId });
+        }
 
-            foreach (var card in cards) { card.DeckId = newDeck.Id; card.Deck = null; }
-            _context.Flashcards.AddRange(cards);
-            _context.SaveChanges();
-
-            return RedirectToAction(nameof(Index));
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddCard([Bind("DeckId,FrontText,BackText,ImageFilePath,AudioFilePath")] Flashcard flashcard)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(flashcard);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(flashcard);
         }
 
         [HttpPost, ActionName("Delete")]
@@ -127,11 +115,54 @@ namespace NipponQuest.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var deck = await _context.Decks.FirstOrDefaultAsync(d => d.Id == id && d.ApplicationUserId == userId);
+            var deck = await _context.Decks
+                .Include(d => d.Flashcards)
+                .FirstOrDefaultAsync(d => d.Id == id && d.ApplicationUserId == userId);
 
             if (deck != null) _context.Decks.Remove(deck);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Study(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var deck = await _context.Decks
+                .Include(d => d.Flashcards)
+                .FirstOrDefaultAsync(d => d.Id == id && d.ApplicationUserId == userId);
+
+            if (deck == null) return NotFound();
+
+            var cardToStudy = deck.Flashcards
+                .OrderBy(f => f.SuccessCount)
+                .ThenBy(f => Guid.NewGuid())
+                .FirstOrDefault();
+
+            if (cardToStudy == null) return RedirectToAction("Index");
+
+            ViewBag.DeckTitle = deck.Title;
+            return View(cardToStudy);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SubmitResult(int cardId, string result)
+        {
+            var card = await _context.Flashcards.FindAsync(cardId);
+            if (card == null) return NotFound();
+
+            // ANKI LOGIC ENGINE
+            switch (result.ToLower())
+            {
+                case "again": card.SuccessCount = 0; break;
+                case "hard": card.SuccessCount = Math.Max(0, card.SuccessCount - 1); break;
+                case "good": card.SuccessCount += 1; break;
+                case "easy": card.SuccessCount += 3; break;
+            }
+
+            card.LastReviewed = DateTime.Now;
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Study", new { id = card.DeckId });
         }
     }
 }

@@ -11,26 +11,26 @@
                 <i class="bi bi-arrow-left me-1"></i> Back to Decks
             </a>
 
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-dark text-white border-secondary" style="border: 1px solid #333 !important;">
                 <div class="bg-primary p-4 text-center text-white">
                     <i class="bi bi-pencil-square display-4 mb-2"></i>
                     <h3 class="fw-black m-0">Edit Deck Details</h3>
                 </div>
 
-                <div class="card-body p-5 bg-white">
+                <div class="card-body p-5">
                     <form asp-action="Edit" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
                         <input type="hidden" asp-for="Id" />
 
                         <div class="mb-4">
-                            <label asp-for="Title" class="form-label fw-bold text-dark">DECK TITLE</label>
-                            <input asp-for="Title" class="form-control form-control-lg border-2 rounded-4 fw-bold" placeholder="e.g. JLPT N5 Vocabulary" />
+                            <label asp-for="Title" class="form-label fw-bold">DECK TITLE</label>
+                            <input asp-for="Title" class="form-control form-control-lg bg-dark text-white border-secondary rounded-4 fw-bold" placeholder="e.g. Japanese_Hiragana" />
                             <span asp-validation-for="Title" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-4">
-                            <label asp-for="Description" class="form-label fw-bold text-dark">DESCRIPTION</label>
-                            <textarea asp-for="Description" class="form-control border-2 rounded-4 fw-bold" style="min-height: 120px;" placeholder="What is this deck for?"></textarea>
+                            <label asp-for="Description" class="form-label fw-bold">DESCRIPTION</label>
+                            <textarea asp-for="Description" class="form-control bg-dark text-white border-secondary rounded-4 fw-bold" style="min-height: 120px;">@Model.Description</textarea>
                             <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
 
@@ -38,7 +38,7 @@
                             <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm py-3">
                                 SAVE CHANGES
                             </button>
-                            <a asp-action="Index" class="btn btn-light btn-lg rounded-pill fw-bold border py-3">
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg rounded-pill fw-bold py-3">
                                 CANCEL
                             </a>
                         </div>

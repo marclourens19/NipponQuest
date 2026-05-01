@@ -1,79 +1,93 @@
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NipponQuest.Data;
-using NipponQuest.Jobs;
 using NipponQuest.Models;
 using NipponQuest.Services;
 using Quartz;
 
-// PHASE 1 FIX: Initialize SQLite native drivers immediately on app startup
-// to prevent "Process Exited with Code -1" during later imports.
-SQLitePCL.Batteries_V2.Init();
-
 var builder = WebApplication.CreateBuilder(args);
 
-// Database & Identity
+// --- 1. MOVE INITIALIZATION HERE ---
+// Initialize SQLite support after the builder is created but before services are added.
+SQLitePCL.Batteries.Init();
+
+// 2. Database Configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string not found.");
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+// 3. Identity Setup
+builder.Services.AddDefaultIdentity<ApplicationUser>(options => {
+    options.SignIn.RequireConfirmedAccount = false;
+    options.Password.RequireDigit = false;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>();
 
-// Google Authentication
-builder.Services.AddAuthentication().AddGoogle(options =>
-{
-    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-});
+// 4. Custom Service Registrations
+builder.Services.AddScoped<GithubService>();
 
 builder.Services.AddControllersWithViews();
 
-// >>> UPLOAD LIMITS (500 MB) <<<
-// Essential for large Anki packages (.apkg)
-builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 524288000);
-builder.Services.Configure<IISServerOptions>(options => options.MaxRequestBodySize = 524288000);
-builder.Services.Configure<FormOptions>(options =>
-{
-    options.MultipartBodyLengthLimit = 524288000;
-    options.ValueLengthLimit = int.MaxValue;
-    options.MemoryBufferThreshold = 2097152;
-});
-
-// Quartz.NET Reset Job
+// 5. Quartz Background Jobs
 builder.Services.AddQuartz(q =>
 {
     var jobKey = new JobKey("WeeklyLeagueResetJob");
-    q.AddJob<WeeklyLeagueResetJob>(opts => opts.WithIdentity(jobKey));
-    q.AddTrigger(opts => opts.ForJob(jobKey).WithIdentity("WeeklyResetTrigger").WithCronSchedule("0 0 0 ? * SUN"));
+    q.AddJob<NipponQuest.Jobs.WeeklyLeagueResetJob>(opts => opts.WithIdentity(jobKey));
+    q.AddTrigger(opts => opts
+        .ForJob(jobKey)
+        .WithIdentity("WeeklyLeagueResetJob-trigger")
+        .WithCronSchedule("0 0 0 ? * MON"));
 });
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
-builder.Services.AddScoped<GithubService>();
-
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment()) { app.UseMigrationsEndPoint(); }
-else { app.UseExceptionHandler("/Home/Error"); app.UseHsts(); }
+// 6. Seed Data and Migrations
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        context.Database.Migrate();
+        SeedData.Initialize(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+    }
+}
+
+// 7. Middleware Pipeline
+if (app.Environment.IsDevelopment())
+{
+    app.UseMigrationsEndPoint();
+}
+else
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
 app.UseRouting();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
-app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}").WithStaticAssets();
-app.MapRazorPages().WithStaticAssets();
-
-// Seed Database
-using (var scope = app.Services.CreateScope())
-{
-    SeedData.Initialize(scope.ServiceProvider);
-}
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapRazorPages();
 
 app.Run();

@@ -1,23 +1,17 @@
 ﻿@model NipponQuest.Models.Deck
-@{
-    ViewData["Title"] = "Delete Deck";
-}
-
 <div class="container py-5 mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-dark text-white" style="border: 1px solid #dc3545 !important;">
                 <div class="bg-danger p-4 text-center text-white">
-                    <i class="bi bi-exclamation-triangle-fill display-4"></i>
-                    <h3 class="fw-black">Danger Zone</h3>
+                    <h3 class="fw-black m-0">Danger Zone</h3>
                 </div>
                 <div class="p-5 text-center">
                     <h4 class="fw-black mb-3">Delete "@Model.Title"?</h4>
-                    <p class="text-muted mb-4">All flashcards in this deck will be permanently removed.</p>
-                    <form asp-action="Delete" method="post" class="d-flex justify-content-center gap-3">
+                    <form asp-action="Delete" method="post" class="d-flex flex-column gap-3">
                         <input type="hidden" asp-for="Id" />
-                        <a asp-action="Index" class="btn btn-light rounded-pill px-4 border">Cancel</a>
-                        <button type="submit" class="btn btn-danger rounded-pill fw-black px-4">Yes, Delete it</button>
+                        <button type="submit" class="btn btn-danger rounded-pill btn-lg fw-black py-3">YES, DELETE IT</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill fw-bold py-3">CANCEL</a>
                     </form>
                 </div>
             </div>

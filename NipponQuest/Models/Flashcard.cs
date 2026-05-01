@@ -35,6 +35,10 @@ namespace NipponQuest.Models
 
         public string ImageFilePath { get; set; } = string.Empty;
         public string AudioFilePath { get; set; } = string.Empty;
+
+        // Anki Logic Fields
+        public int SuccessCount { get; set; } = 0;
+        public DateTime? LastReviewed { get; set; }
     }
 
     public class DeckViewModel
