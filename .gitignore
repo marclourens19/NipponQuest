@@ -1,6 +1,16 @@
+# Build folders
 bin/
 obj/
+
+# Visual Studio specific
 .vs/
+
+# Database files
 *.mdf
 *.ldf
 *.sqlite
+*.db
+
+# User-specific files
+*.user
+*.suo
