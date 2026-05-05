@@ -1,16 +1,19 @@
-# Build folders
+# Visual Studio / Build
+.vs/
 bin/
 obj/
 
-# Visual Studio specific
-.vs/
-
-# Database files
+# Databases
 *.mdf
 *.ldf
 *.sqlite
 *.db
 
-# User-specific files
+# Anki Test Files
+Anki_Handoff/
+*.apkg
+*.anki2
+
+# User specifics
 *.user
 *.suo
