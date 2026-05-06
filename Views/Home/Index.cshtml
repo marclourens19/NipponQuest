@@ -14,8 +14,11 @@
     }
 
     long rawXp        = ViewBag.TotalXP      != null ? (long)ViewBag.TotalXP      : 0;
+    long rawGold      = ViewBag.TotalGold    != null ? (long)ViewBag.TotalGold    : 0;
     int  rawStreaks   = ViewBag.ActiveStreaks != null ? (int)ViewBag.ActiveStreaks  : 0;
+    
     string totalXpDisplay      = FormatNumber(rawXp);
+    string totalGoldDisplay    = FormatNumber(rawGold);
     string activeStreaksDisplay = FormatNumber(rawStreaks);
 }
 
@@ -32,6 +35,37 @@
     .delay-100 { transition-delay: 100ms; }
     .delay-200 { transition-delay: 200ms; }
     .delay-300 { transition-delay: 300ms; }
+
+    /* ── BETA BANNER ── */
+    .beta-banner {
+        background: linear-gradient(90deg, #0f172a, #1e293b, #0f172a);
+        color: #f8fafc;
+        padding: 10px 20px;
+        font-size: 0.85rem;
+        letter-spacing: 0.03em;
+        position: relative;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .beta-banner-tag {
+        background: #0ea5e9;
+        color: white;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        font-size: 0.65rem;
+        padding: 4px 10px;
+        border-radius: 50px;
+        margin-right: 12px;
+    }
+    .beta-banner a {
+        color: #38bdf8;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+    .beta-banner a:hover {
+        color: #7dd3fc;
+        text-decoration: underline;
+    }
 
     /* ── HERO ── */
     .hero-section {
@@ -379,7 +413,15 @@
     }
 </style>
 
-<div class="hero-section text-center" style="margin-top: -16px; padding: 90px 0 0;">
+<div class="beta-banner d-flex justify-content-center align-items-center flex-wrap gap-2 text-center">
+    <span class="beta-banner-tag">BETA V1.0</span>
+    <span class="fw-bold opacity-75">NipponQuest is currently in early beta. We'd love your feedback to help us improve!</span>
+    <a href="https://forms.gle/3PhMQDTUEpFpc2hp7" target="_blank" class="fw-black ms-md-2">
+        Share Feedback <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.75rem;"></i>
+    </a>
+</div>
+
+<div class="hero-section text-center" style="padding: 90px 0 0;">
     <div class="container">
         <div class="reveal-up">
             <span class="hero-pill">
@@ -438,8 +480,8 @@
             </div>
             <div class="stat-divider d-none d-md-block mx-2"></div>
             <div class="text-center px-4 px-md-5">
-                <div class="stat-number fw-black text-primary">850k+</div>
-                <div class="stat-label">Kanji Defeated</div>
+                <div class="stat-number fw-black text-warning">@totalGoldDisplay</div>
+                <div class="stat-label">Total Gold Earned</div>
             </div>
             <div class="stat-divider d-none d-md-block mx-2"></div>
             <div class="text-center px-4 px-md-5">
@@ -825,7 +867,7 @@
 
         <div class="roadmap-container d-flex justify-content-between align-items-center px-md-5 reveal-up delay-100">
             <div class="roadmap-line"></div>
-            <div class="roadmap-node"          onclick="showLevelInfo('N5')" title="N5: The Basics">N5</div>
+            <div class="roadmap-node"         onclick="showLevelInfo('N5')" title="N5: The Basics">N5</div>
             <div class="roadmap-node node-locked" onclick="showLevelInfo('N4')" title="N4: Conversation">N4</div>
             <div class="roadmap-node node-locked" onclick="showLevelInfo('N3')" title="N3: Intermediate">N3</div>
             <div class="roadmap-node node-locked" onclick="showLevelInfo('N2')" title="N2: Business">N2</div>
@@ -868,7 +910,7 @@
 </div>
 
 
-<div class="quest-log-section bg-white">
+@*<div class="quest-log-section bg-white">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-7">
@@ -897,8 +939,8 @@
                         {
                             var msg  = commit.Commit.Message.ToLower();
                             var icon = "bi-hammer";
-                            if (msg.Contains("feat") || msg.Contains("add"))                             { icon = "bi-hammer"; }
-                            else if (msg.Contains("fix") || msg.Contains("bug"))                         { icon = "bi-wrench-adjustable"; }
+                            if (msg.Contains("feat") || msg.Contains("add"))             { icon = "bi-hammer"; }
+                            else if (msg.Contains("fix") || msg.Contains("bug"))         { icon = "bi-wrench-adjustable"; }
                             else if (msg.Contains("ui") || msg.Contains("css") || msg.Contains("layout")) { icon = "bi-gear-wide-connected"; }
 
                             <div class="commit-item d-flex gap-3">
@@ -936,7 +978,7 @@
             </div>
         </div>
     </div>
-</div>
+</div>*@
 
 
 <div class="cta-section bg-white reveal-up">

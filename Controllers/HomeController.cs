@@ -28,6 +28,8 @@ namespace NipponQuest.Controllers
         {
             ViewBag.TotalXP = await _context.Users.SumAsync(u => u.TotalEXP);
             ViewBag.ActiveStreaks = await _context.Users.CountAsync(u => u.LoginStreak > 0);
+            long totalGold = await _context.Users.SumAsync(u => (long)u.Gold);
+            ViewBag.TotalGold = totalGold;
 
             var commits = await _githubService.GetLatestCommitsAsync("marclourens19", "NipponQuest");
 
