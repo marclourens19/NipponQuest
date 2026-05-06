@@ -26,7 +26,7 @@
                                 <a class="nav-link fw-black text-dark small" asp-controller="Home" asp-action="Index">HOME</a>
                             </li>
 
-                            <!-- Japanese Dropdown with Flash Cards Added -->
+                            <!-- Japanese Dropdown -->
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle fw-black text-dark small nav-link-glow" href="#" id="jpDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     JAPANESE
@@ -42,6 +42,11 @@
                                             <span class="text-primary me-2 fw-black" style="font-size: 1.1rem; width: 20px; text-align: center;">ア</span>Katakana
                                         </a>
                                     </li>
+                                    <li>
+                                        <a class="dropdown-item fw-bold py-2 rounded-3 d-flex align-items-center" asp-controller="KanaBlitz" asp-action="Index">
+                                            <i class="bi bi-lightning-charge-fill text-warning me-2" style="width: 20px; font-size: 1.1rem; text-align: center; display: inline-block;"></i>KanaBlitz
+                                        </a>
+                                    </li>
                                     <li><hr class="dropdown-divider my-1 opacity-25"></li>
                                     <li>
                                         <a class="dropdown-item fw-bold py-2 rounded-3 d-flex align-items-center" asp-controller="Flashcards" asp-action="Index">
@@ -51,8 +56,23 @@
                                 </ul>
                             </li>
 
-                            <li class="nav-item">
-                                <a class="nav-link fw-black text-dark small" asp-controller="Leagues" asp-action="Index">LEADERBOARDS</a>
+                            <!-- Personal Dropdown (Leaderboards + Stats) -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle fw-black text-dark small nav-link-glow" href="#" id="personalDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    PERSONAL
+                                </a>
+                                <ul class="dropdown-menu border-0 shadow-lg rounded-4 p-2 mt-2" aria-labelledby="personalDropdown">
+                                    <li>
+                                        <a class="dropdown-item fw-bold py-2 rounded-3 d-flex align-items-center" asp-controller="Leagues" asp-action="Index">
+                                            <i class="bi bi-trophy-fill text-warning me-2" style="width: 20px; font-size: 1.1rem; text-align: center; display: inline-block;"></i>Leaderboards
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item fw-bold py-2 rounded-3 d-flex align-items-center" asp-controller="Stats" asp-action="Index">
+                                            <i class="bi bi-graph-up-arrow text-primary me-2" style="width: 20px; font-size: 1.1rem; text-align: center; display: inline-block;"></i>Stats Vault
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                         </ul>
                     </div>
@@ -94,7 +114,7 @@
                     <ul class="list-unstyled fw-bold small">
                         <li class="mb-2"><a asp-controller="Home" asp-action="Index" class="footer-link">Home</a></li>
                         <li class="mb-2"><a asp-controller="Leagues" asp-action="Index" class="footer-link">Leaderboards</a></li>
-                        <li class="mb-2"><a href="#" class="footer-link">Quests</a></li>
+                        <li class="mb-2"><a asp-controller="Stats" asp-action="Index" class="footer-link">Stats Vault</a></li>
                     </ul>
                 </div>
 

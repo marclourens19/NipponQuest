@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NipponQuest.Data;
 
@@ -11,9 +12,11 @@ using NipponQuest.Data;
 namespace NipponQuest.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260505135101_UpdateUIUXBlitz")]
+    partial class UpdateUIUXBlitz
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -167,9 +170,6 @@ namespace NipponQuest.Data.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
-                    b.Property<string>("BlitzAccuracyJson")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -271,51 +271,6 @@ namespace NipponQuest.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("NipponQuest.Models.BlitzPersonalBest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Alphabet")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("nvarchar(16)");
-
-                    b.Property<string>("ApplicationUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<double>("BestAccuracy")
-                        .HasColumnType("float");
-
-                    b.Property<int>("BestCombo")
-                        .HasColumnType("int");
-
-                    b.Property<int>("BestCorrect")
-                        .HasColumnType("int");
-
-                    b.Property<int>("BestPoints")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Difficulty")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("nvarchar(16)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApplicationUserId", "Difficulty", "Alphabet")
-                        .IsUnique();
-
-                    b.ToTable("BlitzPersonalBests");
                 });
 
             modelBuilder.Entity("NipponQuest.Models.Deck", b =>
@@ -505,27 +460,12 @@ namespace NipponQuest.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CategoryTag")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("DifficultyLevel")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DisplayHtml")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("GeneratedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsAIGenerated")
-                        .HasColumnType("bit");
-
                     b.Property<string>("MeaningEnglish")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MissingKana")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("WordKana")
@@ -566,39 +506,6 @@ namespace NipponQuest.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("LeaderboardEntries");
-                });
-
-            modelBuilder.Entity("NipponQuest.Models.RewardLedger", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ApplicationUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("EarnedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ExpDelta")
-                        .HasColumnType("int");
-
-                    b.Property<int>("GoldDelta")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Source")
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApplicationUserId");
-
-                    b.ToTable("RewardLedgers");
                 });
 
             modelBuilder.Entity("NipponQuest.Models.UserColorPurchase", b =>
@@ -676,17 +583,6 @@ namespace NipponQuest.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("NipponQuest.Models.BlitzPersonalBest", b =>
-                {
-                    b.HasOne("NipponQuest.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("NipponQuest.Models.Flashcard", b =>
                 {
                     b.HasOne("NipponQuest.Models.Deck", "Deck")
@@ -696,17 +592,6 @@ namespace NipponQuest.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Deck");
-                });
-
-            modelBuilder.Entity("NipponQuest.Models.RewardLedger", b =>
-                {
-                    b.HasOne("NipponQuest.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("NipponQuest.Models.Deck", b =>

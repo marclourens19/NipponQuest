@@ -18,10 +18,8 @@ namespace NipponQuest.Controllers
         private readonly IWebHostEnvironment _environment;
 
         // --- GAMIFIED COLOR ECONOMY ---
-        // Only White is free
         public static readonly List<string> FreeColors = new List<string> { "#ffffff" };
 
-        // 19 Premium Unlockable Colors
         public static readonly List<string> PremiumColors = new List<string>
         {
             "#f87171", "#fb923c", "#fbbf24", "#a3e635",
@@ -63,7 +61,7 @@ namespace NipponQuest.Controllers
                     IsPublic = d.IsPublic,
                     Price = d.Price,
                     IsCommunityClone = d.IsCommunityClone,
-                    ThemeColor = d.ThemeColor // Map the theme color
+                    ThemeColor = d.ThemeColor
                 });
 
             if (!string.IsNullOrEmpty(searchString))
@@ -114,7 +112,6 @@ namespace NipponQuest.Controllers
             ViewBag.UserLevel = user?.Level ?? 1;
             ViewBag.UserGold = user?.Gold ?? 0;
 
-            // Fetch colors the user has already bought
             var purchasedColors = await _context.UserColorPurchases
                 .Where(c => c.ApplicationUserId == userId)
                 .Select(c => c.ColorHex)
@@ -146,7 +143,6 @@ namespace NipponQuest.Controllers
 
             var appUser = await _context.Users.OfType<ApplicationUser>().FirstOrDefaultAsync(u => u.Id == userId);
 
-            // --- SECURITY ENFORCEMENT ---
             if (inputDeck.IsPublic && (appUser == null || appUser.Level < 5))
             {
                 inputDeck.IsPublic = false;
@@ -154,7 +150,6 @@ namespace NipponQuest.Controllers
 
             dbDeck.AuthorName = User.Identity?.Name ?? "Anonymous Questor";
 
-            // Update safe fields
             dbDeck.Title = inputDeck.Title;
             dbDeck.Description = inputDeck.Description;
             dbDeck.IsPublic = inputDeck.IsPublic;
@@ -174,7 +169,7 @@ namespace NipponQuest.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // --- NEW: MARKET PURCHASES FOR COLORS ---
+        // --- MARKET PURCHASES FOR COLORS ---
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PurchaseColor(string colorHex, int deckId)
@@ -184,7 +179,7 @@ namespace NipponQuest.Controllers
 
             if (user == null) return Unauthorized();
 
-            int colorPrice = 50; // Price for a single color
+            int colorPrice = 50;
 
             if (user.Gold >= colorPrice)
             {
@@ -218,7 +213,7 @@ namespace NipponQuest.Controllers
 
             if (user == null) return Unauthorized();
 
-            int bundlePrice = 500; // Discounted price for all 19 premium colors
+            int bundlePrice = 500;
 
             if (user.Gold >= bundlePrice)
             {
@@ -429,7 +424,7 @@ namespace NipponQuest.Controllers
                 Title = string.IsNullOrWhiteSpace(deckTitle) ? "Imported Deck" : deckTitle,
                 ApplicationUserId = userId,
                 Description = "Anki Import",
-                ThemeColor = "#ffffff" // Default for imports
+                ThemeColor = "#ffffff"
             };
 
             _context.Decks.Add(newDeck);
@@ -607,6 +602,15 @@ namespace NipponQuest.Controllers
                     user.Level++;
                 }
 
+                // ── REWARD LEDGER ──
+                _context.RewardLedgers.Add(new RewardLedger
+                {
+                    ApplicationUserId = userId,
+                    ExpDelta = expReward,
+                    GoldDelta = goldReward,
+                    Source = "flashcards"
+                });
+
                 await _context.SaveChangesAsync();
                 TempData["Message"] = $"Quest Complete! +{expReward} EXP and +{goldReward} Gold earned.";
             }
@@ -685,7 +689,6 @@ namespace NipponQuest.Controllers
 
             var isAlreadyOwned = await _context.DeckPurchases.AnyAsync(p => p.ApplicationUserId == userId && p.DeckId == originalDeck.Id);
 
-            // --- ECONOMIC TRANSACTION ---
             if (!isAlreadyOwned)
             {
                 if (originalDeck.Price > 0)
@@ -730,7 +733,7 @@ namespace NipponQuest.Controllers
                 IsCommunityClone = true,
                 ParentDeckId = originalDeck.Id,
                 Price = 0,
-                ThemeColor = originalDeck.ThemeColor // Carry over the creator's theme color
+                ThemeColor = originalDeck.ThemeColor
             };
 
             _context.Decks.Add(newDeck);

@@ -26,6 +26,11 @@ namespace NipponQuest.Models
         public int LoginStreak { get; set; } = 0;
         public DateTime? LastLoginDate { get; set; }
 
+        public int DailyStreak { get; set; } = 0;
+        public DateTime LastPlayedDate { get; set; } = DateTime.MinValue;
+        public int HighestBlitzScore { get; set; } = 0;
+        public string? BlitzAccuracyJson { get; set; }
+
         public string LeagueIconClass => CurrentLeague.ToString().ToLower();
         public int RequiredXP => Level <= 10 ? Level * 50 + 50 : Level <= 50 ? Level * 100 : Level * 250;
         public int XPPercentage => RequiredXP <= 0 ? 0 : (int)((double)CurrentXP / RequiredXP * 100);

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NipponQuest.Data;
 
@@ -11,9 +12,11 @@ using NipponQuest.Data;
 namespace NipponQuest.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260506064735_AddBlitzPersonalBest")]
+    partial class AddBlitzPersonalBest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -514,12 +517,6 @@ namespace NipponQuest.Data.Migrations
 
                     b.Property<string>("DisplayHtml")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("GeneratedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsAIGenerated")
-                        .HasColumnType("bit");
 
                     b.Property<string>("MeaningEnglish")
                         .IsRequired()

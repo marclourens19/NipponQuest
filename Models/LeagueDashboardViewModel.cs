@@ -6,14 +6,14 @@ namespace NipponQuest.Models
     {
         public ApplicationUser CurrentUser { get; set; }
         public List<RankedUserSB> LevelLeaderboard { get; set; }
-        public List<RankedUserSB> StreakLeaderboard { get; set; }
+        public List<RankedUserSB> GoldLeaderboard { get; set; }
         public List<RankedUserSB> ArenaRivals { get; set; }
         public int ArenaRank { get; set; }
         public int ArenaRankChange { get; set; }
         public int GlobalLevelRank { get; set; }
         public int GlobalLevelChange { get; set; }
 
-        // NEW: Total count of users in the system
+        // Total count of users in the system
         public int TotalUserCount { get; set; }
 
         public int GlobalRank => GlobalLevelRank;

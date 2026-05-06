@@ -12,9 +12,8 @@ namespace NipponQuest.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
-        private readonly GithubService _githubService; // Added service field
+        private readonly GithubService _githubService;
 
-        // Inject UserManager, DbContext, and GithubService
         public HomeController(
             UserManager<ApplicationUser> userManager,
             ApplicationDbContext context,
@@ -25,18 +24,13 @@ namespace NipponQuest.Controllers
             _githubService = githubService;
         }
 
-        // Updated Index method to handle DB stats AND GitHub Commits
         public async Task<IActionResult> Index()
         {
-            // 1. Fetch Database Stats for the Dashboard
             ViewBag.TotalXP = await _context.Users.SumAsync(u => u.TotalEXP);
             ViewBag.ActiveStreaks = await _context.Users.CountAsync(u => u.LoginStreak > 0);
 
-            // 2. Fetch GitHub Commits for the Quest Log
-            // Replace "marclourens19" and "NipponQuest" with your actual GitHub details
             var commits = await _githubService.GetLatestCommitsAsync("marclourens19", "NipponQuest");
 
-            // Return the commits as the Model for the Index view
             return View(commits);
         }
 
@@ -63,6 +57,16 @@ namespace NipponQuest.Controllers
                 if (user.WeeklyXP < 0) user.WeeklyXP = 0;
 
                 await _userManager.UpdateAsync(user);
+
+                // ── REWARD LEDGER ──
+                _context.RewardLedgers.Add(new RewardLedger
+                {
+                    ApplicationUserId = user.Id,
+                    ExpDelta = amount,
+                    GoldDelta = 0,
+                    Source = "dev"
+                });
+                await _context.SaveChangesAsync();
             }
             return RedirectToAction("Index");
         }
@@ -76,6 +80,16 @@ namespace NipponQuest.Controllers
                 user.Gold += amount;
                 if (user.Gold < 0) user.Gold = 0;
                 await _userManager.UpdateAsync(user);
+
+                // ── REWARD LEDGER ──
+                _context.RewardLedgers.Add(new RewardLedger
+                {
+                    ApplicationUserId = user.Id,
+                    ExpDelta = 0,
+                    GoldDelta = amount,
+                    Source = "dev"
+                });
+                await _context.SaveChangesAsync();
             }
             return RedirectToAction("Index");
         }

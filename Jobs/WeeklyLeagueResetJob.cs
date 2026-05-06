@@ -10,7 +10,6 @@ namespace NipponQuest.Jobs
     {
         private readonly ApplicationDbContext _context;
 
-        // Constructor must correctly inject the DbContext
         public WeeklyLeagueResetJob(ApplicationDbContext context)
         {
             _context = context;
@@ -18,7 +17,6 @@ namespace NipponQuest.Jobs
 
         public async Task Execute(IJobExecutionContext context)
         {
-            // IMPORTANT: Add a breakpoint or a console log here to see if it fires!
             Console.WriteLine("---> QUARTZ JOB RUNNING: " + DateTime.Now);
 
             var allUsers = await _context.Users.ToListAsync();
@@ -34,13 +32,21 @@ namespace NipponQuest.Jobs
             Console.WriteLine("---> QUARTZ JOB SUCCESSFUL");
         }
 
+        // Tier reward table:
+        // Sprout 150, +100 per league through Master,
+        // then Challenger / Dragon / Legend each gain an extra +100 on top of the base step.
         private int GetWeeklyGold(LeagueRank rank) => rank switch
         {
-            LeagueRank.Legend => 425,
-            LeagueRank.Dragon => 300,
-            LeagueRank.Challenger => 225,
-            LeagueRank.Master => 175,
-            _ => ((int)rank) * 25 + 25
+            LeagueRank.Sprout => 150,
+            LeagueRank.Wood => 250,
+            LeagueRank.Iron => 350,
+            LeagueRank.Gold => 450,
+            LeagueRank.Diamond => 550,
+            LeagueRank.Master => 650,
+            LeagueRank.Challenger => 850,
+            LeagueRank.Dragon => 1050,
+            LeagueRank.Legend => 1250,
+            _ => 150
         };
     }
 }

@@ -44,11 +44,10 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => {
 })
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-// >>> ADDED GOOGLE AUTHENTICATION HERE <<<
+// --- GOOGLE AUTHENTICATION ---
 builder.Services.AddAuthentication()
     .AddGoogle(googleOptions =>
     {
-        // This will pull the keys from the JSON you provided in appsettings.json
         googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
         googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
     });
@@ -56,7 +55,7 @@ builder.Services.AddAuthentication()
 // --- 4. CUSTOM SERVICE REGISTRATIONS ---
 builder.Services.AddScoped<GithubService>();
 
-// UPDATE: Increased MaxModelBindingCollectionSize to allow 2000+ cards in the list
+// Increased MaxModelBindingCollectionSize for large card decks
 builder.Services.AddControllersWithViews(options =>
 {
     options.MaxModelBindingCollectionSize = 10000;
@@ -65,15 +64,25 @@ builder.Services.AddControllersWithViews(options =>
 // --- 5. QUARTZ BACKGROUND JOBS ---
 builder.Services.AddQuartz(q =>
 {
+    // Weekly League Reset Job
     var jobKey = new JobKey("WeeklyLeagueResetJob");
     q.AddJob<NipponQuest.Jobs.WeeklyLeagueResetJob>(opts => opts.WithIdentity(jobKey));
     q.AddTrigger(opts => opts
         .ForJob(jobKey)
         .WithIdentity("WeeklyLeagueResetJob-trigger")
         .WithCronSchedule("0 0 0 ? * MON"));
-});
 
+    // NEW: Streak Decay Job
+    var streakJobKey = new JobKey("StreakDecayJob");
+    q.AddJob<NipponQuest.Jobs.StreakDecayJob>(opts => opts.WithIdentity(streakJobKey));
+    q.AddTrigger(opts => opts
+        .ForJob(streakJobKey)
+        .WithIdentity("StreakDecayJob-trigger")
+        .WithCronSchedule("0 5 0 * * ?")); // every day at 00:05
+});
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+
+builder.Services.AddHostedService<AIKanaGeneratorService>();
 
 // --- 6. BUILD APP ---
 var app = builder.Build();
@@ -85,8 +94,16 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
+
+        // Apply any pending migrations
         context.Database.Migrate();
+
+        // Initialize standard seed data (Leagues, etc)
         SeedData.Initialize(services);
+
+        // >>> KANA BLITZ SEEDING ADDED HERE <<<
+        // This populates the dictionary for the Easy, Normal, Hard, and Insanity modes
+        DbInitializer.SeedKanaBlitzData(context);
     }
     catch (Exception ex)
     {
@@ -114,10 +131,11 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseMiddleware<NipponQuest.Middleware.LoginStreakMiddleware>();
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
 app.MapRazorPages();
 
 app.Run();
