@@ -1,0 +1,170 @@
+﻿@{
+    ViewData["Title"] = "KanaBlitz Leaderboard";
+}
+
+<div class="container py-5">
+
+    <div class="text-center mb-4 reveal-up">
+        <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning border border-warning-subtle px-3 py-2 fw-black shadow-sm" style="letter-spacing: 1px;">
+            <i class="bi bi-bar-chart-fill me-1"></i> KANABLITZ LEADERBOARD
+        </span>
+        <h1 class="display-4 fw-black text-dark mt-3 mb-2" style="letter-spacing: -2px;">
+            Most Kana <span class="text-warning">Correct</span>
+        </h1>
+        <p class="lead fw-bold text-muted mx-auto mb-0" style="max-width: 620px;">
+            90 second Normal-mode benchmark. Same clock for everyone. The only thing that moves you up is more correct answers.
+        </p>
+    </div>
+
+    <div class="d-flex justify-content-center gap-2 mb-4 flex-wrap">
+        <button class="btn btn-light fw-black rounded-pill px-4 py-2 lb-tab-btn active" data-alpha="hiragana" onclick="loadBoard('hiragana', this)">HIRAGANA</button>
+        <button class="btn btn-light fw-black rounded-pill px-4 py-2 lb-tab-btn"        data-alpha="katakana" onclick="loadBoard('katakana', this)">KATAKANA</button>
+        <button class="btn btn-light fw-black rounded-pill px-4 py-2 lb-tab-btn"        data-alpha="dakuten"  onclick="loadBoard('dakuten',  this)">DAKUTEN</button>
+        <button class="btn btn-light fw-black rounded-pill px-4 py-2 lb-tab-btn"        data-alpha="mixed"    onclick="loadBoard('mixed',    this)">MIXED</button>
+    </div>
+
+    <div id="lb-self-card" class="lg-panel mb-4 d-none">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <div class="lg-panel-title">Your Best</div>
+                <div class="lg-panel-sub">Normal &middot; <span id="lb-self-mode">Hiragana</span></div>
+            </div>
+            <div class="d-flex align-items-center gap-4 flex-wrap">
+                <div class="lg-hero-stat">
+                    <span class="v" style="color:#0f172a;">#<span id="lb-self-rank">—</span></span>
+                    <span class="l" style="color:#94a3b8;">Rank</span>
+                </div>
+                <div class="lg-hero-stat">
+                    <span class="v" style="color:#0f172a;"><span id="lb-self-correct">0</span></span>
+                    <span class="l" style="color:#94a3b8;">Kana Correct</span>
+                </div>
+                <div class="lg-hero-stat">
+                    <span class="v" style="color:#0f172a;"><span id="lb-self-points">0</span></span>
+                    <span class="l" style="color:#94a3b8;">Points</span>
+                </div>
+                <div class="lg-hero-stat">
+                    <span class="v" style="color:#0f172a;"><span id="lb-self-acc">0</span>%</span>
+                    <span class="l" style="color:#94a3b8;">Accuracy</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="lg-panel">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+                <div class="lg-panel-title">Top 50</div>
+                <div class="lg-panel-sub" id="lb-mode-sub">Normal &middot; Hiragana</div>
+            </div>
+            <i class="bi bi-trophy-fill fs-4" style="color:#fbbf24;"></i>
+        </div>
+
+        <div id="lb-loading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-3 fw-bold text-muted mb-0">Pulling latest scores...</p>
+        </div>
+
+        <div id="lb-empty" class="text-center py-5 d-none">
+            <i class="bi bi-trophy fs-1 text-muted opacity-50"></i>
+            <p class="mt-3 fw-bold text-muted mb-0">No runs recorded yet. Be the first.</p>
+            <a href="/KanaBlitz" class="btn btn-primary fw-black rounded-pill px-4 py-2 mt-3">
+                <i class="bi bi-lightning-charge-fill me-1"></i> Run Normal Mode
+            </a>
+        </div>
+
+        <div id="lb-list" class="lg-podium-list d-none"></div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let currentSelfId = null;
+
+    async function loadBoard(alpha, btn) {
+        document.querySelectorAll('.lb-tab-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+
+        const list  = document.getElementById('lb-list');
+        const load  = document.getElementById('lb-loading');
+        const empty = document.getElementById('lb-empty');
+
+        list.classList.add('d-none');
+        empty.classList.add('d-none');
+        load.classList.remove('d-none');
+
+        const labelMap = { hiragana: 'Hiragana', katakana: 'Katakana', dakuten: 'Dakuten', mixed: 'Mixed' };
+        document.getElementById('lb-mode-sub').textContent  = `Normal \u00b7 ${labelMap[alpha]}`;
+        document.getElementById('lb-self-mode').textContent = labelMap[alpha];
+
+        try {
+            const res = await fetch(`/Leaderboards/GetBlitzBoard?alphabet=${alpha}&top=50`);
+            const data = await res.json();
+
+            const selfCard = document.getElementById('lb-self-card');
+            if (data.self) {
+                selfCard.classList.remove('d-none');
+                document.getElementById('lb-self-rank').innerText    = data.self.rank;
+                document.getElementById('lb-self-correct').innerText = data.self.bestCorrect;
+                document.getElementById('lb-self-points').innerText  = (data.self.bestPoints || 0).toLocaleString();
+                document.getElementById('lb-self-acc').innerText     = Math.round((data.self.bestAccuracy || 0) * 100);
+                currentSelfId = data.self.userId;
+            } else {
+                selfCard.classList.add('d-none');
+                currentSelfId = null;
+            }
+
+            list.innerHTML = '';
+            if (!data.rows || data.rows.length === 0) {
+                load.classList.add('d-none');
+                empty.classList.remove('d-none');
+                return;
+            }
+
+            data.rows.forEach((r, idx) => {
+                const rank = idx + 1;
+                const isSelf = currentSelfId && r.userId === currentSelfId;
+
+                const row = document.createElement('div');
+                row.className = 'lg-podium-row' + (rank === 1 ? ' rank-1' : '') + (isSelf ? ' is-self' : '');
+
+                let medal = '';
+                if (rank === 1) medal = '<div class="lg-podium-medal r1">1</div>';
+                else if (rank === 2) medal = '<div class="lg-podium-medal r2">2</div>';
+                else if (rank === 3) medal = '<div class="lg-podium-medal r3">3</div>';
+                else medal = `<div class="lg-podium-medal" style="background:#f1f5f9;border-color:#e2e8f0;color:#475569;">${rank}</div>`;
+
+                row.innerHTML = `
+                    ${medal}
+                    <div class="lg-podium-info">
+                        <div class="lg-podium-name">${escapeHtml(r.name)}${isSelf ? ' <span class="you-tag" style="background:#3b82f6;color:#fff;font-size:0.55rem;font-weight:900;letter-spacing:1px;padding:2px 8px;border-radius:50px;margin-left:6px;">YOU</span>' : ''}</div>
+                        <div class="lg-podium-sub">${(r.bestPoints || 0).toLocaleString()} pts &middot; ${Math.round((r.bestAccuracy || 0) * 100)}% acc &middot; combo ${r.bestCombo || 0}x</div>
+                    </div>
+                    <div class="lg-podium-value">${r.bestCorrect} <span style="font-size:0.6rem;color:#94a3b8;font-weight:800;letter-spacing:1px;">CORRECT</span></div>
+                `;
+
+                list.appendChild(row);
+            });
+
+            load.classList.add('d-none');
+            list.classList.remove('d-none');
+        } catch (e) {
+            load.innerHTML = '<p class="text-danger fw-bold">Failed to load leaderboard.</p>';
+        }
+    }
+
+    function escapeHtml(s) {
+        return (s || '').replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadBoard('hiragana', document.querySelector('.lb-tab-btn[data-alpha="hiragana"]'));
+    });
+</script>
+<style>
+    .lb-tab-btn { border: 2px solid #e2e8f0 !important; color: #64748b; transition: all 0.2s; }
+    .lb-tab-btn:hover { border-color: #fbbf24 !important; color: #b45309; }
+    .lb-tab-btn.active { background: #0f172a !important; color: #fbbf24 !important; border-color: #0f172a !important; }
+</style>
+}
