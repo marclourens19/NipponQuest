@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration; // Added for Secret Manager
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -17,33 +19,44 @@ namespace NipponQuest.Services
     {
         private readonly ILogger<AIKanaGeneratorService> _log;
         private readonly IServiceProvider _services;
-        private readonly HttpClient _http = new HttpClient();
 
-        // ── CONFIGURATION – read from env vars (set in your deployment platform) ──
-        private static readonly string Endpoint = Environment.GetEnvironmentVariable("AI_ENDPOINT")      // e.g. https://api.anthropic.com/v1/messages
-                                                   ?? throw new InvalidOperationException("AI_ENDPOINT env var missing");
-        private static readonly string ModelName = Environment.GetEnvironmentVariable("AI_MODEL")         // e.g. claude-3-5-sonnet-20240620
-                                                   ?? "claude-3-5-sonnet-20240620";
-        private static readonly string ApiKey = Environment.GetEnvironmentVariable("AI_API_KEY")        // token for the provider
-                                                   ?? throw new InvalidOperationException("AI_API_KEY env var missing");
+        // Timeout increased to 10 minutes to prevent TaskCanceledExceptions on slow API calls
+        private readonly HttpClient _http = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
 
-        private const int BatchSize = 200;   // how many words per alphabet/difficulty
+        // Configuration variables loaded securely via IConfiguration
+        private readonly string _endpoint;
+        private readonly string _modelName;
+        private readonly string _apiKey;
+
+        // Set to 20 for production daily generation
+        private const int BatchSize = 20;
 
         public AIKanaGeneratorService(ILogger<AIKanaGeneratorService> log,
-                                      IServiceProvider services)
+                                      IServiceProvider services,
+                                      IConfiguration config) // Inject IConfiguration
         {
             _log = log;
             _services = services;
+
+            // Grabs from secrets.json locally, or Azure Environment Variables in production
+            _endpoint = config["AI_ENDPOINT"] ?? throw new InvalidOperationException("AI_ENDPOINT missing from configuration/secrets.");
+            _modelName = config["AI_MODEL"] ?? "gemini-2.5-flash";
+            _apiKey = config["AI_API_KEY"] ?? string.Empty;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             // Run once a day at 02:30 UTC (adjust schedule as you like)
             var nextRun = DateTime.UtcNow.Date.AddHours(2.5);
+
             while (!stoppingToken.IsCancellationRequested)
             {
+                // Timer is restored: The service will sleep here until the daily scheduled time
                 var delay = nextRun - DateTime.UtcNow;
-                if (delay > TimeSpan.Zero) await Task.Delay(delay, stoppingToken);
+                if (delay > TimeSpan.Zero)
+                {
+                    await Task.Delay(delay, stoppingToken);
+                }
 
                 try
                 {
@@ -74,23 +87,33 @@ namespace NipponQuest.Services
                     var prompt = BuildPrompt(alpha, diff);
                     var requestPayload = BuildProviderPayload(prompt);
 
-                    var httpReq = new HttpRequestMessage(HttpMethod.Post, Endpoint)
+                    var httpReq = new HttpRequestMessage(HttpMethod.Post, _endpoint)
                     {
                         Content = new StringContent(JsonSerializer.Serialize(requestPayload),
                                                      Encoding.UTF8, "application/json")
                     };
-                    // Most providers use a bearer token header – adjust if your provider differs.
-                    httpReq.Headers.Add("Authorization", $"Bearer {ApiKey}");
 
-                    // Some providers (Anthropic, OpenAI) also need a version header
-                    if (Endpoint.Contains("anthropic.com"))
+                    if (!string.IsNullOrWhiteSpace(_apiKey))
+                    {
+                        if (_endpoint.Contains("generativelanguage.googleapis.com"))
+                        {
+                            // Native Gemini uses a specific header for API Keys
+                            httpReq.Headers.Add("x-goog-api-key", _apiKey);
+                        }
+                        else
+                        {
+                            httpReq.Headers.Add("Authorization", $"Bearer {_apiKey}");
+                        }
+                    }
+
+                    if (_endpoint.Contains("anthropic.com"))
                         httpReq.Headers.Add("anthropic-version", "2023-06-01");
 
                     var resp = await _http.SendAsync(httpReq, token);
                     resp.EnsureSuccessStatusCode();
 
                     var json = await resp.Content.ReadAsStringAsync(token);
-                    var aiWords = ExtractAiWords(json); // see helper below
+                    var aiWords = ExtractAiWords(json);
 
                     // ---- VALIDATION & INSERT ----
                     var insertBatch = new List<KanaWord>();
@@ -133,108 +156,178 @@ namespace NipponQuest.Services
         private string BuildPrompt(string alphabet, string difficulty)
         {
             return $@"
-  You are a Japanese‑language teacher. Generate {BatchSize} **unique** words for the {alphabet} script at **{difficulty}** difficulty.
-  Return a **single JSON array** where each element has:
-    - ""kana"": the full kana (or Kanji+furigana) string,
-    - ""romaji"": exact romanisation (lowercase, no spaces),
-    - ""meaning"": short English definition (1‑3 words),
-    - ""missing"": one random syllable (or furigana piece) that will be blanked in the UI,
-    - ""display"": same as ""kana"" but with the ""missing"" part replaced by <span class='missing-placeholder'>__</span>.
+        You are a Japanese vocabulary generator. Generate {BatchSize} unique Japanese words using the {alphabet} script at {difficulty} difficulty.
+        You MUST return ONLY a valid JSON array. Do not include any extra text, markdown, or greetings.
 
-  All objects must be **valid JSON**, non‑duplicate, and the romaji must match the kana. Return only the JSON array, no extra text.";
+        EXAMPLE EXPECTED OUTPUT:
+        [
+          {{
+            ""kana"": ""ねこ"",
+            ""romaji"": ""neko"",
+            ""meaning"": ""cat"",
+            ""missing"": ""こ"",
+            ""display"": ""ね<span class='missing-placeholder'>__</span>""
+          }}
+        ]";
         }
 
         private object BuildProviderPayload(string prompt)
         {
-            // The payload differs per provider – we handle the three most common ones.
-            if (Endpoint.Contains("vercel.com"))
+            if (_endpoint.Contains("generativelanguage.googleapis.com"))
             {
-                // Vercel AI Gateway payload
+                // Native Google Gemini payload
                 return new
                 {
-                    model = ModelName,
-                    prompt = prompt,
-                    temperature = 0.7,
-                    max_tokens = 2048
+                    contents = new[]
+                    {
+                        new
+                        {
+                            parts = new[] { new { text = prompt } }
+                        }
+                    },
+                    generationConfig = new
+                    {
+                        temperature = 0.7,
+                        responseMimeType = "application/json" // Native JSON enforcing
+                    }
                 };
             }
-            else if (Endpoint.Contains("anthropic.com"))
+            else if (_endpoint.Contains("vercel.com"))
             {
-                // Anthropic Claude payload (messages array)
+                return new { model = _modelName, prompt = prompt, temperature = 0.7, max_tokens = 2048 };
+            }
+            else if (_endpoint.Contains("anthropic.com"))
+            {
                 return new
                 {
-                    model = ModelName,
+                    model = _modelName,
                     max_tokens = 2048,
                     temperature = 0.7,
                     messages = new[]
                     {
                           new { role = "system", content = "You are a helpful assistant." },
                           new { role = "user",   content = prompt }
-                      }
+                    }
                 };
             }
-            else if (Endpoint.Contains("huggingface.co"))
+            else if (_endpoint.Contains("huggingface.co"))
             {
-                // HF Inference API payload
+                return new { inputs = prompt, parameters = new { temperature = 0.7, max_new_tokens = 1024 } };
+            }
+            else if (_endpoint.Contains("groq.com") || _endpoint.Contains("openai.com"))
+            {
                 return new
                 {
-                    inputs = prompt,
-                    parameters = new { temperature = 0.7, max_new_tokens = 1024 }
+                    model = _modelName,
+                    temperature = 0.7,
+                    messages = new[]
+                    {
+                        new { role = "system", content = "You are a helpful assistant." },
+                        new { role = "user", content = prompt }
+                    }
                 };
+            }
+            else if (_endpoint.Contains("11434") || _endpoint.Contains("ollama"))
+            {
+                return new
+                {
+                    model = _modelName,
+                    prompt = prompt,
+                    stream = false,
+                    format = "json",
+                    options = new { temperature = 0.7 }
+                };
+            }
+            throw new NotSupportedException($"Endpoint '{_endpoint}' not recognised for payload building.");
+        }
+
+        private List<AiKanaDto> ExtractAiWords(string rawJson)
+        {
+            string textToParse = "";
+
+            // 1. Extract the core text from the provider's unique response shell
+            if (_endpoint.Contains("generativelanguage.googleapis.com"))
+            {
+                using var doc = JsonDocument.Parse(rawJson);
+                textToParse = doc.RootElement
+                                 .GetProperty("candidates")[0]
+                                 .GetProperty("content")
+                                 .GetProperty("parts")[0]
+                                 .GetProperty("text")
+                                 .GetString()!;
+            }
+            else if (_endpoint.Contains("vercel.com"))
+            {
+                textToParse = rawJson;
+            }
+            else if (_endpoint.Contains("anthropic.com"))
+            {
+                using var doc = JsonDocument.Parse(rawJson);
+                textToParse = doc.RootElement.GetProperty("content")[0].GetProperty("text").GetString()!;
+            }
+            else if (_endpoint.Contains("huggingface.co"))
+            {
+                using var doc = JsonDocument.Parse(rawJson);
+                textToParse = doc.RootElement[0].GetProperty("generated_text").GetString()!;
+            }
+            else if (_endpoint.Contains("groq.com") || _endpoint.Contains("openai.com"))
+            {
+                using var doc = JsonDocument.Parse(rawJson);
+                textToParse = doc.RootElement.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString()!;
+            }
+            else if (_endpoint.Contains("11434") || _endpoint.Contains("ollama"))
+            {
+                using var doc = JsonDocument.Parse(rawJson);
+                textToParse = doc.RootElement.GetProperty("response").GetString()!;
             }
             else
             {
-                throw new NotSupportedException($"Endpoint '{Endpoint}' not recognised for payload building.");
+                throw new NotSupportedException($"Cannot parse response from {_endpoint}");
             }
-        }
 
-        // Extract the JSON array the model returned – each provider nests it slightly differently.
-        private List<AiKanaDto> ExtractAiWords(string rawJson)
-        {
-            // 1️⃣ Vercel – rawJson is the array itself.
-            if (Endpoint.Contains("vercel.com"))
-                return JsonSerializer.Deserialize<List<AiKanaDto>>(rawJson)!;
+            // 2. Global Bulletproof JSON Extraction
+            int arrayStart = textToParse.IndexOf('[');
+            int arrayEnd = textToParse.LastIndexOf(']');
+            int objStart = textToParse.IndexOf('{');
+            int objEnd = textToParse.LastIndexOf('}');
 
-            // 2️⃣ Anthropic – response shape: { content: [{ text: "..." }], ... }
-            if (Endpoint.Contains("anthropic.com"))
+            string cleanJson = "";
+
+            if (arrayStart != -1 && arrayEnd != -1 && arrayEnd > arrayStart)
             {
-                using var doc = JsonDocument.Parse(rawJson);
-                var text = doc.RootElement
-                              .GetProperty("content")[0]
-                              .GetProperty("text")
-                              .GetString()!;
-                return JsonSerializer.Deserialize<List<AiKanaDto>>(text)!;
+                cleanJson = textToParse.Substring(arrayStart, arrayEnd - arrayStart + 1);
             }
-
-            // 3️⃣ HuggingFace – response shape: [{ generated_text: "..." }]
-            if (Endpoint.Contains("huggingface.co"))
+            else if (objStart != -1 && objEnd != -1 && objEnd > objStart)
             {
-                using var doc = JsonDocument.Parse(rawJson);
-                var generated = doc.RootElement[0].GetProperty("generated_text").GetString()!;
-                return JsonSerializer.Deserialize<List<AiKanaDto>>(generated)!;
+                string singleObj = textToParse.Substring(objStart, objEnd - objStart + 1);
+                cleanJson = $"[{singleObj}]";
+            }
+            else
+            {
+                throw new FormatException($"AI did not return valid JSON. Raw response: {textToParse}");
             }
 
-            throw new NotSupportedException($"Cannot parse response from {Endpoint}");
+            // 3. Deserialize with forgiving options
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true
+            };
+
+            return JsonSerializer.Deserialize<List<AiKanaDto>>(cleanJson, options)!;
         }
 
         private bool ValidateAiWord(AiKanaDto w, string alphabet, string diff)
         {
-            // Very lightweight sanity checks – you can extend them later.
-            if (string.IsNullOrWhiteSpace(w.Kana) ||
-                string.IsNullOrWhiteSpace(w.Romaji) ||
-                string.IsNullOrWhiteSpace(w.Missing) ||
-                string.IsNullOrWhiteSpace(w.Display))
+            if (string.IsNullOrWhiteSpace(w.Kana) || string.IsNullOrWhiteSpace(w.Romaji) ||
+                string.IsNullOrWhiteSpace(w.Missing) || string.IsNullOrWhiteSpace(w.Display))
                 return false;
 
-            // The missing piece must actually appear in the full kana string.
             if (!w.Kana.Contains(w.Missing)) return false;
 
-            // Optional: you can put a small transliteration library here to confirm
-            // that `w.Romaji` truly matches `w.Kana`. For now we trust the model.
             return true;
         }
 
-        // DTO that matches what the model returns
         private class AiKanaDto
         {
             public string Kana { get; set; } = "";
