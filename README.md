@@ -94,4 +94,3 @@ This project was developed by **Joshua Marc Lourens** as a student in the **Bach
 
 *NipponQuest is an ongoing project focused on merging educational psychology with software engineering best practices.*
 
-```
