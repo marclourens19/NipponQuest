@@ -1,0 +1,146 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using NipponQuest.Models
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+
+<!-- Mobile‑only overrides – keep existing classes untouched -->
+<style>
+    @@media (max-width: 576px) {
+        .hud-bubble {
+            padding: 0.4rem 0.6rem !important;
+            font-size: 0.85rem !important;
+        }
+
+        .rank-text {
+            font-size: 0.7rem !important;
+            padding: 2px 4px !important;
+        }
+
+        .gold-coin {
+            width: 1rem !important;
+            height: 1rem !important;
+        }
+
+        .progress {
+            height: 6px !important;
+        }
+
+        .level-label-sync {
+            min-width: 35px !important;
+            font-size: 0.75rem !important;
+        }
+
+        .streak-flame-active,
+        .streak-frozen {
+            font-size: 0.9rem !important;
+        }
+    }
+</style>
+
+<ul class="navbar-nav d-flex flex-row align-items-center gap-1 gap-md-3 mb-0 p-0">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        var player = await UserManager.GetUserAsync(User);
+        var currentRankClass = player?.CurrentLeague.ToString().ToLower() ?? "sprout";
+        bool hasActiveStreak = player?.LoginStreak > 0;
+
+        <li class="nav-item">
+            <div class="hud-bubble px-1 px-md-3 py-1 py-md-2" style="display: flex; align-items: center;">
+
+                <div class="d-flex align-items-center justify-content-between gap-1 gap-md-3 pe-0 pe-md-3 border-end-0
+                    border-md-end border-secondary border-opacity-10">
+
+                    <div class="d-flex align-items-center gap-1">
+                        <i class="bi bi-fire fs-6 d-md-none @(hasActiveStreak ? "streak-flame-active" :
+                                                       "streak-frozen")"></i>
+                        <span class="fw-black d-md-none @(hasActiveStreak ? "streak-flame-active" : "streak-frozen")"
+                              style="font-size: 0.8rem;">@player?.LoginStreak</span>
+
+                        <i class="bi bi-fire fs-5 d-none d-md-inline-block @(hasActiveStreak ? "streak-flame-active" :
+                                                        "streak-frozen")"></i>
+                        <span class="fw-black d-none d-md-inline-block @(hasActiveStreak ? "streak-flame-active" :
+                                                          "streak-frozen")" style="font-size: 0.95rem;">@player?.LoginStreak</span>
+                    </div>
+
+                    <a asp-controller="Leagues" asp-action="Index" class="text-decoration-none d-none d-sm-block">
+                        <span class="rank-text @currentRankClass d-md-none" style="font-size: 0.75rem; padding: 2px
+                        6px;">@player?.CurrentLeague</span>
+                        <span class="rank-text @currentRankClass d-none
+                        d-md-inline-block">@player?.CurrentLeague</span>
+                    </a>
+
+                    <div class="level-label-sync mx-1 mx-md-0 px-1" style="font-size: 0.8rem; min-width: 40px;
+                        text-align: center;">
+                        LV.@player?.Level
+                    </div>
+
+                    <div class="d-flex d-md-none align-items-center gap-1">
+                        <span class="fw-black text-dark" style="font-size: 0.85rem;">@player?.Gold</span>
+                        <div class="gold-coin"></div>
+                    </div>
+
+                    <div class="d-none d-md-flex align-items-center gap-1">
+                        <span class="fw-black text-dark" style="font-size: 0.85rem;">@player?.Gold</span>
+                        <div class="gold-coin"></div>
+                    </div>
+                </div>
+
+                <div class="d-none d-md-block ms-3" style="width: 140px;">
+                    <div class="d-flex justify-content-between mb-1" style="font-size: 0.65rem;">
+                        <span class="fw-black text-muted">EXP</span>
+                        <span class="text-muted fw-bold">@(player?.XPPercentage ?? 0)%</span>
+                    </div>
+                    <div class="progress" style="height: 8px; background: rgba(0,0,0,0.06); border-radius: 10px;">
+                        <div class="progress-bar bg-info progress-bar-striped progress-bar-animated"
+                             style="width: @(player?.XPPercentage ?? 0)%"></div>
+                    </div>
+                </div>
+            </div>
+        </li>
+
+        <li class="nav-item">
+            <form class="form-inline m-0 ms-1" asp-area="Identity"
+                  asp-page="/Account/Logout"
+                  asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                <!-- Use the same bubble classes as the other items -->
+                <button type="submit"
+                        class="hud-bubble px-1 px-md-3 py-1 py-md-2 d-flex align-items-center justify-content-center
+                    border-0 shadow-sm"
+                        style="background: #fff;">
+                    <!-- Desktop (visible on md+) -->
+                    <span class="logout-text small d-none d-md-block">LOGOUT</span>
+                    <!-- Mobile (visible on <md) -->
+                    <i class="bi bi-box-arrow-right d-md-none fw-bold"
+                       style="font-size: 1.1rem; color: #dc3545;"></i>
+                </button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="hud-bubble text-decoration-none px-2 d-flex d-md-none align-items-center justify-content-center"
+                   style="min-height: 36px;" asp-area="Identity" asp-page="/Account/Login">
+                <span class="fw-black text-primary" style="font-size: 0.8rem;">LOGIN</span>
+            </a>
+            <a class="hud-bubble text-decoration-none px-4 d-none d-md-flex align-items-center justify-content-center"
+                   style="min-height: 40px;" asp-area="Identity" asp-page="/Account/Login">
+                <span class="fw-black text-primary small">LOGIN</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="hud-bubble text-decoration-none shadow-sm px-2 border-0 d-flex d-md-none align-items-center
+                justify-content-center ms-1"
+                   style="background-color: #0d6efd !important; min-height: 36px;"
+                   asp-area="Identity" asp-page="/Account/Register">
+                <span class="fw-black text-white" style="font-size: 0.8rem;">JOIN</span>
+            </a>
+            <a class="hud-bubble text-decoration-none shadow-sm px-4 d-none d-md-flex align-items-center
+                justify-content-center ms-md-2"
+                   style="background-color: #0d6efd !important; min-height: 40px;"
+                   asp-area="Identity" asp-page="/Account/Register">
+                <span class="fw-black small text-white">REGISTER</span>
+            </a>
+        </li>
+    }
+</ul>

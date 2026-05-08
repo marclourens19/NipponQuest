@@ -1,0 +1,285 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="manifest" href="~/manifest.json">
+    <meta name="theme-color" content="#dc3545">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NipponQuest">
+    <title>@ViewData["Title"] - NipponQuest</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- *** Mobile‑only overrides (added) *** -->
+    <style>
+            /* Mobile (≤576 px) – keep desktop styling intact */
+            @@media (max-width: 576px) {
+                /* Reduce padding on the main edit card */
+                #MainEditCard.static-card {
+                    padding: 1rem !important;
+                    margin: 0.5rem !important;
+                }
+                /* Make tables horizontally scrollable */
+                .table-responsive {
+                    overflow-x: auto;
+                }
+                /* Shrink the main header text so it fits on small screens */
+                .navbar-brand {
+                    font-size: 1.2rem !important;
+                    letter-spacing: -0.5px !important;
+                }
+                /* Tighten the navigation links */
+                .navbar-nav .nav-link {
+                    font-size: 0.85rem;
+                    padding: 0.5rem 0;
+                }
+                /* Reduce size of color swatches for mobile thumbs */
+                .color-swatch {
+                    width: 28px;
+                    height: 28px;
+                }
+                /* Stack the “Add New Card” button on a new line */
+                .d-flex.justify-content-between.align-items-center.mb-4.flex-wrap {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                    .d-flex.justify-content-between.align-items-center.mb-4.flex-wrap h4 {
+                        margin-bottom: 0.5rem;
+                        text-align: center;
+                    }
+                /* Adjust modal widths for better fit */
+                .modal-dialog {
+                    margin: 1rem;
+                }
+                /* Slightly smaller icons inside buttons */
+                .btn .bi {
+                    font-size: 0.9rem;
+                }
+            }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom py-2 py-md-3 shadow-sm sticky-top">
+            <div class="container-fluid px-2 px-md-4 d-flex align-items-center justify-content-between">
+
+                <div class="d-flex align-items-center">
+                    <button class="navbar-toggler border-0 px-1 me-2" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#navbarLinks" aria-controls="navbarLinks" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon" style="width: 1.2rem; height: 1.2rem;"></span>
+                    </button>
+
+                    <div class="d-flex flex-column align-items-center me-2">
+                        <a class="navbar-brand fw-black text-primary p-0 m-0" asp-area="" asp-controller="Home"
+                           asp-action="Index" style="font-size: 1.4rem; letter-spacing: -1px; line-height: 1.2;">NipponQuest</a>
+                        <span class="brand-japanese-sub d-none d-sm-block" style="font-size: 0.6rem; letter-spacing:
+                        0.2em; line-height: 1;">ニッポン・クエスト</span>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center order-lg-last">
+                    <partial name="_LoginPartial" />
+                </div>
+
+                <div class="collapse navbar-collapse mt-3 mt-lg-0" id="navbarLinks">
+                    <ul class="navbar-nav gap-2 gap-lg-4 ms-lg-4 text-center text-lg-start">
+                        <li class="nav-item">
+                            <a class="nav-link fw-black text-dark small py-2" asp-controller="Home"
+                               asp-action="Index">HOME</a>
+                        </li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle fw-black text-dark small nav-link-glow py-2" href="#"
+                                   id="jpDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                JAPANESE
+                            </a>
+                            <ul class="dropdown-menu border-0 shadow-lg rounded-4 p-2 mt-2 text-center text-lg-start"
+                                aria-labelledby="jpDropdown">
+                                <li>
+                                    <a class="dropdown-item fw-bold py-2 rounded-3 d-flex align-items-center
+                                        justify-content-center justify-content-lg-start" asp-controller="Learning" asp-action="Hiragana">
+                                        <span class="text-primary me-2 fw-black" style="font-size: 1.1rem; width:
+                                        20px; text-align: center;">あ</span>Hiragana
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item fw-bold py-2 rounded-3 d-flex align-items-center
+                                        justify-content-center justify-content-lg-start" asp-controller="Learning" asp-action="Katakana">
+                                        <span class="text-primary me-2 fw-black" style="font-size: 1.1rem; width:
+                                        20px; text-align: center;">ア</span>Katakana
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item fw-bold py-2 rounded-3 d-flex align-items-center
+                                        justify-content-center justify-content-lg-start" asp-controller="KanaBlitz" asp-action="Index">
+                                        <i class="bi bi-lightning-charge-fill text-warning me-2" style="width: 20px;
+                                        font-size: 1.1rem; text-align: center;"></i>KanaBlitz
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-1 opacity-25"></li>
+                                <li>
+                                    <a class="dropdown-item fw-bold py-2 rounded-3 d-flex align-items-center
+                                        justify-content-center justify-content-lg-start" asp-controller="Flashcards" asp-action="Index">
+                                        <i class="bi bi-stack text-primary me-2 fw-black" style="font-size: 1.1rem;
+                                        width: 20px; text-align: center;"></i>Flashcards
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle fw-black text-dark small nav-link-glow py-2" href="#"
+                                   id="personalDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                PERSONAL
+                            </a>
+                            <ul class="dropdown-menu border-0 shadow-lg rounded-4 p-2 mt-2 text-center text-lg-start"
+                                aria-labelledby="personalDropdown">
+                                <li>
+                                    <a class="dropdown-item fw-bold py-2 rounded-3 d-flex align-items-center
+                                        justify-content-center justify-content-lg-start" asp-controller="Leagues" asp-action="Index">
+                                        <i class="bi bi-trophy-fill text-warning me-2" style="width: 20px; font-size:
+                                        1.1rem; text-align: center;"></i>Leaderboards
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item fw-bold py-2 rounded-3 d-flex align-items-center
+                                        justify-content-center justify-content-lg-start" asp-controller="Stats" asp-action="Index">
+                                        <i class="bi bi-graph-up-arrow text-primary me-2" style="width: 20px;
+                                        font-size: 1.1rem; text-align: center;"></i>Stats Vault
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-1 opacity-25"></li>
+                                <li>
+                                    <a class="dropdown-item fw-bold py-2 rounded-3 d-flex align-items-center
+                                        justify-content-center justify-content-lg-start"
+                                           asp-area="Identity" asp-page="/Account/Manage/Index">
+                                        <i class="bi bi-person-circle text-secondary me-2" style="width: 20px;
+                                        font-size: 1.1rem; text-align: center;"></i>Account
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container-fluid flex-grow-1 p-0">
+        <main role="main" class="pb-5">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="nippon-footer mt-auto">
+        <div class="container">
+            <div class="row pt-5 pb-4">
+                <div class="col-lg-4 mb-4">
+                    <div class="d-inline-flex flex-column align-items-center">
+                        <a class="navbar-brand fw-black text-primary p-0 m-0" asp-area="" asp-controller="Home"
+                               asp-action="Index" style="font-size: 1.6rem; letter-spacing: -1.5px; line-height: 1;">
+                            NipponQuest
+                        </a>
+                        <span class="brand-japanese-sub m-0" style="letter-spacing: 0.3em; font-size: 0.7rem; width:
+                        100%; text-align: center;">ニッポン・クエスト</span>
+                    </div>
+                    <p class="text-muted small mt-3 fw-bold" style="max-width: 280px;">
+                        A premium language learning ecosystem engineered by <strong>YugenLabs</strong>. Master
+                        Japanese through gamified excellence.
+                    </p>
+                </div>
+
+                <div class="col-6 col-lg-2 mb-4">
+                    <h6 class="fw-black text-uppercase small opacity-50 mb-3" style="letter-spacing:
+                        1px;">
+                        Platform
+                    </h6>
+                    <ul class="list-unstyled fw-bold small">
+                        <li class="mb-2"><a asp-controller="Home" asp-action="Index" class="footer-link">Home</a></li>
+                        <li class="mb-2">
+                            <a asp-controller="Leagues" asp-action="Index"
+                               class="footer-link">Leaderboards</a>
+                        </li>
+                        <li class="mb-2">
+                            <a asp-controller="Stats" asp-action="Index" class="footer-link">
+                                Stats
+                                Vault
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col-6 col-lg-2 mb-4">
+                    <h6 class="fw-black text-uppercase small opacity-50 mb-3" style="letter-spacing: 1px;">Legal</h6>
+                    <ul class="list-unstyled fw-bold small">
+                        <li class="mb-2">
+                            <a asp-controller="Home" asp-action="Privacy" class="footer-link">
+                                Privacy
+                                Policy
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a asp-controller="Home" asp-action="Terms" class="footer-link">
+                                Terms of
+                                Service
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a asp-controller="Home" asp-action="Cookies" class="footer-link">
+                                Cookie
+                                Policy
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-4 mb-4 text-lg-end">
+                    <h6 class="fw-black text-uppercase small opacity-50 mb-3" style="letter-spacing:
+                        1px;">
+                        Community
+                    </h6>
+                    <div class="d-flex justify-content-lg-end gap-3">
+                        <a href="#" class="social-icon-btn"><i class="bi bi-discord"></i></a>
+                        <a href="#" class="social-icon-btn"><i class="bi bi-twitter-x"></i></a>
+                        <a href="https://github.com/marclourens19/NipponQuest" class="social-icon-btn">
+                            <i class="bi
+                            bi-github"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-top py-4 d-flex flex-column flex-md-row justify-content-between align-items-center
+                gap-3">
+                <span class="text-muted small fw-bold">
+                    &copy; @DateTime.Now.Year NipponQuest. All rights reserved.
+                </span>
+                <span class="text-muted small fw-black text-uppercase opacity-50" style="letter-spacing: 2px;">
+                    Designed by YugenLabs
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function () {
+                    navigator.serviceWorker.register('/sw.js').then(function (registration) {
+                        console.log('NipponQuest Mobile App Registered!', registration.scope);
+                    }, function (err) {
+                        console.log('Mobile App Registration Failed: ', err);
+                    });
+                });
+            }
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

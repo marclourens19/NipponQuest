@@ -1,0 +1,19 @@
+# Visual Studio / Build
+.vs/
+bin/
+obj/
+
+# Databases
+*.mdf
+*.ldf
+*.sqlite
+*.db
+
+# Anki Test Files
+Anki_Handoff/
+*.apkg
+*.anki2
+
+# User specifics
+*.user
+*.suo
