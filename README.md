@@ -1,5 +1,4 @@
-```markdown
-# NipponQuest 🎌
+# NipponQuest 
 
 NipponQuest is a gamified full-stack Japanese language learning platform built using **ASP.NET Core MVC**. It transforms the traditional study of Hiragana and Katakana into an interactive "quest" experience, utilizing a persistent leveling system to drive student engagement and retention.
 
@@ -37,7 +36,6 @@ NipponQuest-main/
 ├── wwwroot/             # Static assets (Custom CSS, JS, Audio files)
 └── NipponQuest.csproj   # Project configuration & NuGet dependencies
 
-```
 
 ## ⚙️ Setup & Installation
 
@@ -94,7 +92,5 @@ This project was developed by **Joshua Marc Lourens** as a student in the **Bach
 ---
 
 *NipponQuest is an ongoing project focused on merging educational psychology with software engineering best practices.*
-
-```
 
 ```
