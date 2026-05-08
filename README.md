@@ -36,6 +36,7 @@ NipponQuest-main/
 ├── wwwroot/             # Static assets (Custom CSS, JS, Audio files)
 └── NipponQuest.csproj   # Project configuration & NuGet dependencies
 
+```
 
 ## ⚙️ Setup & Installation
 
