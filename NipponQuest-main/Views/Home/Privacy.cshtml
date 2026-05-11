@@ -1,77 +1,337 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<div class="container py-5">
-    <div class="auth-card mx-auto shadow-lg" style="max-width: 900px; padding: 4rem;">
-        <div class="text-center mb-5">
-            <h1 class="fw-black text-dark" style="letter-spacing: -2px; font-size: 3rem;">@ViewData["Title"]</h1>
-            <p class="text-muted fw-bold">Effective Date: May 5, 2026</p>
-        </div>
 
-        <div class="legal-content fw-bold text-muted" style="line-height: 1.8;">
-            <section class="mb-5">
-                <h4 class="text-dark fw-black text-uppercase small mb-3" style="letter-spacing: 1px;">1. Overview</h4>
-                <p>
-                    Welcome to <strong>NipponQuest</strong>. We are committed to protecting your personal data and your privacy.
-                    This policy outlines how we handle your information as you progress through our gamified Japanese language platform.
-                </p>
-            </section>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
-            <section class="mb-5">
-                <h4 class="text-dark fw-black text-uppercase small mb-3" style="letter-spacing: 1px;">2. Information Collection</h4>
-                <p>To provide a personalized experience and maintain the integrity of our Player Economy, we collect the following:</p>
-                <ul class="list-unstyled ps-3 border-start border-primary border-3">
-                    <li class="mb-2"><strong>Identity Data:</strong> Your email address and chosen GamerTag.</li>
-                    <li class="mb-2"><strong>Authentication Data:</strong> Profile information provided via Google third-party authentication.</li>
-                    <li class="mb-2"><strong>Gamification Metrics:</strong> Records of your Level, XP, Gold, and League placement.</li>
-                    <li class="mb-2"><strong>User-Generated Content:</strong> Flashcard decks, Anki import files (.apkg), and associated text/media you upload to the Discover Hub.</li>
-                    <li class="mb-2"><strong>Economy Data:</strong> Transaction history for Gold exchanges, deck downloads, and marketplace interactions.</li>
-                </ul>
-            </section>
+<style>
+    .privacy-body { font-family: 'Nunito', sans-serif; background: #ffffff; }
+    .privacy-card {
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 28px;
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+    }
+    .privacy-section { margin-bottom: 2.5rem; }
+    .privacy-section h4 {
+        font-size: 0.75rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #0f172a;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .privacy-section h4::before {
+        content: '';
+        display: block;
+        width: 4px;
+        height: 20px;
+        background: linear-gradient(180deg, #0ea5e9, #2563eb);
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+    .privacy-section p, .privacy-section li {
+        font-size: 0.9rem;
+        line-height: 1.75;
+        color: #475569;
+        font-weight: 600;
+    }
+    .privacy-section strong { color: #0f172a; font-weight: 900; }
+    .privacy-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .privacy-list li {
+        padding: 0.6rem 0;
+        padding-left: 1.5rem;
+        position: relative;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .privacy-list li:last-child { border-bottom: none; }
+    .privacy-list li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 1rem;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0ea5e9;
+        flex-shrink: 0;
+    }
+    .privacy-info {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin: 1rem 0;
+    }
+    .privacy-info p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #075985;
+        font-weight: 700;
+    }
+    .privacy-warning {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin: 1rem 0;
+    }
+    .privacy-warning p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #92400e;
+        font-weight: 700;
+    }
+    .privacy-footer {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        margin-top: 3rem;
+    }
+    @@media (max-width: 576px) {
+        .privacy-card { padding: 2rem !important; border-radius: 20px; }
+        .privacy-section p, .privacy-section li { font-size: 0.85rem; }
+    }
+</style>
 
-            <section class="mb-5">
-                <h4 class="text-dark fw-black text-uppercase small mb-3" style="letter-spacing: 1px;">3. Data Usage</h4>
-                <p>Your information is used strictly to facilitate the competitive and educational features of the platform, including:</p>
-                <ul class="list-unstyled">
-                    <li class="mb-1"><i class="bi bi-check2-circle text-primary me-2"></i> Managing your character progression and Login Streaks.</li>
-                    <li class="mb-1"><i class="bi bi-check2-circle text-primary me-2"></i> Generating global and local Arena Leaderboards.</li>
-                    <li class="mb-1"><i class="bi bi-check2-circle text-primary me-2"></i> Hosting and distributing your published decks on the Discover Hub.</li>
-                    <li class="mb-1"><i class="bi bi-check2-circle text-primary me-2"></i> Processing Player Economy transactions and Gold rewards securely.</li>
-                </ul>
-            </section>
+<div class="privacy-body">
+    <div class="container py-5">
+        <div class="privacy-card mx-auto" style="max-width: 900px; padding: 4rem;">
+            <div class="text-center mb-5">
+                <span class="badge rounded-pill px-3 py-2 fw-black mb-3" style="background: #dbeafe; color: #1d4ed8; font-size: 0.65rem; letter-spacing: 1.5px;">DATA & PRIVACY</span>
+                <h1 class="fw-black" style="letter-spacing: -2px; font-size: 3rem; color: #0f172a;">@ViewData["Title"]</h1>
+                <p class="fw-bold mt-2" style="color: #94a3b8; font-size: 0.85rem;">Effective Date: May 5, 2026 &middot; Applies to all NipponQuest services</p>
+            </div>
 
-            <section class="mb-5">
-                <h4 class="text-dark fw-black text-uppercase small mb-3" style="letter-spacing: 1px;">4. Security & Storage</h4>
-                <p>
-                    We utilize <strong>ASP.NET Core Identity</strong> and industry-standard encryption to protect your data.
-                    Your authentication secrets are managed via secure environments to ensure zero exposure. Temporary files required for processing user uploads (such as Anki deck extractions) are routinely and securely deleted from our servers once processed.
-                </p>
-            </section>
+            <div class="privacy-body-content">
 
-            <section class="mb-5">
-                <h4 class="text-dark fw-black text-uppercase small mb-3" style="letter-spacing: 1px;">5. Your Rights</h4>
-                <p>
-                    As a user of NipponQuest, you maintain the right to access your data, update your GamerTag, remove your published decks from the Discover Hub, or request full account deletion.
-                    Contact us directly for any data-related inquiries.
-                </p>
-            </section>
+                <div class="privacy-section">
+                    <h4>1. Overview</h4>
+                    <p>
+                        Welcome to <strong>NipponQuest</strong>. We respect your privacy and are committed to handling your personal data responsibly. This Privacy Policy explains what information we collect, how we use it, how long we keep it, and what rights you have when using our Japanese learning platform, including <strong>KanaBlitz Arena</strong>, <strong>Flashcards</strong>, <strong>Leagues</strong>, <strong>Stats Vault</strong>, and the <strong>Discover Hub</strong>.
+                    </p>
+                    <p>
+                        This Policy should be read together with our <a href="/Home/Terms" style="color: #0ea5e9; font-weight: 900;">Terms of Service</a> and <a href="/Home/Cookies" style="color: #0ea5e9; font-weight: 900;">Cookie Policy</a>. By using the Platform, you acknowledge that your data will be processed as described below.
+                    </p>
+                </div>
 
-            <div class="mt-5 pt-4 border-top text-center">
-                <p class="small opacity-75">
-                    For legal or technical inquiries: <br />
-                    <span class="text-dark fw-black">YugenLabs</span><br />
-                    <span class="text-muted">Lead Developer: Joshua Marc Lourens</span><br />
-                    Westville, South Africa
-                </p>
-            <style>
-                @@media (max-width: 576px) {
-                    .container.py-5 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
-                    .auth-card { max-width: 100% !important; padding: 2rem !important; }
-                    h1.fw-black { font-size: clamp(2rem, 6vw, 3rem) !important; }
-                    .legal-content .mb-5 { margin-bottom: 1rem !important; }
-                    .mt-5.pt-4.border-top { margin-top: 2rem !important; }
-                }
-            </style>
+                <div class="privacy-section">
+                    <h4>2. Who We Are</h4>
+                    <p>
+                        NipponQuest is operated by <strong>YugenLabs</strong>. For the purposes of applicable privacy law, YugenLabs is the party responsible for determining how your personal data is collected and used on the Platform.
+                    </p>
+                </div>
+
+                <div class="privacy-section">
+                    <h4>3. Information We Collect</h4>
+                    <p>We collect information in the following categories:</p>
+                    <ul class="privacy-list">
+                        <li><strong>Identity Data:</strong> Your email address, chosen GamerTag, account ID, and any profile details you add to your account.</li>
+                        <li><strong>Authentication Data:</strong> Password hashes managed through ASP.NET Core Identity, login metadata, and profile information supplied through third-party sign-in providers such as Google (where used).</li>
+                        <li><strong>Gameplay Data:</strong> Your XP, Gold, Level, Login Streak, League tier, leaderboard positions, Arena scores, KanaBlitz run history, accuracy, combos, and progression milestones.</li>
+                        <li><strong>Flashcard & Study Data:</strong> Deck names, card content, imported Anki data, review history, scheduling intervals, SRS ratings (Again / Hard / Good / Easy), and related study preferences.</li>
+                        <li><strong>User-Generated Content:</strong> Flashcard decks, titles, descriptions, tags, notes, text, images, media, and other content you upload or publish to the Discover Hub.</li>
+                        <li><strong>Economy Data:</strong> Gold balances, deck purchases, deck sales, marketplace activity, reward grants, and transaction logs needed to maintain the in-platform economy.</li>
+                        <li><strong>Technical & Device Data:</strong> IP address, browser type, device type, operating system, approximate region, app version, error logs, request metadata, and basic diagnostic information.</li>
+                        <li><strong>Local Storage & Preference Data:</strong> UI preferences, one-time warnings acknowledged, temporary gameplay settings, and similar client-side state stored in localStorage or cookies.</li>
+                    </ul>
+                </div>
+
+                <div class="privacy-section">
+                    <h4>4. How We Collect Data</h4>
+                    <p>We collect information from the following sources:</p>
+                    <ul class="privacy-list">
+                        <li><strong>Directly from you:</strong> When you register, log in, edit your account, play KanaBlitz, review flashcards, upload decks, or contact us.</li>
+                        <li><strong>Automatically:</strong> Through gameplay events, leaderboards, score submissions, session tracking, cookies, localStorage, server logs, and service-worker or PWA-related behavior.</li>
+                        <li><strong>From third parties:</strong> From Google or other authentication providers if you choose to sign in using them.</li>
+                    </ul>
+                </div>
+
+                <div class="privacy-section">
+                    <h4>5. How We Use Your Data</h4>
+                    <p>Your information is used only to operate, improve, secure, and personalize the Platform. This includes:</p>
+                    <ul class="privacy-list">
+                        <li>Creating and managing your account.</li>
+                        <li>Authenticating you and preventing unauthorized access.</li>
+                        <li>Tracking your XP, Gold, Level, streaks, KanaBlitz runs, League standings, and leaderboard positions.</li>
+                        <li>Hosting and displaying your uploaded decks and Discover Hub content.</li>
+                        <li>Processing in-platform economy actions such as deck purchases and Gold rewards.</li>
+                        <li>Saving flashcard review history and scheduling future reviews using spaced repetition logic.</li>
+                        <li>Displaying profile information and gameplay statistics to you and, where relevant, to other users.</li>
+                        <li>Maintaining security, detecting bots, preventing cheating, and investigating abuse or suspicious activity.</li>
+                        <li>Improving performance, balancing game systems, debugging bugs, and refining beta features.</li>
+                        <li>Sending service-related communications such as security alerts, account notices, and important beta updates.</li>
+                    </ul>
+                </div>
+
+                <div class="privacy-section">
+                    <h4>6. KanaBlitz Arena Data</h4>
+                    <p>
+                        When you use KanaBlitz, we record gameplay events needed to run the mode fairly and preserve competitive integrity. This may include:
+                    </p>
+                    <ul class="privacy-list">
+                        <li>Selected script and difficulty mode (Easy, Normal, Hard, Insanity).</li>
+                        <li>Correct answers, mistakes, max combo, time remaining, and total points.</li>
+                        <li>Leaderboard-eligible score submissions and personal best indicators.</li>
+                        <li>One-time acknowledgements for rule acceptance, photosensitivity warnings, and Insanity mode entry.</li>
+                        <li>Temporary client-side storage for acknowledgements or UI state using localStorage.</li>
+                    </ul>
+                    <div class="privacy-warning">
+                        <p>
+                            KanaBlitz includes flashing effects, pulsing timers, and audio cues. We may store whether you acknowledged these warnings so that we do not repeatedly interrupt your gameplay experience.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="privacy-section">
+                    <h4>7. Flashcards, Anki Imports & Discover Hub</h4>
+                    <p>
+                        If you import, create, or publish flashcards, we store the data required to make those features work. This may include card text, tags, notes, imported deck structures, and marketplace metadata.
+                    </p>
+                    <ul class="privacy-list">
+                        <li><strong>Anki Imports:</strong> Uploaded .apkg files may be temporarily processed on our servers to extract deck contents. Temporary processing files are deleted once processing is complete or abandoned.</li>
+                        <li><strong>Published Decks:</strong> If you publish a deck, other users may see your GamerTag, deck title, deck description, rating information, and deck pricing.</li>
+                        <li><strong>Marketplace Logs:</strong> Gold transactions involving deck purchases or deck sales are stored to maintain the integrity of the Discover Hub economy.</li>
+                    </ul>
+                </div>
+
+                <div class="privacy-section">
+                    <h4>8. Cookies, Local Storage & PWA Features</h4>
+                    <p>
+                        NipponQuest uses cookies, local storage, and related browser technologies to keep the Platform functional and secure.
+                    </p>
+                    <ul class="privacy-list">
+                        <li><strong>Authentication Cookies:</strong> Used to keep you signed in and maintain secure sessions.</li>
+                        <li><strong>Preference Storage:</strong> Used to remember UI state, acknowledgements, and temporary gameplay preferences.</li>
+                        <li><strong>Service Worker / PWA Data:</strong> If you install NipponQuest as a mobile web app, your device may locally cache files to improve loading speed and offline resilience. This cached data remains on your device until cleared by your browser or updated by the service worker.</li>
+                    </ul>
+                    <p>
+                        You can manage cookies and site storage through your browser settings, although disabling them may break sign-in, gameplay, or flashcard functionality.
+                    </p>
+                </div>
+
+                <div class="privacy-section">
+                    <h4>9. Legal Basis for Processing</h4>
+                    <p>
+                        Depending on your location, we process your data based on one or more of the following legal bases:
+                    </p>
+                    <ul class="privacy-list">
+                        <li><strong>Contractual necessity:</strong> To provide the Platform features you requested.</li>
+                        <li><strong>Legitimate interests:</strong> To secure the Platform, improve gameplay systems, prevent abuse, and maintain fair competition.</li>
+                        <li><strong>Consent:</strong> Where we request your consent for optional features or specific communications.</li>
+                        <li><strong>Legal obligation:</strong> Where we are required to retain or disclose information by law.</li>
+                    </ul>
+                </div>
+
+                <div class="privacy-section">
+                    <h4>10. Data Sharing</h4>
+                    <p>
+                        We do <strong>not</strong> sell your personal data. We may share limited information only in the following circumstances:
+                    </p>
+                    <ul class="privacy-list">
+                        <li><strong>Authentication Providers:</strong> Where needed for Google or similar sign-in flows.</li>
+                        <li><strong>Infrastructure & Hosting Providers:</strong> With vendors that help us host, secure, or operate the Platform.</li>
+                        <li><strong>Legal Requirements:</strong> If required to comply with a lawful request, court order, subpoena, or legal obligation.</li>
+                        <li><strong>Safety & Enforcement:</strong> Where necessary to investigate fraud, abuse, cheating, or threats to users or the Platform.</li>
+                    </ul>
+                    <p>
+                        Some of your profile and gameplay data is visible to other users by design, including your GamerTag, League, leaderboard positions, and any decks you publish publicly.
+                    </p>
+                </div>
+
+                <div class="privacy-section">
+                    <h4>11. Data Retention</h4>
+                    <p>
+                        We retain your data only for as long as reasonably necessary to operate the Platform, meet legal obligations, resolve disputes, or enforce our Terms. Examples include:
+                    </p>
+                    <ul class="privacy-list">
+                        <li><strong>Account Data:</strong> Retained while your account is active.</li>
+                        <li><strong>Gameplay & Economy Logs:</strong> Retained as needed for leaderboard integrity, fraud detection, balancing, and dispute resolution.</li>
+                        <li><strong>Published Decks:</strong> Retained while published or until removed, subject to backup and system retention windows.</li>
+                        <li><strong>Temporary Upload Files:</strong> Deleted after processing where reasonably possible.</li>
+                    </ul>
+                    <div class="privacy-info">
+                        <p>
+                            Because NipponQuest is in beta, some gameplay data, progression data, or economy data may be reset, archived, or removed as part of balancing, maintenance, or migration. This is explained further in our Terms of Service.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="privacy-section">
+                    <h4>12. Security</h4>
+                    <p>
+                        We use reasonable technical and organizational measures to protect your information, including secure authentication practices, restricted access controls, industry-standard password hashing, and basic infrastructure monitoring. However, no system is completely secure, and we cannot guarantee absolute security.
+                    </p>
+                    <p>
+                        If we become aware of a material security incident affecting your personal data, we will take reasonable steps to investigate, contain, and notify affected users where required by law.
+                    </p>
+                </div>
+
+                <div class="privacy-section">
+                    <h4>13. International Transfers</h4>
+                    <p>
+                        Depending on where our infrastructure or service providers are located, your data may be processed outside your country of residence. By using NipponQuest, you understand that your information may be transferred to and processed in jurisdictions that may have different data protection standards than your own.
+                    </p>
+                </div>
+
+                <div class="privacy-section">
+                    <h4>14. Your Rights</h4>
+                    <p>
+                        Depending on your location, you may have the right to:
+                    </p>
+                    <ul class="privacy-list">
+                        <li>Access the personal data we hold about you.</li>
+                        <li>Correct inaccurate or outdated information.</li>
+                        <li>Request deletion of your account and personal data.</li>
+                        <li>Object to or restrict certain processing.</li>
+                        <li>Request a copy of your data in a portable format where applicable.</li>
+                        <li>Withdraw consent where processing is based on consent.</li>
+                    </ul>
+                    <p>
+                        Some rights may be limited where we must retain data for security, fraud prevention, legal compliance, or platform integrity reasons.
+                    </p>
+                </div>
+
+                <div class="privacy-section">
+                    <h4>15. Children’s Privacy</h4>
+                    <p>
+                        NipponQuest is not intended for children under 13. We do not knowingly collect personal data from children under 13 without appropriate consent. If you believe a child under 13 has provided us with personal data without authorization, contact us and we will investigate.
+                    </p>
+                </div>
+
+                <div class="privacy-section">
+                    <h4>16. Policy Updates</h4>
+                    <p>
+                        We may update this Privacy Policy from time to time to reflect legal changes, platform changes, new game modes, beta updates, or operational improvements. The date at the top of this page indicates the latest revision. Continued use of the Platform after changes become effective constitutes acceptance of the updated Policy.
+                    </p>
+                </div>
+
+                <div class="privacy-section">
+                    <h4>17. Contact & Data Requests</h4>
+                    <p>
+                        For privacy questions, account deletion requests, security concerns, or legal notices, contact:
+                    </p>
+                    <div class="privacy-footer">
+                        <p class="fw-black" style="font-size: 1.1rem; color: #0f172a; margin-bottom: 0.5rem;">YugenLabs</p>
+                        <p class="fw-bold" style="color: #64748b; font-size: 0.85rem; margin-bottom: 0.25rem;">Lead Developer: Joshua Marc Lourens</p>
+                        <p class="fw-bold" style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.5rem;">Westville, KwaZulu-Natal, South Africa</p>
+                        <a href="https://forms.gle/3PhMQDTUEpFpc2hp7" target="_blank" class="btn fw-black px-4 py-2" style="font-size: 0.7rem; letter-spacing: 1px; border-radius: 12px; background: linear-gradient(135deg, #0ea5e9, #2563eb); color: #fff; border: none; box-shadow: 0 4px 16px rgba(14, 165, 233, 0.25); text-decoration: none;">
+                            SUBMIT PRIVACY REQUEST
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>

@@ -1,59 +1,321 @@
 ﻿@page
 @model ExternalLoginModel
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Finalize Registration";
 }
 
-<div class="container py-5 mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6 col-xl-5">
-            <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden p-4 p-md-5">
-                
-                <div class="text-center mb-5">
-                    <div class="bg-primary-blue bg-opacity-10 text-primary-blue rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
-                        <i class="bi bi-person-check-fill fs-2"></i>
-                    </div>
-                    <h2 class="fw-black text-dark m-0 text-uppercase tracking-tight" style="font-size: 2.2rem; letter-spacing: -1px;">ALMOST THERE!</h2>
-                    <p class="text-muted fw-bold mt-2 mb-1">Successfully linked with <strong class="text-primary-blue">@Model.ProviderDisplayName</strong>.</p>
-                    <p class="small text-muted fw-bold px-3">To finalize your NipponQuest profile, please choose your unique username below.</p>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+    body { font-family: 'Nunito', sans-serif !important; background: #f8fafc; }
+
+    .auth-wrapper {
+        min-height: calc(100vh - 80px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1rem;
+        background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(14,165,233,0.07) 0%, transparent 70%), #f8fafc;
+    }
+
+    .auth-card {
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 28px;
+        padding: 3rem 3rem;
+        width: 100%;
+        max-width: 540px;
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+    }
+
+    /* Provider banner */
+    .provider-banner {
+        background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+        border: 1px solid #a7f3d0;
+        border-radius: 16px;
+        padding: 0.85rem 1.25rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    .provider-banner-text {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        color: #065f46;
+        margin: 0;
+    }
+    .provider-banner-text strong {
+        color: #047857;
+        font-weight: 900;
+    }
+
+    /* Inputs */
+    .auth-input {
+        font-family: 'Nunito', sans-serif !important;
+        font-weight: 700;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 14px !important;
+        padding: 0.85rem 1rem;
+        transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+        color: #0f172a;
+    }
+    .auth-input::placeholder { color: #94a3b8; font-weight: 600; }
+    .auth-input:focus {
+        background: #ffffff;
+        border-color: #0ea5e9;
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+        outline: none;
+        color: #0f172a;
+    }
+    .auth-input:read-only,
+    .auth-input[readonly] {
+        background: #f1f5f9;
+        cursor: not-allowed;
+        color: #475569;
+    }
+    .auth-input.is-invalid { border-color: #ef4444 !important; }
+    .icon-pad-left  { padding-left: 2.8rem !important; }
+    .icon-pad-right { padding-right: 2.8rem !important; }
+    .auth-input-wrapper .bi { z-index: 4; font-size: 1.1rem; }
+
+    /* Labels */
+    .auth-label {
+        font-family: 'Nunito', sans-serif !important;
+        font-size: 0.65rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-bottom: 0.4rem;
+        display: block;
+    }
+
+    /* Submit button */
+    .btn-finalize {
+        font-family: 'Nunito', sans-serif !important;
+        font-weight: 900;
+        font-size: 0.85rem;
+        letter-spacing: 1.5px;
+        border-radius: 14px !important;
+        border: none !important;
+        padding: 0.95rem 1.5rem;
+        background: linear-gradient(135deg, #0ea5e9, #2563eb);
+        color: #ffffff;
+        box-shadow: 0 4px 20px rgba(14, 165, 233, 0.3);
+        transition: all 0.25s ease;
+    }
+    .btn-finalize:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(14, 165, 233, 0.4);
+        color: #ffffff;
+    }
+
+    /* T&Cs checkbox */
+    .terms-check-box {
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1rem 1.25rem;
+        transition: border-color 0.2s, background 0.2s;
+    }
+    .terms-check-box.accepted {
+        border-color: #10b981;
+        background: #f0fdf4;
+    }
+    .terms-check-box .form-check-input {
+        width: 18px;
+        height: 18px;
+        border: 2px solid #cbd5e1;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 2px;
+        flex-shrink: 0;
+        transition: all 0.2s;
+    }
+    .terms-check-box .form-check-input:checked {
+        background-color: #10b981;
+        border-color: #10b981;
+    }
+    .terms-check-box .form-check-input:focus {
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    }
+    .terms-check-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #475569;
+        line-height: 1.5;
+    }
+    .terms-check-label a {
+        color: #0ea5e9;
+        font-weight: 900;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(14, 165, 233, 0.3);
+        transition: border-color 0.2s;
+    }
+    .terms-check-label a:hover { border-color: #0ea5e9; }
+
+    .terms-error {
+        font-size: 0.72rem;
+        color: #ef4444;
+        font-weight: 700;
+        display: none;
+        margin-top: 0.4rem;
+    }
+    .terms-error.show { display: block; }
+
+    /* Validation */
+    .text-danger { font-size: 0.72rem; font-weight: 700; }
+
+    /* Secure footer */
+    .secure-footer {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 0.85rem 1.25rem;
+        text-align: center;
+        margin-top: 1.5rem;
+    }
+    .secure-footer p {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #64748b;
+        margin: 0;
+    }
+    .secure-footer strong { color: #0f172a; font-weight: 900; }
+
+    @@media (max-width: 576px) {
+        .auth-card { padding: 2rem 1.5rem; border-radius: 20px; }
+    }
+</style>
+
+<div class="auth-wrapper">
+    <div class="auth-card">
+
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <div class="mb-3 d-inline-flex align-items-center justify-content-center rounded-circle"
+                 style="width: 68px; height: 68px; background: #e0f2fe;">
+                <i class="bi bi-person-check-fill" style="font-size: 2rem; color: #0ea5e9;"></i>
+            </div>
+            <h1 class="fw-black mb-1" style="letter-spacing: -1.5px; font-size: 2.25rem; color: #0f172a;">Almost There!</h1>
+            <p class="fw-bold mb-0" style="color: #94a3b8; font-size: 0.85rem;">Choose your username to complete your profile.</p>
+        </div>
+
+        <!-- Provider Banner -->
+        <div class="provider-banner">
+            <p class="provider-banner-text">
+                <i class="bi bi-shield-check me-1"></i>
+                Successfully linked with <strong>@Model.ProviderDisplayName</strong>
+            </p>
+        </div>
+
+        <!-- Confirmation Form -->
+        <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3" role="alert"></div>
+
+            <!-- GamerTag -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label asp-for="Input.GamerTag" class="auth-label mb-0">Username</label>
+                    <span class="badge fw-black"
+                          style="background:#e0f2fe;color:#0369a1;font-size:0.55rem;letter-spacing:1px;border-radius:8px;padding:3px 8px;">
+                        MAX 12 CHARS
+                    </span>
                 </div>
+                <div class="position-relative auth-input-wrapper">
+                    <i class="bi bi-controller position-absolute top-50 start-0 translate-middle-y ms-3 text-muted opacity-50"></i>
+                    <input asp-for="Input.GamerTag"
+                           class="form-control auth-input icon-pad-left"
+                           placeholder="e.g. ShadowQuest"
+                           aria-required="true"
+                           maxlength="12" />
+                </div>
+                <span asp-validation-for="Input.GamerTag" class="text-danger mt-1 d-block"></span>
+            </div>
 
-                <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger small fw-bold mb-3" role="alert"></div>
+            <!-- Confirmed Email (readonly) -->
+            <div class="mb-4">
+                <label asp-for="Input.Email" class="auth-label">Confirmed Email</label>
+                <div class="position-relative auth-input-wrapper">
+                    <i class="bi bi-envelope-fill position-absolute top-50 start-0 translate-middle-y ms-3 text-muted opacity-50"></i>
+                    <input asp-for="Input.Email"
+                           class="form-control auth-input icon-pad-left icon-pad-right"
+                           readonly />
+                    <i class="bi bi-lock-fill position-absolute end-0 top-50 translate-middle-y me-3 text-muted opacity-75"></i>
+                </div>
+                <span asp-validation-for="Input.Email" class="text-danger mt-1 d-block"></span>
+            </div>
 
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2 ms-1">
-                            <label asp-for="Input.GamerTag" class="fw-black small text-muted text-uppercase mb-0 tracking-wider">USERNAME</label>
-                            <span class="badge bg-primary-blue bg-opacity-10 text-primary-blue border border-primary-subtle fw-bold rounded-pill" style="font-size: 0.65rem;">MAX 12 CHARS</span>
-                        </div>
-                        <input asp-for="Input.GamerTag" class="form-control form-control-lg fw-black rounded-4 bg-light border-light-subtle shadow-sm custom-input" placeholder="e.g. ShadowQuest" aria-required="true" maxlength="12" />
-                        <span asp-validation-for="Input.GamerTag" class="text-danger small fw-bold mt-2 d-block"></span>
-                    </div>
-
-                    <div class="mb-5">
-                        <label asp-for="Input.Email" class="fw-black small text-muted text-uppercase mb-2 ms-1 tracking-wider">CONFIRMED EMAIL</label>
-                        <div class="position-relative">
-                            <input asp-for="Input.Email" class="form-control form-control-lg fw-black rounded-4 bg-light border-light-subtle shadow-sm custom-input pe-5" readonly style="opacity: 0.7; cursor: not-allowed;" />
-                            <i class="bi bi-lock-fill position-absolute end-0 top-50 translate-middle-y me-4 text-muted opacity-75"></i>
-                        </div>
-                        <span asp-validation-for="Input.Email" class="text-danger small fw-bold mt-2 d-block"></span>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary-blue rounded-pill fw-black w-100 py-3 shadow-sm text-uppercase tracking-wider hover-lift">
-                        FINALIZE QUEST REGISTRATION
-                    </button>
-                </form>
-
-                <div class="text-center mt-4 pt-4 border-top border-light-subtle">
-                    <p class="small text-muted fw-bold mb-0">
-                        <i class="bi bi-shield-check text-success me-1"></i> Registering securely as <span class="text-dark">@Model.Input.Email</span>
-                    </p>
+            <!-- Terms & Privacy Acceptance -->
+            <div class="mb-4">
+                <div class="terms-check-box d-flex align-items-start gap-3" id="termsBox">
+                    <input class="form-check-input mt-0 flex-shrink-0"
+                           type="checkbox"
+                           id="termsAccepted"
+                           name="TermsAccepted"
+                           onchange="handleTermsChange(this)" />
+                    <label class="terms-check-label" for="termsAccepted">
+                        I have read and agree to the
+                        <a href="/Home/Terms" target="_blank">Terms of Service</a>
+                        and
+                        <a href="/Home/Privacy" target="_blank">Privacy Policy</a>.
+                        I understand that NipponQuest is in beta and certain features, including XP, Gold, and leaderboard data, may be subject to reset.
+                    </label>
+                </div>
+                <div class="terms-error" id="termsError">
+                    <i class="bi bi-exclamation-circle me-1"></i>
+                    You must accept the Terms of Service and Privacy Policy to continue.
                 </div>
             </div>
+
+            <!-- Submit -->
+            <button type="submit"
+                    class="btn btn-finalize w-100 d-flex justify-content-center align-items-center gap-2"
+                    onclick="return validateTerms()">
+                <i class="bi bi-stars" style="color: #fbbf24;"></i>
+                <span>FINALIZE QUEST REGISTRATION</span>
+            </button>
+        </form>
+
+        <!-- Secure Footer -->
+        <div class="secure-footer">
+            <p>
+                <i class="bi bi-shield-check me-1" style="color: #10b981;"></i>
+                Registering securely as <strong>@Model.Input.Email</strong>
+            </p>
         </div>
+
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        // ── Terms checkbox ──
+        function handleTermsChange(checkbox) {
+            const box   = document.getElementById('termsBox');
+            const error = document.getElementById('termsError');
+            if (checkbox.checked) {
+                box.classList.add('accepted');
+                error.classList.remove('show');
+            } else {
+                box.classList.remove('accepted');
+            }
+        }
+
+        // ── Validate terms before submit ──
+        function validateTerms() {
+            const checkbox = document.getElementById('termsAccepted');
+            const error    = document.getElementById('termsError');
+            if (!checkbox.checked) {
+                error.classList.add('show');
+                document.getElementById('termsBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+            return true;
+        }
+    </script>
 }

@@ -22,10 +22,26 @@ namespace NipponQuest.Controllers
 
         public static readonly List<string> PremiumColors = new List<string>
         {
-            "#f87171", "#fb923c", "#fbbf24", "#a3e635",
-            "#4ade80", "#34d399", "#2dd4bf", "#22d3ee", "#38bdf8",
-            "#60a5fa", "#818cf8", "#a78bfa", "#c084fc", "#e879f9",
-            "#f472b6", "#fb7185", "#94a3b8", "#a8a29e", "#eab308"
+            // All colours are light pastels so dark text stays legible on deck cards
+            "#fecaca", // rose-200
+            "#fed7aa", // orange-200
+            "#fef08a", // yellow-200
+            "#d9f99d", // lime-200
+            "#bbf7d0", // green-200
+            "#a7f3d0", // emerald-200
+            "#99f6e4", // teal-200
+            "#a5f3fc", // cyan-200
+            "#bae6fd", // sky-200
+            "#bfdbfe", // blue-200
+            "#c7d2fe", // indigo-200
+            "#ddd6fe", // violet-200
+            "#e9d5ff", // purple-200
+            "#f5d0fe", // fuchsia-200
+            "#fbcfe8", // pink-200
+            "#fecdd3", // rose-100 warm
+            "#e2e8f0", // slate-200
+            "#e7e5e4", // stone-200
+            "#fef9c3", // yellow-100 cream
         };
 
         public FlashcardsController(ApplicationDbContext context, IWebHostEnvironment environment)
@@ -61,7 +77,8 @@ namespace NipponQuest.Controllers
                     IsPublic = d.IsPublic,
                     Price = d.Price,
                     IsCommunityClone = d.IsCommunityClone,
-                    ThemeColor = d.ThemeColor
+                    ThemeColor = d.ThemeColor,
+                    AuthorName = d.AuthorName
                 });
 
             if (!string.IsNullOrEmpty(searchString))
@@ -72,7 +89,27 @@ namespace NipponQuest.Controllers
 
         // --- DECK MANAGEMENT (CRUD) ---
         [HttpGet]
-        public IActionResult Create() => View();
+        public async Task<IActionResult> Create()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Challenge();
+
+            var user = await _context.Users.OfType<ApplicationUser>().FirstOrDefaultAsync(u => u.Id == userId);
+            ViewBag.UserLevel = user?.Level ?? 1;
+            ViewBag.UserGold = user?.Gold ?? 0;
+
+            // Fetch colors the user already owns so the Create view is aware of them
+            var purchasedColors = await _context.UserColorPurchases
+                .Where(c => c.ApplicationUserId == userId)
+                .Select(c => c.ColorHex)
+                .ToListAsync();
+
+            ViewBag.FreeColors = FreeColors;
+            ViewBag.PremiumColors = PremiumColors;
+            ViewBag.PurchasedColors = purchasedColors;
+
+            return View(new Deck { ThemeColor = "#ffffff" });
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -102,7 +139,7 @@ namespace NipponQuest.Controllers
 
             if (deck == null) return NotFound();
 
-            if (deck.IsCommunityClone || deck.Description.StartsWith("(Community Deck)"))
+            if (deck.IsCommunityClone || (deck.Description ?? string.Empty).StartsWith("(Community Deck)"))
             {
                 TempData["Message"] = "Community decks are read-only and cannot be edited.";
                 return RedirectToAction(nameof(Index));
@@ -136,7 +173,7 @@ namespace NipponQuest.Controllers
             var dbDeck = await _context.Decks.FindAsync(id);
             if (dbDeck == null) return NotFound();
 
-            if (dbDeck.IsCommunityClone || dbDeck.Description.StartsWith("(Community Deck)"))
+            if (dbDeck.IsCommunityClone || (dbDeck.Description ?? string.Empty).StartsWith("(Community Deck)"))
             {
                 return BadRequest("Action not allowed on Community Decks.");
             }
@@ -149,7 +186,6 @@ namespace NipponQuest.Controllers
             }
 
             dbDeck.AuthorName = User.Identity?.Name ?? "Anonymous Questor";
-
             dbDeck.Title = inputDeck.Title;
             dbDeck.Description = inputDeck.Description;
             dbDeck.IsPublic = inputDeck.IsPublic;
@@ -201,6 +237,7 @@ namespace NipponQuest.Controllers
                 TempData["Error"] = "Not enough Gold to purchase this color.";
             }
 
+            if (deckId == 0) return RedirectToAction(nameof(Create));
             return RedirectToAction(nameof(Edit), new { id = deckId });
         }
 
@@ -244,6 +281,7 @@ namespace NipponQuest.Controllers
                 TempData["Error"] = "Not enough Gold to purchase the bundle.";
             }
 
+            if (deckId == 0) return RedirectToAction(nameof(Create));
             return RedirectToAction(nameof(Edit), new { id = deckId });
         }
 
@@ -263,13 +301,86 @@ namespace NipponQuest.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var deck = await _context.Decks.FindAsync(id);
+            if (string.IsNullOrEmpty(userId)) return Challenge();
 
-            if (deck != null && deck.ApplicationUserId == userId)
+            var deck = await _context.Decks
+                .Include(d => d.Flashcards)
+                .FirstOrDefaultAsync(d => d.Id == id && d.ApplicationUserId == userId);
+
+            if (deck == null)
             {
+                TempData["Error"] = "Deck not found or you do not have permission to delete it.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                // Detach community clones / child decks so parent deletion won't fail.
+                var childDecks = await _context.Decks
+                    .Where(d => d.ParentDeckId == deck.Id)
+                    .ToListAsync();
+
+                foreach (var child in childDecks)
+                {
+                    child.ParentDeckId = null;
+                }
+
+                // Remove related votes and purchases for this deck.
+                var votes = await _context.DeckVotes
+                    .Where(v => v.DeckId == deck.Id)
+                    .ToListAsync();
+                if (votes.Any()) _context.DeckVotes.RemoveRange(votes);
+
+                var purchases = await _context.DeckPurchases
+                    .Where(p => p.DeckId == deck.Id)
+                    .ToListAsync();
+                if (purchases.Any()) _context.DeckPurchases.RemoveRange(purchases);
+
+                // Delete media files that are only used by this deck's cards.
+                var mediaDir = Path.Combine(_environment.WebRootPath, "uploads", "media");
+                if (deck.Flashcards != null && deck.Flashcards.Any())
+                {
+                    foreach (var card in deck.Flashcards)
+                    {
+                        if (!string.IsNullOrWhiteSpace(card.ImageFilePath))
+                        {
+                            var imageStillUsed = await _context.Flashcards
+                                .AnyAsync(f => f.Id != card.Id && f.ImageFilePath == card.ImageFilePath);
+
+                            if (!imageStillUsed)
+                            {
+                                var imagePath = Path.Combine(mediaDir, card.ImageFilePath);
+                                if (System.IO.File.Exists(imagePath)) System.IO.File.Delete(imagePath);
+                            }
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(card.AudioFilePath))
+                        {
+                            var audioStillUsed = await _context.Flashcards
+                                .AnyAsync(f => f.Id != card.Id && f.AudioFilePath == card.AudioFilePath);
+
+                            if (!audioStillUsed)
+                            {
+                                var audioPath = Path.Combine(mediaDir, card.AudioFilePath);
+                                if (System.IO.File.Exists(audioPath)) System.IO.File.Delete(audioPath);
+                            }
+                        }
+                    }
+
+                    // Remove flashcards before removing the deck to avoid FK issues.
+                    _context.Flashcards.RemoveRange(deck.Flashcards);
+                }
+
                 _context.Decks.Remove(deck);
                 await _context.SaveChangesAsync();
+
+                TempData["Message"] = "Deck deleted successfully.";
             }
+            catch
+            {
+                TempData["Error"] = "The deck could not be deleted. Please try again or contact support if the problem persists.";
+            }
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -285,7 +396,7 @@ namespace NipponQuest.Controllers
         public async Task<IActionResult> AddCard(Flashcard card, IFormFile imageFile, IFormFile audioFile)
         {
             var deck = await _context.Decks.FindAsync(card.DeckId);
-            if (deck != null && (deck.IsCommunityClone || deck.Description.StartsWith("(Community Deck)")))
+            if (deck != null && (deck.IsCommunityClone || (deck.Description ?? string.Empty).StartsWith("(Community Deck)")))
                 return BadRequest("Cannot add cards to a Community Deck.");
 
             card.NextReview = DateTime.UtcNow;
@@ -328,7 +439,7 @@ namespace NipponQuest.Controllers
             var existingCard = await _context.Flashcards.Include(f => f.Deck).FirstOrDefaultAsync(f => f.Id == card.Id);
             if (existingCard == null) return NotFound();
 
-            if (existingCard.Deck != null && (existingCard.Deck.IsCommunityClone || existingCard.Deck.Description.StartsWith("(Community Deck)")))
+            if (existingCard.Deck != null && (existingCard.Deck.IsCommunityClone || (existingCard.Deck.Description ?? string.Empty).StartsWith("(Community Deck)")))
                 return BadRequest("Cannot edit cards in a Community Deck.");
 
             existingCard.FrontText = card.FrontText;
@@ -368,7 +479,7 @@ namespace NipponQuest.Controllers
             var card = await _context.Flashcards.Include(f => f.Deck).FirstOrDefaultAsync(f => f.Id == cardId);
             if (card != null)
             {
-                if (card.Deck != null && (card.Deck.IsCommunityClone || card.Deck.Description.StartsWith("(Community Deck)")))
+                if (card.Deck != null && (card.Deck.IsCommunityClone || (card.Deck.Description ?? string.Empty).StartsWith("(Community Deck)")))
                     return BadRequest("Cannot delete cards from a Community Deck.");
 
                 _context.Flashcards.Remove(card);
@@ -811,7 +922,7 @@ namespace NipponQuest.Controllers
 
             if (deck != null)
             {
-                if (deck.IsCommunityClone || deck.Description.StartsWith("(Community Deck)"))
+                if (deck.IsCommunityClone || (deck.Description ?? string.Empty).StartsWith("(Community Deck)"))
                     return BadRequest("Community decks cannot be published.");
 
                 deck.IsPublic = !deck.IsPublic;

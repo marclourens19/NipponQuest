@@ -9,23 +9,30 @@
     int demoteLimit = totalRivals - (int)System.Math.Floor(totalRivals * 0.2);
 }
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
 <style>
     /* ──────────────────────────────────────────────────────
-       LEAGUES PAGE — Polished Premium Layout
+       LEAGUES PAGE — Nunito · Site CSS Aligned
        ────────────────────────────────────────────────────── */
+
+    body { font-family: 'Nunito', sans-serif !important; background: #ffffff; }
 
     .lg-reveal { opacity: 0; transform: translateY(24px); transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
     .lg-reveal.active { opacity: 1; transform: translateY(0); }
 
-    /* HERO */
+    /* ── HERO ── */
     .lg-hero {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #0ea5e9 160%);
-        border-radius: 32px;
+        border-radius: 28px;
         color: #ffffff;
         padding: 2.5rem;
         position: relative;
         overflow: hidden;
         box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.4);
+        font-family: 'Nunito', sans-serif;
     }
     .lg-hero::before {
         content: "";
@@ -45,9 +52,10 @@
         line-height: 1;
         letter-spacing: -8px;
         pointer-events: none;
+        font-family: 'Nunito', sans-serif;
     }
     .lg-hero-meta {
-        font-size: 0.7rem; font-weight: 900;
+        font-size: 0.65rem; font-weight: 900;
         letter-spacing: 2px;
         color: rgba(255,255,255,0.6);
         text-transform: uppercase;
@@ -56,6 +64,7 @@
         font-size: clamp(2.4rem, 5vw, 3.8rem);
         font-weight: 900; letter-spacing: -2px; line-height: 1;
         margin: 6px 0 2px;
+        font-family: 'Nunito', sans-serif;
     }
     .lg-current-rank {
         font-size: clamp(1.6rem, 3.5vw, 2.4rem);
@@ -64,65 +73,74 @@
     }
     .lg-hero-stat { display: flex; flex-direction: column; gap: 4px; }
     .lg-hero-stat .v { font-size: 1.6rem; font-weight: 900; line-height: 1; letter-spacing: -0.5px; }
-    .lg-hero-stat .l { font-size: 0.6rem; font-weight: 900; letter-spacing: 2px; color: rgba(255,255,255,0.55); text-transform: uppercase; }
+    .lg-hero-stat .l { font-size: 0.55rem; font-weight: 900; letter-spacing: 2px; color: rgba(255,255,255,0.55); text-transform: uppercase; }
 
     .lg-info-btn {
-        width: 44px; height: 44px; border-radius: 50%;
+        width: 40px; height: 40px; border-radius: 50%;
         background: rgba(255,255,255,0.12);
         border: 2px solid rgba(255,255,255,0.25);
         color: #ffffff;
         display: inline-flex; align-items: center; justify-content: center;
         transition: all 200ms ease;
+        cursor: pointer;
     }
-    .lg-info-btn:hover { background: rgba(251, 191, 36, 0.95); color: #422006; border-color: #fbbf24; transform: translateY(-2px); }
+    .lg-info-btn:hover {
+        background: #fbbf24;
+        color: #422006;
+        border-color: #fbbf24;
+        transform: translateY(-2px);
+    }
 
     .lg-countdown-pill {
         display: inline-flex; align-items: center; gap: 8px;
-        background: rgba(251, 191, 36, 0.95);
+        background: #fbbf24;
         color: #422006;
-        font-weight: 900; font-size: 0.75rem;
+        font-weight: 900; font-size: 0.7rem;
         letter-spacing: 1.2px; text-transform: uppercase;
-        padding: 10px 18px; border-radius: 50px;
-        box-shadow: 0 8px 20px -6px rgba(251, 191, 36, 0.5);
+        padding: 10px 18px; border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(251, 191, 36, 0.35);
+        font-family: 'Nunito', sans-serif;
     }
 
-    /* PANELS */
+    /* ── PANELS ── */
     .lg-panel {
         background: #ffffff;
-        border: 1px solid #e2e8f0;
+        border: 2px solid #e2e8f0;
         border-radius: 24px;
         padding: 1.75rem;
-        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
         transition: all 250ms ease;
+        font-family: 'Nunito', sans-serif;
     }
-    .lg-panel:hover { box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08); }
+    .lg-panel:hover { box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08); }
     .lg-panel-title {
         font-size: 0.7rem; font-weight: 900;
         letter-spacing: 2px; color: #0f172a;
         text-transform: uppercase; margin-bottom: 0.25rem;
     }
-    .lg-panel-sub { font-size: 0.75rem; color: #64748b; font-weight: 700; }
+    .lg-panel-sub { font-size: 0.7rem; color: #94a3b8; font-weight: 700; }
 
-    /* PANEL HEADER ICONS */
+    /* ── PANEL HEADER ICONS ── */
     .lg-head-icon-xp {
-        width: 38px; height: 38px; border-radius: 10px;
-        background: #38bdf8; color: #ffffff;
-        font-weight: 900; font-size: 0.78rem;
+        width: 36px; height: 36px; border-radius: 10px;
+        background: #0ea5e9; color: #ffffff;
+        font-weight: 900; font-size: 0.72rem;
         display: inline-flex; align-items: center; justify-content: center;
         box-shadow: 0 3px 0 #0284c7;
         flex-shrink: 0;
+        font-family: 'Nunito', sans-serif;
     }
     .lg-head-icon-gold-wrap {
-        width: 38px; height: 38px;
+        width: 36px; height: 36px;
         display: inline-flex; align-items: center; justify-content: center;
         flex-shrink: 0;
     }
     .lg-head-icon-gold-wrap .gold-coin {
         width: 32px; height: 32px;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
     }
 
-    /* TIER LADDER */
+    /* ── TIER LADDER ── */
     .lg-tier-ladder { display: flex; flex-direction: column; gap: 10px; }
     .lg-tier-row {
         display: grid;
@@ -131,7 +149,7 @@
         gap: 14px;
         padding: 14px 18px;
         background: #f8fafc;
-        border: 1px solid #e2e8f0;
+        border: 2px solid #e2e8f0;
         border-radius: 16px;
         transition: all 200ms ease;
     }
@@ -152,14 +170,15 @@
         padding: 4px 9px; border-radius: 50px;
         white-space: nowrap;
         line-height: 1;
+        font-family: 'Nunito', sans-serif;
     }
     .lg-tier-info { min-width: 0; }
     .lg-tier-info .jp-name {
-        font-size: 0.75rem; font-weight: 800; color: #475569;
+        font-size: 0.72rem; font-weight: 800; color: #475569;
         line-height: 1.2; margin-top: 6px;
     }
     .lg-tier-info .romaji {
-        font-size: 0.55rem; font-weight: 900; color: #94a3b8;
+        font-size: 0.5rem; font-weight: 900; color: #94a3b8;
         text-transform: uppercase; letter-spacing: 1.5px; margin-top: 2px;
     }
     .lg-tier-reward {
@@ -168,10 +187,10 @@
     }
     .lg-tier-reward .amt {
         display: flex; align-items: center; gap: 8px;
-        font-weight: 900; color: #0f172a; font-size: 1.05rem;
+        font-weight: 900; color: #0f172a; font-size: 1rem;
     }
     .lg-tier-reward .lbl {
-        font-size: 0.55rem; font-weight: 900; color: #94a3b8;
+        font-size: 0.5rem; font-weight: 900; color: #94a3b8;
         text-transform: uppercase; letter-spacing: 1.5px;
     }
 
@@ -179,36 +198,37 @@
     .modal-body .lg-tier-ladder { gap: 8px; }
     .modal-body .lg-tier-row { padding: 12px 14px; border-radius: 14px; }
     .modal-body .lg-tier-row:hover { transform: none; }
-    .modal-body .lg-tier-info .jp-name { font-size: 0.72rem; margin-top: 4px; }
-    .modal-body .lg-tier-info .romaji { font-size: 0.52rem; }
-    .modal-body .lg-tier-reward .amt { font-size: 0.95rem; }
+    .modal-body .lg-tier-info .jp-name { font-size: 0.7rem; margin-top: 4px; }
+    .modal-body .lg-tier-info .romaji { font-size: 0.5rem; }
+    .modal-body .lg-tier-reward .amt { font-size: 0.9rem; }
 
-    /* ARENA CARD */
+    /* ── ARENA CARD ── */
     .lg-arena-card { position: relative; overflow: hidden; }
     .lg-arena-rank-display {
         text-align: center;
         padding: 1.5rem 1rem 1.25rem;
         background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
         border-radius: 20px;
-        border: 1px solid #e2e8f0;
+        border: 2px solid #e2e8f0;
         margin-bottom: 1.25rem;
     }
     .lg-arena-rank-display .lbl {
-        font-size: 0.6rem; font-weight: 900;
+        font-size: 0.55rem; font-weight: 900;
         letter-spacing: 2.5px; color: #94a3b8; text-transform: uppercase;
     }
     .lg-arena-rank-display .num {
         font-size: clamp(3.6rem, 8vw, 5.2rem);
         font-weight: 900; line-height: 0.9; letter-spacing: -5px;
         color: #0f172a; margin: 0.4rem 0;
+        font-family: 'Nunito', sans-serif;
     }
     .lg-arena-movement {
         display: inline-flex; align-items: center; gap: 6px;
-        font-size: 0.7rem; font-weight: 900;
+        font-size: 0.65rem; font-weight: 900;
         letter-spacing: 1.2px; text-transform: uppercase;
         padding: 6px 14px; border-radius: 50px;
     }
-    .lg-arena-movement.up { background: #dcfce7; color: #15803d; }
+    .lg-arena-movement.up { background: #d1fae5; color: #065f46; }
     .lg-arena-movement.down { background: #fee2e2; color: #b91c1c; }
     .lg-arena-movement.flat { background: #f1f5f9; color: #64748b; }
 
@@ -218,10 +238,10 @@
     }
     .lg-zone-key .zk {
         text-align: center; padding: 8px 6px; border-radius: 10px;
-        font-size: 0.55rem; font-weight: 900;
+        font-size: 0.5rem; font-weight: 900;
         letter-spacing: 1px; text-transform: uppercase;
     }
-    .lg-zone-key .zk.promo { background: #dcfce7; color: #15803d; }
+    .lg-zone-key .zk.promo { background: #d1fae5; color: #065f46; }
     .lg-zone-key .zk.safe  { background: #f1f5f9; color: #64748b; }
     .lg-zone-key .zk.demo  { background: #fee2e2; color: #b91c1c; }
 
@@ -238,47 +258,47 @@
         display: flex; align-items: center; gap: 12px;
         padding: 12px 14px;
         background: #f8fafc;
-        border: 1px solid transparent;
+        border: 2px solid transparent;
         border-radius: 14px;
         transition: all 200ms ease;
     }
     .lg-rival:hover { transform: translateX(4px); }
-    .lg-rival.zone-promote { background: linear-gradient(90deg, #f0fdf4, #ffffff); border-left: 3px solid #22c55e; }
-    .lg-rival.zone-demote  { background: linear-gradient(90deg, #fef2f2, #ffffff); border-left: 3px solid #ef4444; }
+    .lg-rival.zone-promote { background: linear-gradient(90deg, #f0fdf4, #ffffff); border-left-color: #22c55e; border-left-width: 3px; }
+    .lg-rival.zone-demote  { background: linear-gradient(90deg, #fef2f2, #ffffff); border-left-color: #ef4444; border-left-width: 3px; }
     .lg-rival.is-self {
         background: linear-gradient(90deg, #eff6ff, #ffffff);
-        border: 1px solid #3b82f6;
-        box-shadow: 0 8px 20px -8px rgba(59, 130, 246, 0.4);
+        border: 2px solid #0ea5e9;
+        box-shadow: 0 8px 20px -8px rgba(14, 165, 233, 0.3);
     }
     .lg-rival .rk {
         display: inline-flex; align-items: center; justify-content: center;
-        min-width: 38px; height: 38px;
+        min-width: 36px; height: 36px;
         border-radius: 10px;
         background: #ffffff;
-        border: 1px solid #e2e8f0;
-        font-weight: 900; color: #475569; font-size: 0.85rem;
+        border: 2px solid #e2e8f0;
+        font-weight: 900; color: #475569; font-size: 0.8rem;
     }
-    .lg-rival.is-self .rk { background: #3b82f6; color: #ffffff; border-color: #3b82f6; }
-    .lg-rival .nm { font-weight: 900; color: #0f172a; font-size: 0.9rem; }
+    .lg-rival.is-self .rk { background: #0ea5e9; color: #ffffff; border-color: #0ea5e9; }
+    .lg-rival .nm { font-weight: 900; color: #0f172a; font-size: 0.85rem; }
     .lg-rival .you-tag {
-        background: #3b82f6; color: #ffffff;
-        font-size: 0.55rem; font-weight: 900; letter-spacing: 1px;
+        background: #0ea5e9; color: #ffffff;
+        font-size: 0.5rem; font-weight: 900; letter-spacing: 1px;
         padding: 2px 8px; border-radius: 50px; margin-left: 6px;
     }
-    .lg-rival .xp { margin-left: auto; font-weight: 900; color: #0f172a; font-size: 0.95rem; }
+    .lg-rival .xp { margin-left: auto; font-weight: 900; color: #0f172a; font-size: 0.9rem; }
     .lg-rival .xp small {
-        font-size: 0.6rem; color: #94a3b8;
+        font-size: 0.55rem; color: #94a3b8;
         font-weight: 800; letter-spacing: 1px; margin-left: 4px;
     }
     .lg-rival .zone-tag {
-        font-size: 0.5rem; font-weight: 900;
+        font-size: 0.45rem; font-weight: 900;
         letter-spacing: 1px; text-transform: uppercase;
         padding: 3px 7px; border-radius: 50px;
     }
     .lg-rival .zone-tag.promo { background: #22c55e; color: #ffffff; }
     .lg-rival .zone-tag.demo  { background: #ef4444; color: #ffffff; }
 
-    /* PODIUM (TOP 3) */
+    /* ── PODIUM (TOP 3) ── */
     .lg-podium-list { display: flex; flex-direction: column; gap: 8px; }
     .lg-podium-row {
         display: grid;
@@ -287,139 +307,172 @@
         gap: 12px;
         padding: 14px;
         background: #f8fafc;
-        border: 1px solid #e2e8f0;
+        border: 2px solid #e2e8f0;
         border-radius: 14px;
         transition: all 200ms ease;
         min-width: 0;
     }
     .lg-podium-row:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06); }
-    .lg-podium-row.is-self { background: linear-gradient(90deg, #eff6ff, #ffffff); border-color: #3b82f6; }
+    .lg-podium-row.is-self { background: linear-gradient(90deg, #eff6ff, #ffffff); border-color: #0ea5e9; }
     .lg-podium-row.rank-1 {
         background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
         border-color: #fbbf24;
     }
     .lg-podium-medal {
-        width: 38px; height: 38px;
+        width: 36px; height: 36px;
         border-radius: 50%;
         display: inline-flex; align-items: center; justify-content: center;
-        font-weight: 900; font-size: 1rem; flex-shrink: 0;
+        font-weight: 900; font-size: 0.95rem; flex-shrink: 0;
         border: 2px solid;
+        font-family: 'Nunito', sans-serif;
     }
     .lg-podium-medal.r1 { background: linear-gradient(135deg, #fde68a, #f59e0b); border-color: #b45309; color: #422006; }
     .lg-podium-medal.r2 { background: linear-gradient(135deg, #f1f5f9, #cbd5e1); border-color: #64748b; color: #1e293b; }
     .lg-podium-medal.r3 { background: linear-gradient(135deg, #fed7aa, #c2410c); border-color: #7c2d12; color: #ffffff; }
     .lg-podium-info { min-width: 0; overflow: hidden; }
     .lg-podium-name {
-        font-weight: 900; color: #0f172a; font-size: 0.9rem; line-height: 1.1;
+        font-weight: 900; color: #0f172a; font-size: 0.85rem; line-height: 1.1;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .lg-podium-sub {
-        font-size: 0.6rem; font-weight: 800; color: #94a3b8;
+        font-size: 0.55rem; font-weight: 800; color: #94a3b8;
         letter-spacing: 1px; text-transform: uppercase; margin-top: 2px;
     }
     .lg-podium-value {
         font-weight: 900; color: #0f172a;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         white-space: nowrap;
         flex-shrink: 0;
     }
 
-    /* INFO CARD */
+    /* ── INFO CARD ── */
     .lg-info-card {
-        background: linear-gradient(135deg, #1e3a8a 0%, #0ea5e9 100%);
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0ea5e9 160%);
         color: #ffffff; border-radius: 24px;
         padding: 1.75rem;
         position: relative; overflow: hidden;
         box-shadow: 0 12px 30px -10px rgba(14, 165, 233, 0.4);
+        font-family: 'Nunito', sans-serif;
     }
     .lg-info-card::before {
         content: "";
         position: absolute; inset: -30% -10% auto auto;
         width: 220px; height: 220px;
-        background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(251, 191, 36, 0.15) 0%, transparent 70%);
         pointer-events: none;
     }
     .lg-info-card .info-eyebrow {
-        font-size: 0.6rem; font-weight: 900;
+        font-size: 0.55rem; font-weight: 900;
         letter-spacing: 2px; text-transform: uppercase;
-        color: rgba(255,255,255,0.7);
+        color: #fbbf24;
     }
     .lg-info-card .info-headline {
-        font-size: 1.3rem; font-weight: 900; line-height: 1.15;
+        font-size: 1.25rem; font-weight: 900; line-height: 1.15;
         margin-top: 6px; letter-spacing: -0.5px;
     }
     .lg-info-card .info-body {
-        font-size: 0.85rem; font-weight: 700;
+        font-size: 0.8rem; font-weight: 700;
         opacity: 0.85; line-height: 1.5; margin-top: 8px;
     }
 
-    /* CTA BUTTON */
+    /* ── CTA BUTTON (KanaBlitz Style) ── */
     .lg-cta-btn {
         display: inline-flex; align-items: center; justify-content: center; gap: 10px;
         width: 100%;
-        padding: 16px 22px;
-        border-radius: 50px;
-        background: linear-gradient(135deg, #1e3a8a, #0ea5e9);
+        padding: 14px 22px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #0ea5e9, #2563eb);
         color: #ffffff !important;
         font-weight: 900;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         letter-spacing: 1.5px;
         text-transform: uppercase;
         border: none;
         text-decoration: none;
-        box-shadow: 0 12px 30px -10px rgba(14, 165, 233, 0.5);
+        box-shadow: 0 4px 20px rgba(14, 165, 233, 0.3);
         transition: all 250ms ease;
+        cursor: pointer;
+        font-family: 'Nunito', sans-serif;
     }
     .lg-cta-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 18px 36px -10px rgba(14, 165, 233, 0.6);
-        filter: brightness(1.08);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(14, 165, 233, 0.4);
         color: #ffffff !important;
     }
 
-    /* INFO MODAL PILLARS */
-    .info-pillar { border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; height: 100%; background: #ffffff; transition: all 0.2s; }
-    .info-pillar:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
-    .info-pillar .info-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 10px; }
+    /* ── INFO MODAL PILLARS ── */
+    .info-pillar {
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 16px;
+        height: 100%;
+        background: #ffffff;
+        transition: all 0.2s;
+        font-family: 'Nunito', sans-serif;
+    }
+    .info-pillar:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.05); border-color: #cbd5e1; }
+    .info-pillar .info-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 10px; }
     .info-divider { height: 1px; background: #e2e8f0; margin: 18px 0; }
     .info-row-list { list-style: none; padding-left: 0; margin: 0; }
-    .info-row-list li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; font-size: 0.85rem; color: #475569; font-weight: 600; }
-    .info-row-list li i { color: #f59e0b; font-size: 1rem; flex-shrink: 0; margin-top: 2px; }
+    .info-row-list li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; font-size: 0.82rem; color: #475569; font-weight: 600; }
+    .info-row-list li i { color: #f59e0b; font-size: 0.95rem; flex-shrink: 0; margin-top: 2px; }
 
-    /* EARN-XP MODAL CHOICE TILES */
+    /* ── EARN-XP MODAL CHOICE TILES ── */
     .earn-choice {
         display: flex; align-items: center; gap: 16px;
         padding: 1.25rem 1.5rem;
         background: #ffffff;
         border: 2px solid #e2e8f0;
-        border-radius: 20px;
+        border-radius: 16px;
         text-decoration: none;
         color: inherit;
         transition: all 200ms ease;
         width: 100%;
+        font-family: 'Nunito', sans-serif;
     }
     .earn-choice:hover {
         transform: translateY(-3px);
-        box-shadow: 0 14px 30px rgba(14, 165, 233, 0.18);
+        box-shadow: 0 12px 28px rgba(14, 165, 233, 0.15);
         border-color: #0ea5e9;
         color: inherit;
     }
     .earn-choice .ec-icon {
-        width: 56px; height: 56px; border-radius: 16px;
+        width: 52px; height: 52px; border-radius: 14px;
         display: inline-flex; align-items: center; justify-content: center;
-        font-size: 1.6rem; flex-shrink: 0;
+        font-size: 1.5rem; flex-shrink: 0;
     }
     .earn-choice.blitz .ec-icon { background: #fffbeb; color: #b45309; }
     .earn-choice.cards .ec-icon { background: #eff6ff; color: #1d4ed8; }
-    .earn-choice .ec-title { font-weight: 900; font-size: 1rem; color: #0f172a; letter-spacing: -0.3px; }
-    .earn-choice .ec-sub   { font-size: 0.75rem; font-weight: 700; color: #64748b; margin-top: 2px; }
-    .earn-choice .ec-arrow { margin-left: auto; color: #94a3b8; font-size: 1.2rem; transition: transform 200ms ease; }
+    .earn-choice .ec-title { font-weight: 900; font-size: 0.95rem; color: #0f172a; letter-spacing: -0.3px; }
+    .earn-choice .ec-sub   { font-size: 0.72rem; font-weight: 700; color: #64748b; margin-top: 2px; }
+    .earn-choice .ec-arrow { margin-left: auto; color: #94a3b8; font-size: 1.1rem; transition: transform 200ms ease; }
     .earn-choice:hover .ec-arrow { transform: translateX(6px); color: #0ea5e9; }
 
-    /* ── KANABLITZ LEADERBOARD TAB BUTTONS (mode-based with difficulty accents) ── */
-    .lb-tab-btn { border: 2px solid #e2e8f0 !important; color: #64748b; transition: all 0.2s; }
-    .lb-tab-btn:hover { border-color: #fbbf24 !important; color: #b45309; }
-    .lb-tab-btn.active { background: #0f172a !important; color: #fbbf24 !important; border-color: #0f172a !important; }
+    /* ── KANABLITZ LEADERBOARD TAB BUTTONS ── */
+    .lb-tab-btn {
+        font-family: 'Nunito', sans-serif !important;
+        background: #ffffff !important;
+        border: 2px solid #e2e8f0 !important;
+        color: #64748b !important;
+        font-weight: 900;
+        font-size: 0.7rem;
+        letter-spacing: 1.5px;
+        padding: 10px 18px !important;
+        border-radius: 14px !important;
+        transition: all 0.2s;
+    }
+    .lb-tab-btn:hover {
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+    }
+    .lb-tab-btn.active {
+        background: linear-gradient(135deg, #0f172a, #1e293b) !important;
+        color: #fbbf24 !important;
+        border-color: #0f172a !important;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.2);
+    }
 
     .lb-mode-dot {
         display: inline-block;
@@ -428,12 +481,12 @@
         margin-right: 6px;
         vertical-align: middle;
     }
-    .lb-mode-dot.easy     { background: #22c55e; }
-    .lb-mode-dot.normal   { background: #38bdf8; }
+    .lb-mode-dot.easy     { background: #10b981; }
+    .lb-mode-dot.normal   { background: #0ea5e9; }
     .lb-mode-dot.hard     { background: #f97316; }
     .lb-mode-dot.insanity { background: #ef4444; }
 
-    /* Section divider for the embedded blitz leaderboard */
+    /* ── SECTION DIVIDER ── */
     .lg-section-divider {
         display: flex; align-items: center; gap: 14px;
         margin: 3rem auto 1.75rem auto;
@@ -442,14 +495,57 @@
     }
     .lg-section-divider .line { flex: 1; height: 1px; background: linear-gradient(to right, transparent, #e2e8f0, transparent); }
     .lg-section-divider .label {
-        font-size: 0.65rem; font-weight: 900;
+        font-size: 0.6rem; font-weight: 900;
         letter-spacing: 2px; color: #94a3b8;
         text-transform: uppercase; white-space: nowrap;
+        font-family: 'Nunito', sans-serif;
+    }
+
+    /* ── LEADERBOARD HEADING ── */
+    .lb-heading {
+        font-size: clamp(2rem, 4vw, 2.75rem);
+        font-weight: 900;
+        letter-spacing: -1px;
+        color: #0f172a;
+        font-family: 'Nunito', sans-serif;
+    }
+    .lb-heading-accent { color: #f59e0b; }
+    .lb-eyebrow {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fde68a;
+        padding: 0.4rem 0.85rem;
+        border-radius: 999px;
+        font-size: 0.6rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+    }
+    .lb-sub {
+        font-size: 0.95rem;
+        color: #64748b;
+        font-weight: 700;
+        max-width: 640px;
+        margin: 0 auto;
+    }
+
+    /* ── MODALS ── */
+    .modal-content {
+        font-family: 'Nunito', sans-serif;
+        border-radius: 24px !important;
+        border: none;
+    }
+    .modal-content .bg-warning {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
     }
 
     @@media (max-width: 991.98px) {
         .lg-hero::after { font-size: 6rem; right: 10px; bottom: -18px; }
         .lg-rival-list { max-height: 420px; }
+    }
+    @@media (max-width: 576px) {
+        .lg-hero { padding: 1.75rem; border-radius: 20px; }
+        .lg-panel { padding: 1.25rem; border-radius: 18px; }
     }
 </style>
 
@@ -646,7 +742,7 @@
     </div>
 
     <!-- ─────────────────────────────────────────────
-         EMBEDDED KANABLITZ LEADERBOARD (by difficulty mode, all on Mixed kana)
+         EMBEDDED KANABLITZ LEADERBOARD
          ───────────────────────────────────────────── -->
     <div id="kanablitz-rankings" class="lg-section-divider lg-reveal">
         <span class="line"></span>
@@ -655,22 +751,22 @@
     </div>
 
     <div class="text-center mb-4 lg-reveal">
-        <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning border border-warning-subtle px-3 py-2 fw-black shadow-sm" style="letter-spacing: 1px;">
+        <span class="lb-eyebrow">
             <i class="bi bi-bar-chart-fill me-1"></i> KANABLITZ LEADERBOARD
         </span>
-        <h2 class="display-5 fw-black text-dark mt-3 mb-2" style="letter-spacing: -2px;">
-            Most Kana <span class="text-warning">Correct</span>
+        <h2 class="lb-heading mt-3 mb-2">
+            Most Kana <span class="lb-heading-accent">Correct</span>
         </h2>
-        <p class="lead fw-bold text-muted mx-auto mb-0" style="max-width: 640px;">
+        <p class="lb-sub mb-0">
             Mixed-kana benchmark across every difficulty. Same pool for everyone &mdash; the only thing that moves you up is more correct answers at your chosen tempo.
         </p>
     </div>
 
     <div class="d-flex justify-content-center gap-2 mb-4 flex-wrap lg-reveal">
-        <button class="btn btn-light fw-black rounded-pill px-4 py-2 lb-tab-btn"        data-mode="easy"     onclick="loadBoard('easy', this)"><span class="lb-mode-dot easy"></span>EASY</button>
-        <button class="btn btn-light fw-black rounded-pill px-4 py-2 lb-tab-btn active" data-mode="normal"   onclick="loadBoard('normal', this)"><span class="lb-mode-dot normal"></span>NORMAL</button>
-        <button class="btn btn-light fw-black rounded-pill px-4 py-2 lb-tab-btn"        data-mode="hard"     onclick="loadBoard('hard', this)"><span class="lb-mode-dot hard"></span>HARD</button>
-        <button class="btn btn-light fw-black rounded-pill px-4 py-2 lb-tab-btn"        data-mode="insanity" onclick="loadBoard('insanity', this)"><span class="lb-mode-dot insanity"></span>INSANITY</button>
+        <button class="btn lb-tab-btn"        data-mode="easy"     onclick="loadBoard('easy', this)"><span class="lb-mode-dot easy"></span>EASY</button>
+        <button class="btn lb-tab-btn active" data-mode="normal"   onclick="loadBoard('normal', this)"><span class="lb-mode-dot normal"></span>NORMAL</button>
+        <button class="btn lb-tab-btn"        data-mode="hard"     onclick="loadBoard('hard', this)"><span class="lb-mode-dot hard"></span>HARD</button>
+        <button class="btn lb-tab-btn"        data-mode="insanity" onclick="loadBoard('insanity', this)"><span class="lb-mode-dot insanity"></span>INSANITY</button>
     </div>
 
     <div id="lb-self-card" class="lg-panel mb-4 d-none lg-reveal">
@@ -710,15 +806,15 @@
         </div>
 
         <div id="lb-loading" class="text-center py-5">
-            <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-3 fw-bold text-muted mb-0">Pulling latest scores...</p>
+            <div class="spinner-border" style="color:#0ea5e9;" role="status"></div>
+            <p class="mt-3 fw-bold mb-0" style="color:#94a3b8;">Pulling latest scores...</p>
         </div>
 
         <div id="lb-empty" class="text-center py-5 d-none">
-            <i class="bi bi-trophy fs-1 text-muted opacity-50"></i>
-            <p class="mt-3 fw-bold text-muted mb-0">No runs recorded yet for this mode. Be the first.</p>
-            <a href="/KanaBlitz" class="btn btn-primary fw-black rounded-pill px-4 py-2 mt-3">
-                <i class="bi bi-lightning-charge-fill me-1"></i> Run KanaBlitz
+            <i class="bi bi-trophy fs-1" style="color:#cbd5e1;"></i>
+            <p class="mt-3 fw-bold mb-3" style="color:#94a3b8;">No runs recorded yet for this mode. Be the first.</p>
+            <a href="/KanaBlitz" class="lg-cta-btn d-inline-flex" style="width:auto;padding:12px 24px;">
+                <i class="bi bi-lightning-charge-fill" style="color:#fbbf24;"></i> Run KanaBlitz
             </a>
         </div>
 
@@ -730,13 +826,13 @@
 <!-- EARN XP CHOICE MODAL -->
 <div class="modal fade" id="earnXpModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-5 shadow-lg overflow-hidden">
+        <div class="modal-content overflow-hidden">
 
             <div class="bg-warning p-4 text-center position-relative">
                 <div class="position-absolute top-50 start-0 translate-middle-y ps-4 text-dark opacity-25">
                     <i class="bi bi-lightning-charge-fill display-4"></i>
                 </div>
-                <h4 class="fw-black text-dark m-0 text-uppercase" style="letter-spacing: 2px;">Earn More XP</h4>
+                <h4 class="fw-black text-dark m-0 text-uppercase" style="letter-spacing: 2px; font-family: 'Nunito', sans-serif;">Earn More XP</h4>
                 <p class="text-dark fw-bold small mb-0 mt-1 opacity-75">Pick your training ground</p>
                 <button type="button" class="btn-close position-absolute top-50 end-0 translate-middle-y me-4" data-bs-dismiss="modal"></button>
             </div>
@@ -769,13 +865,13 @@
 <!-- LEAGUES INFO MODAL -->
 <div class="modal fade" id="leaguesGuideModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-        <div class="modal-content border-0 rounded-5 shadow-lg overflow-hidden">
+        <div class="modal-content overflow-hidden">
 
             <div class="bg-warning p-4 text-center position-relative">
                 <div class="position-absolute top-50 start-0 translate-middle-y ps-4 text-dark opacity-25">
                     <i class="bi bi-trophy-fill display-4"></i>
                 </div>
-                <h4 class="fw-black text-dark m-0 text-uppercase" style="letter-spacing: 2px;">Leagues Field Manual</h4>
+                <h4 class="fw-black text-dark m-0 text-uppercase" style="letter-spacing: 2px; font-family: 'Nunito', sans-serif;">Leagues Field Manual</h4>
                 <p class="text-dark fw-bold small mb-0 mt-1 opacity-75">Compete, climb, and cash in every week</p>
                 <button type="button" class="btn-close position-absolute top-50 end-0 translate-middle-y me-4" data-bs-dismiss="modal"></button>
             </div>
@@ -783,8 +879,8 @@
             <div class="modal-body p-4 p-md-5 bg-white">
 
                 <div class="mb-4">
-                    <h5 class="fw-black text-dark text-uppercase mb-2" style="letter-spacing: 1px;">What are Leagues?</h5>
-                    <p class="text-muted fw-bold mb-0" style="font-size: 0.9rem; line-height: 1.6;">
+                    <h5 class="fw-black text-dark text-uppercase mb-2" style="letter-spacing: 1px; font-family: 'Nunito', sans-serif;">What are Leagues?</h5>
+                    <p class="text-muted fw-bold mb-0" style="font-size: 0.85rem; line-height: 1.6;">
                         Leagues are weekly competitive arenas. Every player is placed in a tier based on their progress, and you compete only against other players in your own tier. Earn weekly XP through any activity on NipponQuest, climb your arena, and bank a guaranteed gold payout when the week resets.
                     </p>
                 </div>
@@ -792,33 +888,32 @@
                 <div class="row g-3 mb-2">
                     <div class="col-md-4">
                         <div class="info-pillar">
-                            <div class="info-icon bg-warning bg-opacity-10 text-warning"><i class="bi bi-bullseye"></i></div>
-                            <h6 class="fw-black text-dark text-uppercase mb-1" style="font-size: 0.8rem; letter-spacing: 1px;">How to Participate</h6>
-                            <p class="text-muted small fw-bold mb-0">Just play. Flashcard reviews, KanaBlitz runs, and quest completions all feed your Weekly XP automatically.</p>
+                            <div class="info-icon" style="background:#fef3c7;color:#92400e;"><i class="bi bi-bullseye"></i></div>
+                            <h6 class="fw-black text-dark text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 1px;">How to Participate</h6>
+                            <p class="text-muted small fw-bold mb-0" style="font-size:0.75rem;">Just play. Flashcard reviews, KanaBlitz runs, and quest completions all feed your Weekly XP automatically.</p>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="info-pillar">
-                            <div class="info-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-arrow-up-circle-fill"></i></div>
-                            <h6 class="fw-black text-dark text-uppercase mb-1" style="font-size: 0.8rem; letter-spacing: 1px;">Promotion Rules</h6>
-                            <p class="text-muted small fw-bold mb-0">Finish in the top 20% of your arena to promote into the next tier when the week resets.</p>
+                            <div class="info-icon" style="background:#e0f2fe;color:#0369a1;"><i class="bi bi-arrow-up-circle-fill"></i></div>
+                            <h6 class="fw-black text-dark text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 1px;">Promotion Rules</h6>
+                            <p class="text-muted small fw-bold mb-0" style="font-size:0.75rem;">Finish in the top 20% of your arena to promote into the next tier when the week resets.</p>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="info-pillar">
-                            <div class="info-icon bg-danger bg-opacity-10 text-danger"><i class="bi bi-arrow-down-circle-fill"></i></div>
-                            <h6 class="fw-black text-dark text-uppercase mb-1" style="font-size: 0.8rem; letter-spacing: 1px;">Demotion Rules</h6>
-                            <p class="text-muted small fw-bold mb-0">Land in the bottom 20% of your arena and you drop a tier. Stay active to hold your ground.</p>
+                            <div class="info-icon" style="background:#fee2e2;color:#b91c1c;"><i class="bi bi-arrow-down-circle-fill"></i></div>
+                            <h6 class="fw-black text-dark text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 1px;">Demotion Rules</h6>
+                            <p class="text-muted small fw-bold mb-0" style="font-size:0.75rem;">Land in the bottom 20% of your arena and you drop a tier. Stay active to hold your ground.</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="info-divider"></div>
 
-                <!-- ── PATH TO LEGEND (inside the (i) modal) ── -->
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div>
-                        <h6 class="fw-black text-dark text-uppercase mb-1" style="letter-spacing: 1px;">Path to Legend</h6>
+                        <h6 class="fw-black text-dark text-uppercase mb-1" style="letter-spacing: 1px; font-family: 'Nunito', sans-serif;">Path to Legend</h6>
                         <div class="lg-panel-sub">Weekly gold reward by tier</div>
                     </div>
                     <i class="bi bi-signpost-split-fill fs-4" style="color: #0ea5e9;"></i>
@@ -853,7 +948,7 @@
 
                 <div class="info-divider"></div>
 
-                <h6 class="fw-black text-dark text-uppercase mb-3" style="letter-spacing: 1px;">Weekly Reset</h6>
+                <h6 class="fw-black text-dark text-uppercase mb-3" style="letter-spacing: 1px; font-family: 'Nunito', sans-serif;">Weekly Reset</h6>
                 <ul class="info-row-list mb-2">
                     <li><i class="bi bi-clock-fill"></i><span><strong class="text-dark">Reset day:</strong> Every Monday at 00:00 local server time.</span></li>
                     <li>
@@ -865,7 +960,7 @@
 
                 <div class="info-divider"></div>
 
-                <h6 class="fw-black text-dark text-uppercase mb-3" style="letter-spacing: 1px;">Pro Tips</h6>
+                <h6 class="fw-black text-dark text-uppercase mb-3" style="letter-spacing: 1px; font-family: 'Nunito', sans-serif;">Pro Tips</h6>
                 <ul class="info-row-list">
                     <li><i class="bi bi-lightbulb-fill"></i><span>Stack a daily streak. Login bonuses and combo multipliers compound your weekly XP fast.</span></li>
                     <li><i class="bi bi-lightbulb-fill"></i><span>Mix activities. KanaBlitz pays burst XP, while flashcards drip steady gains across the week.</span></li>
@@ -963,15 +1058,13 @@
             list.classList.add('d-none');
             empty.classList.add('d-none');
             load.classList.remove('d-none');
-            load.innerHTML = '<div class="spinner-border text-primary" role="status"></div><p class="mt-3 fw-bold text-muted mb-0">Pulling latest scores...</p>';
+            load.innerHTML = '<div class="spinner-border" style="color:#0ea5e9;" role="status"></div><p class="mt-3 fw-bold mb-0" style="color:#94a3b8;">Pulling latest scores...</p>';
 
             const labelMap = { easy: 'Easy', normal: 'Normal', hard: 'Hard', insanity: 'Insanity' };
             document.getElementById('lb-mode-sub').textContent  = `${labelMap[mode]} \u00b7 Mixed`;
             document.getElementById('lb-self-mode').textContent = labelMap[mode];
 
             try {
-                // Endpoint lives on LeaguesController. Difficulty is now the axis;
-                // the controller hardcodes alphabet to "mixed" for leaderboard fairness.
                 const res = await fetch(`/Leagues/GetBlitzBoard?difficulty=${mode}&top=50`);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
@@ -1012,10 +1105,10 @@
                     row.innerHTML = `
                         ${medal}
                         <div class="lg-podium-info">
-                            <div class="lg-podium-name">${escapeHtml(r.name)}${isSelf ? ' <span class="you-tag" style="background:#3b82f6;color:#fff;font-size:0.55rem;font-weight:900;letter-spacing:1px;padding:2px 8px;border-radius:50px;margin-left:6px;">YOU</span>' : ''}</div>
+                            <div class="lg-podium-name">${escapeHtml(r.name)}${isSelf ? ' <span class="you-tag" style="background:#0ea5e9;color:#fff;font-size:0.5rem;font-weight:900;letter-spacing:1px;padding:2px 8px;border-radius:50px;margin-left:6px;">YOU</span>' : ''}</div>
                             <div class="lg-podium-sub">${(r.bestPoints || 0).toLocaleString()} pts &middot; ${Math.round((r.bestAccuracy || 0) * 100)}% acc &middot; combo ${r.bestCombo || 0}x</div>
                         </div>
-                        <div class="lg-podium-value">${r.bestCorrect} <span style="font-size:0.6rem;color:#94a3b8;font-weight:800;letter-spacing:1px;">CORRECT</span></div>
+                        <div class="lg-podium-value">${r.bestCorrect} <span style="font-size:0.55rem;color:#94a3b8;font-weight:800;letter-spacing:1px;">CORRECT</span></div>
                     `;
 
                     list.appendChild(row);
@@ -1025,7 +1118,7 @@
                 list.classList.remove('d-none');
             } catch (e) {
                 console.error('[v0] Blitz board load failed:', e);
-                load.innerHTML = '<p class="text-danger fw-bold mb-0">Failed to load leaderboard.</p>';
+                load.innerHTML = '<p class="fw-bold mb-0" style="color:#ef4444;">Failed to load leaderboard.</p>';
             }
         }
 

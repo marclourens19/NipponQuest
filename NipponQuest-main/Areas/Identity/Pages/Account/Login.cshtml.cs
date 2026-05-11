@@ -21,13 +21,13 @@ namespace NipponQuest.Areas.Identity.Pages.Account
     public class LoginModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly UserManager<ApplicationUser> _userManager; // ADDED: Needed for updating the user's streak
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<LoginModel> _logger;
 
         public LoginModel(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, ILogger<LoginModel> logger)
         {
             _signInManager = signInManager;
-            _userManager = userManager; // ADDED
+            _userManager = userManager;
             _logger = logger;
         }
 
@@ -43,11 +43,11 @@ namespace NipponQuest.Areas.Identity.Pages.Account
 
         public class InputModel
         {
-            [Required]
-            [EmailAddress]
+            [Required(ErrorMessage = "Please enter your email address.")]
+            [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
             public string Email { get; set; }
 
-            [Required]
+            [Required(ErrorMessage = "Please enter your password.")]
             [DataType(DataType.Password)]
             public string Password { get; set; }
 
@@ -64,6 +64,7 @@ namespace NipponQuest.Areas.Identity.Pages.Account
 
             returnUrl ??= Url.Content("~/");
 
+            // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
@@ -79,6 +80,8 @@ namespace NipponQuest.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
+                // This doesn't count login failures towards account lockout
+                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
 
                 if (result.Succeeded)
@@ -93,7 +96,7 @@ namespace NipponQuest.Areas.Identity.Pages.Account
                     {
                         var now = DateTime.UtcNow;
 
-                        // Break streak if it has been more than 48 hours
+                        // Break streak if it has been more than 48 hours (gives 24h grace period)
                         if (user.LastLoginDate.HasValue && (now - user.LastLoginDate.Value).TotalHours > 48)
                         {
                             user.LoginStreak = 0;
@@ -123,11 +126,12 @@ namespace NipponQuest.Areas.Identity.Pages.Account
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    ModelState.AddModelError(string.Empty, "Invalid login attempt. Please check your credentials.");
                     return Page();
                 }
             }
 
+            // If we got this far, something failed, redisplay form
             return Page();
         }
     }

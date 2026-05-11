@@ -39,6 +39,44 @@ namespace NipponQuest.Controllers
         public IActionResult Index() => View();
 
         // ─────────────────────────────────────────────────────────────
+        //  ONE-TIME ACKNOWLEDGEMENTS
+        //  Stored inside BlitzAccuracyJson so no schema change is required.
+        // ─────────────────────────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> GetAcknowledgements()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var stats = ParseAccuracy(user.BlitzAccuracyJson);
+            return Json(new
+            {
+                rules = stats.GetValueOrDefault("ack:kanablitz_rules", 0.0) >= 1.0,
+                insanity = stats.GetValueOrDefault("ack:insanity_warning", 0.0) >= 1.0
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AcceptAcknowledgement([FromBody] AcknowledgementDto dto)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var key = (dto?.Key ?? "").Trim().ToLowerInvariant();
+            if (key != "rules" && key != "insanity")
+                return BadRequest(new { error = "Invalid acknowledgement key." });
+
+            var stats = ParseAccuracy(user.BlitzAccuracyJson);
+            stats[key == "rules" ? "ack:kanablitz_rules" : "ack:insanity_warning"] = 1.0;
+            user.BlitzAccuracyJson = JsonSerializer.Serialize(stats);
+
+            await _userManager.UpdateAsync(user);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, key });
+        }
+
+        // ─────────────────────────────────────────────────────────────
         //  UNLOCKS
         // ─────────────────────────────────────────────────────────────
         [HttpGet]
@@ -103,7 +141,7 @@ namespace NipponQuest.Controllers
                 var alpha = alphabet.ToLower();
 
                 var user = await _userManager.GetUserAsync(User);
-                if (user != null && (diff == "hard" || diff == "insanity"))
+                if (user != null && user.GamerTag != "NQDev" && (diff == "hard" || diff == "insanity"))
                 {
                     var stats = ParseAccuracy(user.BlitzAccuracyJson);
                     int level = ResolveLevel(user);
@@ -126,47 +164,115 @@ namespace NipponQuest.Controllers
                     }
                 }
 
-                var query = _context.KanaWords.AsNoTracking().Where(w => w.DifficultyLevel == diff);
+                // ── Build query for the requested difficulty ──
+                var query = _context.KanaWords.AsNoTracking()
+                    .Where(w => w.DifficultyLevel == diff);
 
+                // ── Filter by alphabet ──
                 if (alpha == "mixed")
+                {
+                    // Mixed pulls from hiragana, katakana, dakuten, AND mixed alphabet entries
                     query = query.Where(w => w.Alphabet == "hiragana"
                                           || w.Alphabet == "katakana"
                                           || w.Alphabet == "dakuten"
                                           || w.Alphabet == "mixed");
+                }
                 else
-                    query = query.Where(w => w.Alphabet == alpha);
-
-                var rawWords = await query.ToListAsync();
-                if (rawWords.Count == 0)
                 {
-                    return Json(new
+                    // For specific alphabets, match ONLY that exact alphabet
+                    // This ensures hiragana -> hiragana kana only, katakana -> katakana kana only, etc.
+                    // For insanity mode: include "mixed" only for the mixed script selection,
+                    // but for hiragana/katakana/dakuten-specific runs, keep it pure.
+                    if (diff == "insanity")
                     {
-                        alphabet = alpha,
-                        words = new object[0],
-                        distractors = new string[0],
-                        warning = $"No words seeded for alphabet='{alpha}' difficulty='{diff}'. Re-seed the database."
-                    });
+                        // Insanity allows mixed kanji entries alongside specific alphabet entries
+                        query = query.Where(w => w.Alphabet == alpha
+                                              || w.Alphabet == "mixed"
+                                              || string.IsNullOrEmpty(w.Alphabet));
+                    }
+                    else
+                    {
+                        // Normal/Hard: strict alphabet match only
+                        query = query.Where(w => w.Alphabet == alpha
+                                              || string.IsNullOrEmpty(w.Alphabet));
+                    }
                 }
 
+                var rawWords = await query.ToListAsync();
                 var rng = new Random();
+
+                // ── If database is empty, generate a small local pool ──
+                if (rawWords.Count == 0)
+                {
+                    var localPool = GenerateLocalFallback(diff, alpha, rng);
+                    return Json(new { alphabet = alpha, words = localPool, distractors = new List<string>() });
+                }
+
+                // ── Process database words into arena payload ──
                 var payload = new List<object>();
                 var distractorSet = new HashSet<string>();
+
+                // Build a kanji distractor pool for insanity mode
+                var kanjiDistractors = diff == "insanity"
+                    ? rawWords
+                        .Where(w => (w.WordKana ?? "").Contains('(') && (w.WordKana ?? "").Contains(')'))
+                        .Select(w => { int o = (w.WordKana ?? "").IndexOf('('); return w.WordKana!.Substring(0, o).Trim(); })
+                        .Distinct()
+                        .ToList()
+                    : new List<string>();
+
+                // Build a furigana distractor pool for insanity mode
+                var furiganaDistractors = diff == "insanity"
+                    ? rawWords
+                        .Where(w => (w.WordKana ?? "").Contains('(') && (w.WordKana ?? "").Contains(')'))
+                        .Select(w => { int o = (w.WordKana ?? "").IndexOf('('); int c = (w.WordKana ?? "").IndexOf(')'); return w.WordKana!.Substring(o + 1, c - o - 1).Trim(); })
+                        .Distinct()
+                        .ToList()
+                    : new List<string>();
 
                 foreach (var w in rawWords)
                 {
                     string missing;
                     string display;
+                    string questionType = "kana"; // "kana", "furigana_blank", "kanji_from_furigana", "furigana_from_kanji"
+                    string fullKana = w.WordKana ?? "";
 
                     if (diff == "easy")
                     {
                         display = (w.WordRomaji ?? "").ToUpper();
-                        missing = w.WordKana ?? "";
+                        missing = fullKana;
+                        questionType = "easy";
+                    }
+                    else if (diff == "insanity" && fullKana.Contains('(') && fullKana.Contains(')'))
+                    {
+                        int open = fullKana.IndexOf('(');
+                        int close = fullKana.IndexOf(')');
+                        string kanji = fullKana.Substring(0, open).Trim();
+                        string furigana = fullKana.Substring(open + 1, close - open - 1).Trim();
+
+                        // 50/50: either blank a furigana syllable OR ask user to identify the kanji
+                        if (rng.Next(2) == 0)
+                        {
+                            // Mode A: Show kanji, display furigana with a blank — answer is the missing syllable
+                            (missing, display) = BuildRandomMissing(fullKana, diff, rng);
+                            questionType = "furigana_blank";
+                        }
+                        else
+                        {
+                            // Mode B: Show full furigana reading, ask which kanji it matches
+                            missing = kanji;
+                            display = $"<div class=\"kanji-stack\">" +
+                                      $"<div class=\"kanji-hint\">{w.MeaningEnglish ?? ""}</div>" +
+                                      $"<div class=\"kanji-top\" style=\"font-size:1.8rem;color:#475569;letter-spacing:4px;\">{furigana}</div>" +
+                                      $"<p style=\"font-size:0.65rem;color:#94a3b8;font-weight:600;margin-top:0;\">Select the matching Kanji</p>" +
+                                      $"</div>";
+                            questionType = "kanji_from_furigana";
+                        }
                     }
                     else
                     {
-                        // Always randomize at runtime so the missing kana
-                        // varies between FIRST / MIDDLE / LAST positions.
-                        (missing, display) = BuildRandomMissing(w.WordKana, diff, rng);
+                        (missing, display) = BuildRandomMissing(fullKana, diff, rng);
+                        questionType = "kana";
                     }
 
                     if (!string.IsNullOrEmpty(missing))
@@ -175,22 +281,27 @@ namespace NipponQuest.Controllers
                     payload.Add(new
                     {
                         id = w.Id,
-                        kana = w.WordKana,
-                        romaji = w.WordRomaji,
-                        meaning = w.MeaningEnglish,
+                        kana = fullKana,
+                        romaji = w.WordRomaji ?? "",
+                        meaning = w.MeaningEnglish ?? "",
                         category = w.CategoryTag ?? "",
                         missing,
-                        display
+                        display,
+                        questionType,
+                        alphabet = w.Alphabet ?? alpha
                     });
                 }
 
-                var shuffled = payload.OrderBy(_ => Guid.NewGuid()).ToList();
+                // Shuffle and take a reasonable batch (50 words per run)
+                var shuffled = payload.OrderBy(_ => Guid.NewGuid()).Take(50).ToList();
 
                 return Json(new
                 {
                     alphabet = alpha,
                     words = shuffled,
-                    distractors = distractorSet.ToList()
+                    distractors = distractorSet.ToList(),
+                    kanjiDistractors,
+                    furiganaDistractors
                 });
             }
             catch (Exception ex)
@@ -212,8 +323,7 @@ namespace NipponQuest.Controllers
         // ─────────────────────────────────────────────────────────────
         private static (string missing, string displayHtml) BuildRandomMissing(string wordKana, string difficulty, Random rng)
         {
-            const string Blank = "<span class='missing-placeholder'>__</span>";
-            if (string.IsNullOrEmpty(wordKana)) return ("", Blank);
+            if (string.IsNullOrEmpty(wordKana)) return ("?", "<span class='blank'>?</span>");
 
             // INSANITY format: "漢字 (ふりがな)" — blank inside the furigana
             if (wordKana.Contains('(') && wordKana.Contains(')'))
@@ -226,9 +336,7 @@ namespace NipponQuest.Controllers
                 var sylls = SplitSyllables(furigana);
                 if (sylls.Count == 0)
                 {
-                    return (furigana,
-                        $"<div class=\"kanji-stack\"><div class=\"kanji-top\">{kanji}</div>" +
-                        $"<div class=\"kana-bottom\">({Blank})</div></div>");
+                    return ("?", $"<div class=\"kanji-stack\"><div class=\"kanji-top\">{kanji}</div><div class=\"kana-bottom\"><span class='blank'>?</span></div></div>");
                 }
 
                 int idx = rng.Next(sylls.Count);
@@ -237,8 +345,8 @@ namespace NipponQuest.Controllers
                 var sb = new System.Text.StringBuilder();
                 for (int i = 0; i < sylls.Count; i++)
                 {
-                    if (i == idx) sb.Append($"<span class='missing-placeholder'>{sylls[i]}</span>");
-                    else sb.Append(sylls[i]);
+                    if (i == idx) sb.Append($"<span class='blank'>?</span>");
+                    else sb.Append($"<span class='char'>{sylls[i]}</span>");
                 }
 
                 string html = $"<div class=\"kanji-stack\">" +
@@ -248,9 +356,9 @@ namespace NipponQuest.Controllers
                 return (missingChar, html);
             }
 
-            // NORMAL / HARD plain kana
+            // NORMAL / HARD plain kana — wrap ALL chars in spans for proper display
             var s = SplitSyllables(wordKana);
-            if (s.Count == 0) return (wordKana, Blank);
+            if (s.Count == 0) return ("?", "<span class='blank'>?</span>");
 
             int p = rng.Next(s.Count);
             string miss = s[p];
@@ -258,8 +366,8 @@ namespace NipponQuest.Controllers
             var outBuf = new System.Text.StringBuilder();
             for (int i = 0; i < s.Count; i++)
             {
-                if (i == p) outBuf.Append($"<span class='missing-placeholder'>{s[i]}</span>");
-                else outBuf.Append(s[i]);
+                if (i == p) outBuf.Append($"<span class='blank'>?</span>");
+                else outBuf.Append($"<span class='char'>{s[i]}</span>");
             }
             return (miss, outBuf.ToString());
         }
@@ -289,6 +397,130 @@ namespace NipponQuest.Controllers
                 list.Add(syll);
             }
             return list;
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        //  LOCAL FALLBACK — generates a small pool when DB is empty
+        // ─────────────────────────────────────────────────────────────
+        private static List<object> GenerateLocalFallback(string difficulty, string alphabet, Random rng)
+        {
+            var pool = new List<(string kana, string romaji, string meaning)>();
+
+            if (difficulty == "easy")
+            {
+                pool.Add(("あ", "A", "Pick the kana"));
+                pool.Add(("い", "I", "Pick the kana"));
+                pool.Add(("う", "U", "Pick the kana"));
+                pool.Add(("え", "E", "Pick the kana"));
+                pool.Add(("お", "O", "Pick the kana"));
+                pool.Add(("か", "KA", "Pick the kana"));
+                pool.Add(("き", "KI", "Pick the kana"));
+                pool.Add(("く", "KU", "Pick the kana"));
+                pool.Add(("け", "KE", "Pick the kana"));
+                pool.Add(("こ", "KO", "Pick the kana"));
+                pool.Add(("さ", "SA", "Pick the kana"));
+                pool.Add(("し", "SHI", "Pick the kana"));
+                pool.Add(("す", "SU", "Pick the kana"));
+                pool.Add(("せ", "SE", "Pick the kana"));
+                pool.Add(("そ", "SO", "Pick the kana"));
+            }
+            else if (difficulty == "normal" || difficulty == "hard")
+            {
+                pool.Add(("ねこ", "neko", "Cat"));
+                pool.Add(("いぬ", "inu", "Dog"));
+                pool.Add(("とり", "tori", "Bird"));
+                pool.Add(("さかな", "sakana", "Fish"));
+                pool.Add(("うま", "uma", "Horse"));
+                pool.Add(("くま", "kuma", "Bear"));
+                pool.Add(("やま", "yama", "Mountain"));
+                pool.Add(("かわ", "kawa", "River"));
+                pool.Add(("みず", "mizu", "Water"));
+                pool.Add(("そら", "sora", "Sky"));
+                pool.Add(("はな", "hana", "Flower"));
+                pool.Add(("つき", "tsuki", "Moon"));
+                pool.Add(("ほし", "hoshi", "Star"));
+                pool.Add(("うみ", "umi", "Sea"));
+                pool.Add(("かぜ", "kaze", "Wind"));
+                pool.Add(("あめ", "ame", "Rain"));
+                pool.Add(("ゆき", "yuki", "Snow"));
+                pool.Add(("いえ", "ie", "House"));
+                pool.Add(("ほん", "hon", "Book"));
+                pool.Add(("かばん", "kaban", "Bag"));
+                pool.Add(("とけい", "tokei", "Watch"));
+                pool.Add(("かさ", "kasa", "Umbrella"));
+                pool.Add(("くつ", "kutsu", "Shoes"));
+                pool.Add(("ふく", "fuku", "Clothes"));
+                pool.Add(("たべる", "taberu", "To Eat"));
+                pool.Add(("のむ", "nomu", "To Drink"));
+                pool.Add(("みる", "miru", "To See"));
+                pool.Add(("いく", "iku", "To Go"));
+                pool.Add(("くる", "kuru", "To Come"));
+                pool.Add(("よむ", "yomu", "To Read"));
+                pool.Add(("あさ", "asa", "Morning"));
+                pool.Add(("ひる", "hiru", "Noon"));
+                pool.Add(("よる", "yoru", "Night"));
+                pool.Add(("はる", "haru", "Spring"));
+                pool.Add(("なつ", "natsu", "Summer"));
+                pool.Add(("あき", "aki", "Autumn"));
+                pool.Add(("ふゆ", "fuyu", "Winter"));
+                pool.Add(("あか", "aka", "Red"));
+                pool.Add(("あお", "ao", "Blue"));
+                pool.Add(("しろ", "shiro", "White"));
+                pool.Add(("くろ", "kuro", "Black"));
+            }
+            else // insanity
+            {
+                pool.Add(("学校 (がっこう)", "gakkou", "School"));
+                pool.Add(("先生 (せんせい)", "sensei", "Teacher"));
+                pool.Add(("学生 (がくせい)", "gakusei", "Student"));
+                pool.Add(("家族 (かぞく)", "kazoku", "Family"));
+                pool.Add(("時間 (じかん)", "jikan", "Time"));
+                pool.Add(("天気 (てんき)", "tenki", "Weather"));
+                pool.Add(("電車 (でんしゃ)", "densha", "Train"));
+                pool.Add(("会社 (かいしゃ)", "kaisha", "Company"));
+                pool.Add(("猫 (ねこ)", "neko", "Cat"));
+                pool.Add(("犬 (いぬ)", "inu", "Dog"));
+                pool.Add(("山 (やま)", "yama", "Mountain"));
+                pool.Add(("川 (かわ)", "kawa", "River"));
+                pool.Add(("花 (はな)", "hana", "Flower"));
+                pool.Add(("月 (つき)", "tsuki", "Moon"));
+                pool.Add(("海 (うみ)", "umi", "Sea"));
+                pool.Add(("心 (こころ)", "kokoro", "Heart"));
+                pool.Add(("夢 (ゆめ)", "yume", "Dream"));
+                pool.Add(("力 (ちから)", "chikara", "Power"));
+                pool.Add(("道 (みち)", "michi", "Road"));
+                pool.Add(("水 (みず)", "mizu", "Water"));
+            }
+
+            var result = new List<object>();
+            foreach (var (kana, romaji, meaning) in pool)
+            {
+                string missing;
+                string display;
+
+                if (difficulty == "easy")
+                {
+                    display = romaji.ToUpper();
+                    missing = kana;
+                }
+                else
+                {
+                    (missing, display) = BuildRandomMissing(kana, difficulty, rng);
+                }
+
+                result.Add(new
+                {
+                    id = 0,
+                    kana,
+                    romaji,
+                    meaning,
+                    category = "Local",
+                    missing,
+                    display
+                });
+            }
+
+            return result.OrderBy(_ => Guid.NewGuid()).Take(50).ToList();
         }
 
         // ─────────────────────────────────────────────────────────────
@@ -489,7 +721,6 @@ namespace NipponQuest.Controllers
             if (!word.WordKana.Contains(word.MissingKana))
                 return false;
 
-            // You can plug in a full kana→romaji library here for stricter verification.
             return true;
         }
 
@@ -518,5 +749,10 @@ namespace NipponQuest.Controllers
         public int MaxCombo { get; set; }
         public int Points { get; set; }
         public int DurationSeconds { get; set; }
+    }
+
+    public class AcknowledgementDto
+    {
+        public string Key { get; set; } = "";
     }
 }

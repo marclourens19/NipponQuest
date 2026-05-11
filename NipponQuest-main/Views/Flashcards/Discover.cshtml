@@ -1,261 +1,244 @@
 ﻿@model IEnumerable<NipponQuest.Models.Deck>
 
-<div class="container py-5 mt-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-11">
-            
-            @if (TempData["Error"] != null)
-            {
-                <div class="alert alert-danger border-0 shadow-sm rounded-pill fw-bold px-4 mb-4 d-flex align-items-center">
-                    <i class="bi bi-exclamation-octagon-fill me-2 fs-5"></i> @TempData["Error"]
-                </div>
-            }
-
-            <!-- 1. TOP HEADER SECTION -->
-            <div class="d-flex justify-content-between align-items-end mb-5 flex-wrap gap-3">
-                <div>
-                    <h1 class="fw-black text-dark m-0 text-uppercase tracking-tight d-flex align-items-center flex-wrap gap-3" style="font-size: 2.8rem; letter-spacing: -1px;">
-                        <span>COMMUNITY <span class="text-primary hero-glow-text">HUB</span></span>
-                        
-                        <!-- HELP BUTTON -->
-                        <button class="btn btn-white rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center text-muted hover-blue transition-all hover-lift" 
-                                style="width: 38px; height: 38px; margin-bottom: 8px;" 
-                                data-bs-toggle="modal" data-bs-target="#discoverGuideModal" 
-                                title="How to use the Community Hub">
-                            <i class="bi bi-info-lg fs-5 fw-black"></i>
-                        </button>
-                    </h1>
-                    <p class="text-muted fw-bold m-0 mt-1 text-uppercase tracking-wider" style="font-size: 0.85rem;">Discover legendary decks forged by the community</p>
-                </div>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="badge bg-white text-dark border border-light-subtle rounded-pill px-4 py-2 shadow-sm d-flex align-items-center gap-2">
-                        <span class="text-muted text-uppercase tracking-wider fw-black small">YOUR PURSE:</span>
-                        <div class="gold-coin" style="width: 24px; height: 24px; font-size: 0.8rem; border-width: 1.5px;"></div>
-                        <span class="fw-black fs-5 tracking-tight">@ViewBag.UserGold</span>
-                    </div>
-                    <a asp-action="Index" class="btn btn-white rounded-pill px-4 fw-bold shadow-sm text-muted d-flex align-items-center transition-all hover-lift">
-                        <i class="bi bi-arrow-left me-2 fs-5"></i> BACK
-                    </a>
-                </div>
-            </div>
-
-            <!-- 2. SEARCH & SORT BAR -->
-            <div class="static-card border-0 rounded-4 shadow-sm bg-white mb-5 p-4 p-md-5">
-                <form asp-action="Discover" method="get">
-                    <div class="row g-3 align-items-center">
-                        <div class="col-md-7">
-                            <div class="input-group rounded-pill overflow-hidden border border-light-subtle shadow-sm transition-all focus-ring-container bg-white" style="padding: 0.25rem;">
-                                <span class="input-group-text bg-transparent border-0 ps-4 pe-2">
-                                    <i class="bi bi-search text-primary opacity-75"></i>
-                                </span>
-                                <input type="text" name="searchString" value="@ViewBag.SearchString" class="form-control border-0 bg-transparent py-2 fw-black text-dark shadow-none" placeholder="Search JLPT N5, Kanji, Vocab..." />
-                                <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort" />
-                            </div>
-                        </div>
-                        <div class="col-md-5 d-flex gap-2 justify-content-md-end">
-                            <a asp-action="Discover" asp-route-sortOrder="downloads" asp-route-searchString="@ViewBag.SearchString" 
-                               class="btn @(ViewBag.CurrentSort == "downloads" || string.IsNullOrEmpty(ViewBag.CurrentSort) ? "btn-primary btn-cta-premium text-white" : "btn-white text-muted") rounded-pill px-4 fw-black small shadow-sm flex-fill d-flex align-items-center justify-content-center transition-all hover-lift">
-                                <i class="bi bi-cloud-arrow-down-fill me-2 fs-6"></i> DOWNLOADS
-                            </a>
-                            <a asp-action="Discover" asp-route-sortOrder="likes" asp-route-searchString="@ViewBag.SearchString" 
-                               class="btn @(ViewBag.CurrentSort == "likes" ? "btn-primary btn-cta-premium text-white" : "btn-white text-muted") rounded-pill px-4 fw-black small shadow-sm flex-fill d-flex align-items-center justify-content-center transition-all hover-lift">
-                                <i class="bi bi-heart-fill me-2 fs-6"></i> TOP LIKED
-                            </a>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- 3. MARKETPLACE GRID -->
-            <div class="row g-4 mb-5 pb-5">
-                @foreach (var deck in Model)
-                {
-                    // Check against both active and permanently purchased ledgers
-                    var activeIds = (List<int>)ViewBag.ActiveParentDeckIds ?? new List<int>();
-                    var purchasedIds = (List<int>)ViewBag.PurchasedDeckIds ?? new List<int>();
-                    
-                    var isActiveInDashboard = activeIds.Contains(deck.Id);
-                    var isPermanentlyOwned = purchasedIds.Contains(deck.Id);
-                    
-                    var hexColor = !string.IsNullOrEmpty(deck.ThemeColor) ? deck.ThemeColor : "#ffffff";
-                    
-                    <div class="col-md-6 col-xl-4">
-                        <div class="static-card h-100 border-0 rounded-4 shadow-sm p-0 d-flex flex-column position-relative transition-all hover-lift" style="background-color: @hexColor !important;">
-                            
-                            <div class="p-4 flex-grow-1 d-flex flex-column">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h4 class="fw-black text-dark m-0 tracking-tight text-truncate" style="max-width: 70%;" title="@deck.Title">@deck.Title</h4>
-                                    <span class="badge bg-white text-primary shadow-sm rounded-pill fw-bold">@deck.Flashcards.Count Cards</span>
-                                </div>
-                                <p class="small text-dark fw-bold mb-3 d-flex align-items-center opacity-75">
-                                    <i class="bi bi-person-circle me-1 text-primary"></i> By @(deck.AuthorName ?? "Questor")
-                                </p>
-                                <div class="flex-grow-1 mb-4">
-                                    <p class="text-dark small fw-bold mb-0 opacity-75" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4rem;">
-                                        @(string.IsNullOrWhiteSpace(deck.Description) ? "No description provided." : deck.Description)
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Clean Transparent Footer Actions -->
-                            <div class="px-4 pb-4 bg-transparent d-flex justify-content-between align-items-center mt-auto">
-                                
-                                <div class="d-flex gap-3 align-items-center">
-                                    <form asp-action="VoteDeck" method="post" class="m-0">
-                                        <input type="hidden" name="deckId" value="@deck.Id" />
-                                        <input type="hidden" name="isUpvote" value="true" />
-                                        <button type="submit" class="btn btn-link p-0 text-decoration-none hover-scale d-flex align-items-center transition-all" title="Upvote Deck">
-                                            <i class="bi bi-hand-thumbs-up-fill text-success fs-5" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));"></i>
-                                            <span class="ms-1 fw-black text-dark small">@deck.Likes</span>
-                                        </button>
-                                    </form>
-                                    <div class="d-flex align-items-center" title="Downloads">
-                                        <i class="bi bi-cloud-arrow-down-fill text-primary opacity-75 fs-5"></i>
-                                        <span class="ms-1 fw-black text-dark small">@deck.Downloads</span>
-                                    </div>
-                                </div>
-
-                                <div class="action-wrap">
-                                    @if (deck.ApplicationUserId == ViewBag.CurrentUserId)
-                                    {
-                                        <form asp-action="ToggleVisibility" method="post" class="m-0">
-                                            <input type="hidden" name="deckId" value="@deck.Id" />
-                                            <button type="submit" class="btn btn-danger btn-sm rounded-pill px-4 py-2 fw-black shadow-sm transition-all hover-lift">
-                                                UNPUBLISH
-                                            </button>
-                                        </form>
-                                    }
-                                    else if (isActiveInDashboard)
-                                    {
-                                        <button class="btn btn-light btn-sm rounded-pill px-4 py-2 fw-black text-success border border-success-subtle cursor-default shadow-sm" disabled>
-                                            <i class="bi bi-check-lg"></i> OWNED
-                                        </button>
-                                    }
-                                    else if (isPermanentlyOwned)
-                                    {
-                                        <form asp-action="DownloadDeck" method="post" class="m-0">
-                                            <input type="hidden" name="originalDeckId" value="@deck.Id" />
-                                            <button type="submit" class="btn btn-info text-white btn-sm rounded-pill px-4 py-2 fw-black shadow-sm transition-all hover-lift" title="Re-download for free">
-                                                <i class="bi bi-cloud-arrow-down-fill me-1"></i> REDOWNLOAD
-                                            </button>
-                                        </form>
-                                    }
-                                    else
-                                    {
-                                        <form asp-action="DownloadDeck" method="post" class="m-0">
-                                            <input type="hidden" name="originalDeckId" value="@deck.Id" />
-                                            @if (deck.Price > 0)
-                                            {
-                                                <button type="submit" class="btn btn-dark btn-sm rounded-pill px-4 py-2 fw-black shadow-sm btn-cta-premium transition-all hover-lift d-flex align-items-center gap-2">
-                                                    <div class="gold-coin" style="width: 18px; height: 18px; font-size: 0.6rem; border-width: 1px;"></div>
-                                                    <span>@deck.Price BUY</span>
-                                                </button>
-                                            }
-                                            else
-                                            {
-                                                <button type="submit" class="btn btn-dark btn-sm rounded-pill px-4 py-2 fw-black shadow-sm btn-cta-premium transition-all hover-lift">
-                                                    + FREE
-                                                </button>
-                                            }
-                                        </form>
-                                    }
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                }
-            </div>
-
-            @if (!Model.Any())
-            {
-                <div class="text-center py-5">
-                    <i class="bi bi-search text-muted opacity-25 display-1 mb-3 d-block"></i>
-                    <h4 class="fw-black text-dark text-uppercase tracking-wider">NO DECKS FOUND</h4>
-                    <p class="text-muted fw-bold">Try searching for something else!</p>
-                </div>
-            }
-        </div>
-    </div>
-</div>
-
-<!-- 4. REVAMPED COMMUNITY HELP MODAL -->
-<div class="modal fade" id="discoverGuideModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 rounded-5 shadow-lg overflow-hidden">
-            <div class="bg-primary p-4 text-center position-relative">
-                <div class="position-absolute top-50 start-0 translate-middle-y ps-4 text-white opacity-25">
-                    <i class="bi bi-globe-americas display-4"></i>
-                </div>
-                <h4 class="fw-black text-white m-0 text-uppercase tracking-widest">Quest Log: Market Board</h4>
-                <button type="button" class="btn-close btn-close-white position-absolute top-50 end-0 translate-middle-y me-4" data-bs-dismiss="modal"></button>
-            </div>
-            
-            <div class="modal-body p-4 p-md-5 bg-white">
-                <div class="row g-4">
-                    <div class="col-12">
-                        <div class="d-flex align-items-start gap-3 p-3 rounded-4 bg-light transition-all hover-lift">
-                            <div class="bg-warning bg-opacity-10 text-warning rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
-                                <div class="gold-coin shadow-sm" style="width: 26px; height: 26px; font-size: 0.9rem; border-width: 1.5px;"></div>
-                            </div>
-                            <div>
-                                <h6 class="fw-black text-dark text-uppercase tracking-tight mb-1">Buying Decks</h6>
-                                <p class="text-muted small fw-bold mb-0">Use the gold you earn from daily study quests to purchase premium community decks. Your gold goes directly to the creator!</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-start gap-3 p-3 rounded-4 bg-light transition-all hover-lift h-100">
-                            <div class="bg-info bg-opacity-10 text-info rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
-                                <i class="bi bi-cloud-arrow-down-fill fs-4"></i>
-                            </div>
-                            <div>
-                                <h6 class="fw-black text-dark text-uppercase tracking-tight mb-1">Permanent Ownership</h6>
-                                <p class="text-muted small fw-bold mb-0">Once you buy a deck, you own it forever. If you delete it from your dashboard, you can re-download it here for free.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-start gap-3 p-3 rounded-4 bg-light transition-all hover-lift h-100">
-                            <div class="bg-success bg-opacity-10 text-success rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
-                                <i class="bi bi-hand-thumbs-up-fill fs-4"></i>
-                            </div>
-                            <div>
-                                <h6 class="fw-black text-dark text-uppercase tracking-tight mb-1">Community Voting</h6>
-                                <p class="text-muted small fw-bold mb-0">Help curate the best content! Use the <i class="bi bi-hand-thumbs-up-fill text-success mx-1"></i> button to upvote decks that are accurate and helpful.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mt-5 text-center">
-                    <button type="button" class="btn btn-primary rounded-pill px-5 py-3 fw-black shadow-sm text-uppercase tracking-wider btn-cta-premium w-100" data-bs-dismiss="modal">
-                        Understood!
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
-    body { background-color: #f8fafc; }
+    /* ──────────────────────────────────────────────────────
+       COMMUNITY HUB — Nunito · Site CSS Aligned
+       ────────────────────────────────────────────────────── */
 
-    /* Component-specific overrides aligned with Study View */
-    .btn-white { background: #fff; border: 1px solid #e2e8f0; }
-    .btn-white:hover { background: #f8fafc; border-color: #cbd5e1; }
-    
-    .hover-lift { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1) !important; }
-    
-    .hover-blue:hover { color: #0ea5e9 !important; border-color: #0ea5e9 !important; }
-    .hover-scale:hover { transform: scale(1.15); }
-    .transition-all { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    
-    .hero-glow-text { text-shadow: 0 0 20px rgba(14, 165, 233, 0.2); }
-    .cursor-default { cursor: default !important; }
+    body { font-family: 'Nunito', sans-serif !important; background: #ffffff; }
 
-    /* Gamification Elements */
+    .lg-reveal { opacity: 0; transform: translateY(24px); transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+    .lg-reveal.active { opacity: 1; transform: translateY(0); }
+
+    /* ── HERO ── */
+    .lg-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #0ea5e9 160%);
+        border-radius: 28px;
+        color: #ffffff;
+        padding: 2.5rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.4);
+        font-family: 'Nunito', sans-serif;
+    }
+    .lg-hero::before {
+        content: "";
+        position: absolute;
+        inset: -50% -10% auto auto;
+        width: 420px; height: 420px;
+        background: radial-gradient(circle, rgba(245, 158, 11, 0.18) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .lg-hero::after {
+        content: "市場";
+        position: absolute;
+        right: 20px; bottom: -20px;
+        font-size: 8rem;
+        font-weight: 900;
+        color: rgba(255,255,255,0.04);
+        line-height: 1;
+        letter-spacing: -4px;
+        pointer-events: none;
+    }
+    .lg-hero-meta {
+        font-size: 0.65rem; font-weight: 900;
+        letter-spacing: 2px;
+        color: rgba(255,255,255,0.6);
+        text-transform: uppercase;
+    }
+    .lg-title {
+        font-size: clamp(2.4rem, 5vw, 3.8rem);
+        font-weight: 900; letter-spacing: -2px; line-height: 1;
+        margin: 6px 0 2px;
+        font-family: 'Nunito', sans-serif;
+    }
+    .lg-info-btn {
+        width: 40px; height: 40px; border-radius: 50%;
+        background: rgba(255,255,255,0.12);
+        border: 2px solid rgba(255,255,255,0.25);
+        color: #ffffff;
+        display: inline-flex; align-items: center; justify-content: center;
+        transition: all 200ms ease;
+        cursor: pointer;
+    }
+    .lg-info-btn:hover {
+        background: #fbbf24;
+        color: #422006;
+        border-color: #fbbf24;
+        transform: translateY(-2px);
+    }
+
+    /* Purse pill */
+    .purse-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 14px;
+        padding: 8px 16px;
+        font-family: 'Nunito', sans-serif;
+    }
+    .purse-pill .purse-label {
+        font-size: 0.55rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.65);
+    }
+    .purse-pill .purse-val {
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: #ffffff;
+        line-height: 1;
+    }
+
+    /* ── SEARCH PANEL ── */
+    .lg-panel {
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 24px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+        transition: all 250ms ease;
+        font-family: 'Nunito', sans-serif;
+    }
+    .lg-panel:hover { box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08); }
+
+    /* Search input */
+    .search-group {
+        display: flex;
+        align-items: center;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 4px 8px 4px 16px;
+        transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .search-group:focus-within {
+        border-color: #0ea5e9;
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+        background: #ffffff;
+    }
+    .search-group input {
+        border: none;
+        background: transparent;
+        outline: none;
+        font-family: 'Nunito', sans-serif;
+        font-weight: 700;
+        color: #0f172a;
+        flex: 1;
+        padding: 6px 8px;
+    }
+    .search-group input::placeholder { color: #94a3b8; font-weight: 600; }
+
+    /* Sort buttons */
+    .sort-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 18px;
+        border-radius: 14px;
+        font-family: 'Nunito', sans-serif;
+        font-weight: 900;
+        font-size: 0.68rem;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        text-decoration: none;
+        border: 2px solid #e2e8f0;
+        background: #ffffff;
+        color: #64748b;
+        transition: all 200ms ease;
+        cursor: pointer;
+        flex: 1;
+    }
+    .sort-btn:hover {
+        border-color: #cbd5e1;
+        color: #0f172a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+    }
+    .sort-btn.active {
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        color: #fbbf24;
+        border-color: #0f172a;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.2);
+    }
+
+    /* ── DECK CARDS ── */
+    .deck-card {
+        border-radius: 24px;
+        border: 2px solid #e2e8f0;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+        transition: all 250ms ease;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .deck-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
+    }
+    .deck-badge {
+        font-size: 0.68rem;
+        font-weight: 900;
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid #bae6fd;
+        background: #ffffff;
+        color: #0ea5e9;
+        white-space: nowrap;
+    }
+    .deck-meta {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .deck-desc {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #475569;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.5;
+    }
+
+    /* ── INFO MODAL PILLARS ── */
+    .info-pillar {
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 16px;
+        height: 100%;
+        background: #ffffff;
+        transition: all 0.2s;
+        font-family: 'Nunito', sans-serif;
+    }
+    .info-pillar:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        border-color: #cbd5e1;
+    }
+    .info-pillar .info-icon {
+        width: 44px; height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        margin-bottom: 10px;
+    }
+
+    /* ── GOLD COIN (shared) ── */
     .gold-coin {
         background: linear-gradient(135deg, #FFD700 0%, #FFB900 100%);
         border-radius: 50%;
@@ -264,29 +247,404 @@
         align-items: center;
         justify-content: center;
         font-weight: 900;
-        color: #451a03 !important; 
+        color: #451a03 !important;
+        font-family: 'Nunito', sans-serif;
+        flex-shrink: 0;
     }
     .gold-coin::after { content: "G"; }
-    
-    /* Search Bar Focus Ring */
-    .focus-ring-container:focus-within {
-        border-color: #0ea5e9 !important;
-        box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.15) !important;
+
+    /* ── ACTION BUTTONS ── */
+    .btn { font-family: 'Nunito', sans-serif !important; }
+    .btn-blitz-dark {
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        color: #ffffff;
+        border: none;
+        border-radius: 14px;
+        font-weight: 900;
+        font-size: 0.68rem;
+        letter-spacing: 1.5px;
+        padding: 8px 16px;
+        transition: all 200ms ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
-    @@media (max-width: 576px) {
-        .container.py-5 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
-        .static-card { padding: 1rem !important; }
-        .row.g-4 { gap: 1rem !important; }
-        .col-md-6, .col-xl-4 { max-width: 100% !important; }
-        .hero-section .hero-headline { font-size: clamp(2rem,6vw,3rem) !important; }
-        .hero-section .btn { width: 100%; margin-top: 0.5rem; }
-        .stats-hero { padding: 1rem !important; }
-        .stats-hero .hero-stat .val, .stats-hero .hero-stat .lbl, .stats-hero .hero-meta { font-size: 0.9rem !important; }
-        .quick-stat { padding: 0.8rem 0.9rem; }
-        .panel-card { padding: 1rem !important; }
-        .chart-box { height: 200px; }
-        .donut-wrap { max-width: 180px; }
-        .blitz-matrix { grid-template-columns: 80px repeat(4,1fr); }
-        .activity-calendar .cal-month-header { font-size: 0.8rem; }
+    .btn-blitz-dark:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.3);
+        color: #ffffff;
+    }
+    .btn-blitz-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: #ffffff;
+        border: none;
+        border-radius: 14px;
+        font-weight: 900;
+        font-size: 0.68rem;
+        letter-spacing: 1.5px;
+        padding: 8px 16px;
+        transition: all 200ms ease;
+    }
+    .btn-blitz-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
+        color: #ffffff;
+    }
+    .btn-owned {
+        background: #f0fdf4;
+        border: 2px solid #bbf7d0;
+        color: #15803d;
+        border-radius: 14px;
+        font-weight: 900;
+        font-size: 0.68rem;
+        letter-spacing: 1.5px;
+        padding: 8px 16px;
+        cursor: default;
+    }
+    .btn-redownload {
+        background: linear-gradient(135deg, #0ea5e9, #2563eb);
+        color: #ffffff;
+        border: none;
+        border-radius: 14px;
+        font-weight: 900;
+        font-size: 0.68rem;
+        letter-spacing: 1.5px;
+        padding: 8px 16px;
+        transition: all 200ms ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-redownload:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(14, 165, 233, 0.3);
+        color: #ffffff;
+    }
+
+    /* Vote buttons */
+    .vote-btn {
+        background: none;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-family: 'Nunito', sans-serif;
+        font-weight: 900;
+        font-size: 0.82rem;
+        color: #0f172a;
+        cursor: pointer;
+        transition: transform 200ms ease;
+        padding: 0;
+    }
+    .vote-btn:hover { transform: scale(1.15); }
+
+    /* Back button */
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #ffffff;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 14px;
+        font-family: 'Nunito', sans-serif;
+        font-weight: 900;
+        font-size: 0.7rem;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #ffffff;
+        text-decoration: none;
+        padding: 8px 16px;
+        transition: all 200ms ease;
+        background: rgba(255,255,255,0.12);
+    }
+    .btn-back:hover {
+        background: rgba(255,255,255,0.22);
+        border-color: rgba(255,255,255,0.45);
+        color: #ffffff;
+        transform: translateY(-1px);
+    }
+
+    /* ── RESPONSIVE ── */
+    @@media (max-width: 575.98px) {
+        .container.py-5.mt-4 { padding-top: 1.25rem !important; margin-top: 0 !important; }
+        .mobile-header-container { padding: 1.5rem !important; border-radius: 24px !important; }
+        .lg-hero::after { font-size: 5rem; right: 10px; bottom: -10px; }
+        .mobile-header-btns { flex-wrap: wrap !important; width: 100%; gap: 0.5rem; }
+        .col-md-6.col-xl-4 { width: 100% !important; }
+        .modal-body { padding: 1.25rem !important; }
+    }
+    @@media (min-width: 576px) and (max-width: 767.98px) {
+        .mobile-header-btns { flex-wrap: wrap !important; }
+        .col-md-6.col-xl-4 { width: 50% !important; }
     }
 </style>
+
+<div class="container py-5 mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-11">
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger fw-bold border-0 d-flex align-items-center mb-4 px-4 py-3 alert-dismissible fade show lg-reveal active" style="border-radius: 14px; font-family: 'Nunito', sans-serif;">
+                    <i class="bi bi-exclamation-octagon-fill fs-5 me-2 text-danger"></i>
+                    <div>@TempData["Error"]</div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <!-- ── HERO ── -->
+            <div class="lg-hero mb-4 lg-reveal active mobile-header-container">
+                <div class="row g-4 align-items-center position-relative" style="z-index: 2;">
+                    <div class="col-lg-8">
+                        <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                            <div class="lg-hero-meta"><i class="bi bi-globe-americas me-1 text-warning"></i> MARKETBOARD &middot; 市場</div>
+                        </div>
+                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                            <h1 class="lg-title m-0 text-uppercase">COMMUNITY <span style="color: #fbbf24;">HUB</span></h1>
+                            <button type="button" class="lg-info-btn" data-bs-toggle="modal" data-bs-target="#discoverGuideModal" title="How to use the Community Hub">
+                                <i class="bi bi-info-lg fs-5 fw-black"></i>
+                            </button>
+                        </div>
+                        <div class="lg-hero-meta mt-2 opacity-75" style="letter-spacing: 1px; font-size: 0.8rem;">Discover legendary decks forged by the community</div>
+
+                        <div class="d-flex gap-2 mt-4 mobile-header-btns flex-wrap align-items-center">
+                            <div class="purse-pill">
+                                <span class="purse-label">Purse</span>
+                                <div class="gold-coin" style="width: 20px; height: 20px; font-size: 0.65rem; border-width: 1.5px;"></div>
+                                <span class="purse-val">@ViewBag.UserGold</span>
+                            </div>
+                            <a asp-action="Index" class="btn-back">
+                                <i class="bi bi-arrow-left"></i> BACK
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── SEARCH & SORT ── -->
+            <div class="lg-panel p-4 mb-5 lg-reveal active">
+                <form asp-action="Discover" method="get" class="m-0">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-7">
+                            <div class="search-group">
+                                <i class="bi bi-search text-muted" style="font-size: 1rem; opacity: 0.6;"></i>
+                                <input type="text"
+                                       name="searchString"
+                                       value="@ViewBag.SearchString"
+                                       placeholder="Search JLPT N5, Kanji, Vocab..." />
+                                <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort" />
+                                <button type="submit" class="btn fw-black text-white" style="background: linear-gradient(135deg, #0ea5e9, #2563eb); border: none; border-radius: 10px; font-size: 0.7rem; letter-spacing: 1px; padding: 8px 14px; white-space: nowrap;">
+                                    SEARCH
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-5 d-flex gap-2">
+                            <a asp-action="Discover"
+                               asp-route-sortOrder="downloads"
+                               asp-route-searchString="@ViewBag.SearchString"
+                               class="sort-btn @(string.IsNullOrEmpty(ViewBag.CurrentSort as string) || ViewBag.CurrentSort == "downloads" ? "active" : "")">
+                                <i class="bi bi-cloud-arrow-down-fill"></i> DOWNLOADS
+                            </a>
+                            <a asp-action="Discover"
+                               asp-route-sortOrder="likes"
+                               asp-route-searchString="@ViewBag.SearchString"
+                               class="sort-btn @(ViewBag.CurrentSort == "likes" ? "active" : "")">
+                                <i class="bi bi-heart-fill"></i> TOP LIKED
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ── DECK GRID ── -->
+            <div class="row g-4 mb-5 pb-5">
+                @foreach (var deck in Model)
+                {
+                    var activeIds = (List<int>)ViewBag.ActiveParentDeckIds ?? new List<int>();
+                    var purchasedIds = (List<int>)ViewBag.PurchasedDeckIds ?? new List<int>();
+
+                    var isActiveInDashboard = activeIds.Contains(deck.Id);
+                    var isPermanentlyOwned  = purchasedIds.Contains(deck.Id);
+
+                    var hexColor = !string.IsNullOrEmpty(deck.ThemeColor) && deck.ThemeColor != "#ffffff"
+                        ? deck.ThemeColor : "#ffffff";
+
+                    <div class="col-md-6 col-xl-4 lg-reveal active">
+                        <div class="deck-card" style="background-color: @hexColor;">
+
+                            <div class="p-4 flex-grow-1 d-flex flex-column">
+                                <!-- Title + card count -->
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h4 class="fw-black text-dark m-0 pe-2 text-truncate" style="max-width: 72%; font-family: 'Nunito', sans-serif;" title="@deck.Title">
+                                        @deck.Title
+                                    </h4>
+                                    <span class="deck-badge">@deck.Flashcards.Count Cards</span>
+                                </div>
+
+                                <!-- Author -->
+                                <div class="deck-meta mb-3">
+                                    <i class="bi bi-person-circle"></i>
+                                    <span>By @(deck.AuthorName ?? "Questor")</span>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="flex-grow-1 mb-4">
+                                    <p class="deck-desc">
+                                        @(string.IsNullOrWhiteSpace(deck.Description)
+                                            ? "No description provided."
+                                            : deck.Description)
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Card footer: votes + action -->
+                            <div class="px-4 pb-4 d-flex justify-content-between align-items-center gap-2 mt-auto">
+
+                                <div class="d-flex gap-3 align-items-center">
+                                    <!-- Upvote -->
+                                    <form asp-action="VoteDeck" method="post" class="m-0">
+                                        <input type="hidden" name="deckId" value="@deck.Id" />
+                                        <input type="hidden" name="isUpvote" value="true" />
+                                        <button type="submit" class="vote-btn" title="Upvote Deck">
+                                            <i class="bi bi-hand-thumbs-up-fill text-success" style="font-size: 1.1rem;"></i>
+                                            <span style="font-size: 0.82rem;">@deck.Likes</span>
+                                        </button>
+                                    </form>
+                                    <!-- Download count -->
+                                    <div class="d-flex align-items-center gap-1" title="Downloads">
+                                        <i class="bi bi-cloud-arrow-down-fill" style="color: #0ea5e9; font-size: 1.1rem;"></i>
+                                        <span class="fw-black" style="font-size: 0.82rem; color: #0f172a;">@deck.Downloads</span>
+                                    </div>
+                                </div>
+
+                                <!-- Action button -->
+                                <div>
+                                    @if (deck.ApplicationUserId == ViewBag.CurrentUserId?.ToString())
+                                    {
+                                        <form asp-action="ToggleVisibility" method="post" class="m-0">
+                                            <input type="hidden" name="deckId" value="@deck.Id" />
+                                            <button type="submit" class="btn-blitz-danger">
+                                                UNPUBLISH
+                                            </button>
+                                        </form>
+                                    }
+                                    else if (isActiveInDashboard)
+                                    {
+                                        <span class="btn-owned">
+                                            <i class="bi bi-check-lg me-1"></i> OWNED
+                                        </span>
+                                    }
+                                    else if (isPermanentlyOwned)
+                                    {
+                                        <form asp-action="DownloadDeck" method="post" class="m-0">
+                                            <input type="hidden" name="originalDeckId" value="@deck.Id" />
+                                            <button type="submit" class="btn-redownload">
+                                                <i class="bi bi-cloud-arrow-down-fill"></i> REDOWNLOAD
+                                            </button>
+                                        </form>
+                                    }
+                                    else if (deck.Price > 0)
+                                    {
+                                        <form asp-action="DownloadDeck" method="post" class="m-0">
+                                            <input type="hidden" name="originalDeckId" value="@deck.Id" />
+                                            <button type="submit" class="btn-blitz-dark">
+                                                <div class="gold-coin" style="width: 16px; height: 16px; font-size: 0.5rem; border-width: 1px;"></div>
+                                                @deck.Price BUY
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="DownloadDeck" method="post" class="m-0">
+                                            <input type="hidden" name="originalDeckId" value="@deck.Id" />
+                                            <button type="submit" class="btn-blitz-dark">
+                                                + FREE
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5 lg-reveal active">
+                    <i class="bi bi-search text-muted opacity-25 display-1 mb-3 d-block"></i>
+                    <h4 class="fw-black text-dark text-uppercase" style="font-family: 'Nunito', sans-serif;">NO DECKS FOUND</h4>
+                    <p class="fw-bold" style="color: #94a3b8; font-family: 'Nunito', sans-serif;">Try searching for something else!</p>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+
+<!-- ── GUIDE MODAL ── -->
+<div class="modal fade" id="discoverGuideModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg overflow-hidden" style="border-radius: 24px; font-family: 'Nunito', sans-serif;">
+
+            <div class="p-4 text-center position-relative" style="background: linear-gradient(135deg, #fbbf24, #f59e0b);">
+                <div class="position-absolute top-50 start-0 translate-middle-y ps-4 text-dark opacity-25">
+                    <i class="bi bi-globe-americas display-4"></i>
+                </div>
+                <h4 class="fw-black text-dark m-0 text-uppercase" style="letter-spacing: 2px;">Quest Log</h4>
+                <p class="text-dark fw-bold small mb-0 mt-1 opacity-75">Market Board Guide</p>
+                <button type="button" class="btn-close position-absolute top-50 end-0 translate-middle-y me-4" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body p-4 p-md-5 bg-white">
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="info-pillar w-100">
+                            <div class="info-icon" style="background: #fffbeb; color: #b45309;">
+                                <div class="gold-coin shadow-sm" style="width: 26px; height: 26px; font-size: 0.85rem; border-width: 1.5px;"></div>
+                            </div>
+                            <h6 class="fw-black text-dark text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 1px;">Buying Decks</h6>
+                            <p class="text-muted small fw-bold mb-0">Use the gold you earn from daily study quests to purchase premium community decks. Your gold goes directly to the creator!</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-pillar">
+                            <div class="info-icon" style="background: #e0f2fe; color: #0369a1;"><i class="bi bi-cloud-arrow-down-fill"></i></div>
+                            <h6 class="fw-black text-dark text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 1px;">Permanent Ownership</h6>
+                            <p class="text-muted small fw-bold mb-0">Once you buy a deck, you own it forever. If you delete it from your dashboard, you can re-download it here for free.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-pillar">
+                            <div class="info-icon" style="background: #f0fdf4; color: #15803d;"><i class="bi bi-hand-thumbs-up-fill"></i></div>
+                            <h6 class="fw-black text-dark text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 1px;">Community Voting</h6>
+                            <p class="text-muted small fw-bold mb-0">Help curate the best content! Use the <i class="bi bi-hand-thumbs-up-fill text-success mx-1"></i> button to upvote decks that are accurate and helpful.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <button type="button"
+                            class="btn fw-black text-white w-100 transition-all"
+                            style="background: linear-gradient(135deg, #0ea5e9, #2563eb); border: none; border-radius: 14px; padding: 12px; font-size: 0.8rem; letter-spacing: 1.5px; box-shadow: 0 4px 16px rgba(14,165,233,0.3);"
+                            data-bs-dismiss="modal">
+                        Understood!
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const obs = new IntersectionObserver(
+                es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('active'); }),
+                { threshold: 0.05 }
+            );
+            document.querySelectorAll('.lg-reveal').forEach(el => obs.observe(el));
+        });
+    </script>
+}

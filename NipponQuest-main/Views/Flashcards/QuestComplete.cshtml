@@ -5,93 +5,170 @@
     int gold = ViewBag.GoldReward ?? 5;
 }
 
-<div class="container py-5 mt-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-7 col-xl-6">
-            
-            <!-- 1. QUEST COMPLETE CARD -->
-            <div class="static-card border-0 rounded-4 shadow-lg overflow-hidden bg-white text-center p-0 mb-5 transition-all">
-                
-                <!-- Premium Gradient Header Banner -->
-                <div class="p-5 text-white position-relative" style="background: linear-gradient(135deg, #1e3a8a 0%, #0ea5e9 100%);">
-                    <div class="mb-4">
-                        <div class="gold-coin shadow-lg transition-all hover-scale" style="width: 100px; height: 100px; font-size: 3rem; border-width: 4px; box-shadow: 0 6px 0 #B45309; margin: 0 auto;"></div>
-                    </div>
-                    <h1 class="fw-black m-0 text-uppercase tracking-tight" style="font-size: 3.2rem;">Quest Complete!</h1>
-                    <p class="fw-black text-white opacity-75 mt-2 text-uppercase tracking-wider">You have conquered this challenge</p>
-                </div>
-
-                <div class="card-body p-5">
-                    <!-- Stats Display -->
-                    <div class="mb-5">
-                        <p class="text-muted fw-black text-uppercase tracking-wider small mb-2">Mastery Progress</p>
-                        <h2 class="fw-black text-primary tracking-tight m-0 hero-glow-text" style="font-size: 5rem; line-height: 1;">@total / @total</h2>
-                    </div>
-
-                    <!-- 2. REWARDS HUD CONTAINER -->
-                    <div class="bg-soft-blue p-4 rounded-4 mb-5 border border-primary-subtle shadow-sm mx-auto transition-all hover-lift" style="max-width: 450px;">
-                        <p class="fw-black text-primary mb-3 text-uppercase tracking-wider small opacity-75">
-                            Rewards Earned
-                        </p>
-                        <div class="d-flex justify-content-center align-items-center gap-4">
-                            <!-- EXP Reward -->
-                            <div class="text-center">
-                                <span class="fw-black text-dark d-block" style="font-size: 2.2rem;">
-                                    <i class="bi bi-lightning-charge-fill text-warning"></i> @exp
-                                </span>
-                                <span class="fw-black text-muted text-uppercase tracking-wider small" style="font-size: 0.7rem;">EXP gained</span>
-                            </div>
-                            
-                            <!-- Divider -->
-                            <div class="border-start border-primary-subtle h-100 mx-2" style="min-height: 45px; opacity: 0.5;"></div>
-
-                            <!-- Gold Reward -->
-                            <div class="text-center">
-                                <div class="d-flex align-items-center justify-content-center gap-2">
-                                    <div class="gold-coin" style="width: 32px; height: 32px; font-size: 1rem; border-width: 2px; box-shadow: 0 2px 0 #B45309;"></div>
-                                    <span class="fw-black text-dark" style="font-size: 2.2rem;">@gold</span>
-                                </div>
-                                <span class="fw-black text-muted text-uppercase tracking-wider small" style="font-size: 0.7rem;">Gold forged</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 3. CLAIM ACTION -->
-                    <form asp-action="ClaimRewards" method="post">
-                        <input type="hidden" name="expReward" value="@exp" />
-                        <input type="hidden" name="goldReward" value="@gold" />
-                        
-                        <div class="d-grid gap-3 justify-content-center">
-                            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-black px-5 py-3 shadow-sm text-uppercase tracking-wider btn-cta-premium w-100 transition-all hover-lift" style="min-width: 320px; font-size: 1.1rem;">
-                                <i class="bi bi-trophy-fill me-2"></i> CLAIM REWARDS
-                            </button>
-                            <p class="text-muted small fw-bold mt-2">Rewards will be added to your profile instantly.</p>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            
-        </div>
-    </div>
-</div>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
-    body { background-color: #f8fafc; }
+    /* ──────────────────────────────────────────────────────
+       QUEST COMPLETE — Nunito · Site CSS Aligned
+       ────────────────────────────────────────────────────── */
 
-    /* Specific overrides aligned with other views */
-    .tracking-tight { letter-spacing: -1px; }
-    .tracking-wider { letter-spacing: 1px; }
-    
-    .hero-glow-text { text-shadow: 0 0 20px rgba(14, 165, 233, 0.2); }
+    body { font-family: 'Nunito', sans-serif !important; background: #ffffff; }
 
-    /* Interactions */
-    .hover-lift { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1) !important; }
-    
-    .hover-scale:hover { transform: scale(1.1); }
-    .transition-all { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .qc-reveal {
+        opacity: 0;
+        transform: translateY(24px);
+        transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .qc-reveal.active { opacity: 1; transform: translateY(0); }
 
-    /* Gamification Elements */
+    /* Outer card wrapper */
+    .qc-card {
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+        transition: box-shadow 0.25s ease;
+        font-family: 'Nunito', sans-serif;
+    }
+    .qc-card:hover { box-shadow: 0 18px 48px rgba(15, 23, 42, 0.1); }
+
+    /* Hero banner inside the card */
+    .qc-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #0ea5e9 160%);
+        color: #ffffff;
+        padding: 3rem 2rem 2.5rem;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    .qc-hero::before {
+        content: "";
+        position: absolute;
+        inset: -45% -10% auto auto;
+        width: 360px; height: 360px;
+        background: radial-gradient(circle, rgba(245, 158, 11, 0.22) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .qc-hero::after {
+        content: "完了";
+        position: absolute;
+        right: 14px; bottom: -20px;
+        font-size: 7rem;
+        font-weight: 900;
+        color: rgba(255,255,255,0.05);
+        line-height: 1;
+        letter-spacing: -4px;
+        pointer-events: none;
+        font-family: 'Nunito', sans-serif;
+    }
+    .qc-hero h1 {
+        font-size: clamp(2.4rem, 5vw, 3.2rem);
+        font-weight: 900;
+        letter-spacing: -1.5px;
+        line-height: 1;
+        margin: 0;
+        font-family: 'Nunito', sans-serif;
+    }
+    .qc-hero .qc-sub {
+        font-size: 0.7rem;
+        font-weight: 900;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.6);
+        margin-top: 0.75rem;
+    }
+
+    /* Big gold coin */
+    .qc-coin {
+        width: 92px;
+        height: 92px;
+        margin: 0 auto 1.5rem;
+        font-size: 2.6rem;
+        border-width: 4px !important;
+        box-shadow: 0 6px 0 #B45309, 0 12px 30px rgba(245, 158, 11, 0.35);
+        transform: rotate(-5deg);
+    }
+
+    /* Card body */
+    .qc-body {
+        padding: 2.5rem 2rem;
+        text-align: center;
+    }
+    .qc-stat-label {
+        font-size: 0.6rem;
+        font-weight: 900;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #94a3b8;
+        margin-bottom: 0.5rem;
+    }
+    .qc-stat-value {
+        font-size: clamp(3rem, 7vw, 4.8rem);
+        font-weight: 900;
+        letter-spacing: -2px;
+        line-height: 1;
+        background: linear-gradient(135deg, #0ea5e9, #2563eb);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-family: 'Nunito', sans-serif;
+    }
+
+    /* Rewards box */
+    .qc-rewards {
+        background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+        border: 2px solid #bae6fd;
+        border-radius: 20px;
+        padding: 1.5rem 1.25rem;
+        max-width: 460px;
+        margin: 1.5rem auto 2rem;
+    }
+    .qc-rewards-title {
+        font-size: 0.6rem;
+        font-weight: 900;
+        letter-spacing: 2px;
+        color: #0369a1;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+    .qc-reward-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+    }
+    .qc-reward-divider {
+        width: 1px;
+        height: 50px;
+        background: #bae6fd;
+        flex-shrink: 0;
+    }
+    .qc-reward-item {
+        text-align: center;
+    }
+    .qc-reward-item .qc-reward-num {
+        font-size: 2rem;
+        font-weight: 900;
+        color: #0f172a;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: 'Nunito', sans-serif;
+    }
+    .qc-reward-item .qc-reward-label {
+        font-size: 0.55rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-top: 0.4rem;
+    }
+
+    /* Gold coin (general) */
     .gold-coin {
         background: linear-gradient(135deg, #FFD700 0%, #FFB900 100%);
         border-radius: 50%;
@@ -100,8 +177,131 @@
         align-items: center;
         justify-content: center;
         font-weight: 900;
-        color: #451a03 !important; 
-        transform: translateY(-2px);
+        color: #451a03 !important;
+        font-family: 'Nunito', sans-serif;
+        flex-shrink: 0;
     }
     .gold-coin::after { content: "G"; }
+
+    /* CTA button (matches site) */
+    .btn-claim {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #0ea5e9, #2563eb);
+        color: #ffffff !important;
+        border: none;
+        border-radius: 16px;
+        font-family: 'Nunito', sans-serif;
+        font-weight: 900;
+        font-size: 0.95rem;
+        letter-spacing: 1.5px;
+        padding: 14px 28px;
+        cursor: pointer;
+        transition: all 200ms ease;
+        box-shadow: 0 8px 24px rgba(14, 165, 233, 0.3);
+        text-transform: uppercase;
+        width: 100%;
+        max-width: 380px;
+    }
+    .btn-claim:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(14, 165, 233, 0.4);
+        color: #ffffff !important;
+    }
+
+    .qc-hint {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #94a3b8;
+        margin-top: 1rem;
+    }
+
+    @@media (max-width: 575.98px) {
+        .qc-hero { padding: 2.25rem 1.25rem 2rem; }
+        .qc-body { padding: 2rem 1.25rem; }
+        .qc-coin { width: 80px; height: 80px; font-size: 2.2rem; }
+        .qc-rewards { padding: 1.25rem 1rem; }
+        .qc-reward-row { gap: 1rem; }
+        .qc-reward-item .qc-reward-num { font-size: 1.6rem; }
+    }
 </style>
+
+<div class="container py-5 mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-xl-6">
+            
+            <div class="qc-card qc-reveal">
+                
+                <!-- HERO -->
+                <div class="qc-hero">
+                    <div class="position-relative" style="z-index: 2;">
+                        <div class="gold-coin qc-coin"></div>
+                        <h1>Quest Complete!</h1>
+                        <div class="qc-sub">You have conquered this challenge</div>
+                    </div>
+                </div>
+
+                <!-- BODY -->
+                <div class="qc-body">
+                    
+                    <!-- Mastery score -->
+                    <div class="mb-4">
+                        <div class="qc-stat-label">Mastery Progress</div>
+                        <div class="qc-stat-value">@total / @total</div>
+                    </div>
+
+                    <!-- Rewards -->
+                    <div class="qc-rewards">
+                        <div class="qc-rewards-title">
+                            <i class="bi bi-trophy-fill me-1" style="color:#fbbf24;"></i> Rewards Earned
+                        </div>
+                        <div class="qc-reward-row">
+                            <div class="qc-reward-item">
+                                <div class="qc-reward-num">
+                                    <i class="bi bi-lightning-charge-fill" style="color: #fbbf24; font-size: 1.6rem;"></i>
+                                    @exp
+                                </div>
+                                <div class="qc-reward-label">EXP gained</div>
+                            </div>
+
+                            <div class="qc-reward-divider"></div>
+
+                            <div class="qc-reward-item">
+                                <div class="qc-reward-num">
+                                    <div class="gold-coin" style="width: 30px; height: 30px; font-size: 0.9rem; border-width: 2px; box-shadow: 0 2px 0 #B45309;"></div>
+                                    @gold
+                                </div>
+                                <div class="qc-reward-label">Gold forged</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Claim -->
+                    <form asp-action="ClaimRewards" method="post">
+                        <input type="hidden" name="expReward" value="@exp" />
+                        <input type="hidden" name="goldReward" value="@gold" />
+
+                        <button type="submit" class="btn-claim">
+                            <i class="bi bi-trophy-fill"></i> CLAIM REWARDS
+                        </button>
+
+                        <p class="qc-hint">Rewards will be added to your profile instantly.</p>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const obs = new IntersectionObserver(
+            es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('active'); }),
+            { threshold: 0.05 }
+        );
+        document.querySelectorAll('.qc-reveal').forEach(el => obs.observe(el));
+    });
+</script>

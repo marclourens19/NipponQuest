@@ -1,62 +1,385 @@
 ﻿@{
     ViewData["Title"] = "Cookie Policy";
 }
-<div class="container py-5">
-    <div class="auth-card mx-auto shadow-lg" style="max-width: 900px; padding: 4rem;">
-        <div class="text-center mb-5">
-            <h1 class="fw-black text-dark" style="letter-spacing: -2px; font-size: 3rem;">@ViewData["Title"]</h1>
-            <p class="text-muted fw-bold">Issued by YugenLabs | 2026</p>
-        </div>
 
-        <div class="legal-content fw-bold text-muted" style="line-height: 1.8;">
-            <section class="mb-5">
-                <h4 class="text-dark fw-black text-uppercase small mb-3" style="letter-spacing: 1px;">1. Engineering Excellence</h4>
-                <p>
-                    At <strong>YugenLabs</strong>, we prioritize a seamless user experience. Cookies and local browser storage are the technical foundations
-                    that allow <strong>NipponQuest</strong> to deliver real-time gamification, power our Spaced Repetition Engine, and ensure secure authentication.
-                </p>
-            </section>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
-            <section class="mb-5">
-                <h4 class="text-dark fw-black text-uppercase small mb-3" style="letter-spacing: 1px;">2. Storage Classification</h4>
-                <div class="ps-3 border-start border-primary border-3">
-                    <p class="mb-2"><strong>Authentication:</strong> Managed via .NET Identity to keep your session secure across the Arena and Discover Hub.</p>
-                    <p class="mb-2"><strong>Progression & Economy:</strong> Tracking XP, Gold balances, and League rank updates during your active session.</p>
-                    <p class="mb-2"><strong>Flashcard Engine:</strong> Utilizing local and session storage to manage active flashcard reviews, Anki deck import states, and learning algorithm timings.</p>
-                    <p class="mb-2"><strong>Security:</strong> Anti-forgery tokens (XSRF) to prevent cross-site request forgery during gameplay and marketplace transactions.</p>
+<style>
+    .cookies-body { font-family: 'Nunito', sans-serif; background: #ffffff; }
+    .cookies-card {
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 28px;
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+    }
+    .cookies-section { margin-bottom: 2.5rem; }
+    .cookies-section h4 {
+        font-size: 0.75rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #0f172a;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .cookies-section h4::before {
+        content: '';
+        display: block;
+        width: 4px;
+        height: 20px;
+        background: linear-gradient(180deg, #0ea5e9, #2563eb);
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+    .cookies-section p, .cookies-section li {
+        font-size: 0.9rem;
+        line-height: 1.75;
+        color: #475569;
+        font-weight: 600;
+    }
+    .cookies-section strong { color: #0f172a; font-weight: 900; }
+    .cookies-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .cookies-list li {
+        padding: 0.6rem 0;
+        padding-left: 1.5rem;
+        position: relative;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .cookies-list li:last-child { border-bottom: none; }
+    .cookies-list li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 1rem;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0ea5e9;
+        flex-shrink: 0;
+    }
+    /* Cookie type table */
+    .cookie-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        overflow: hidden;
+        margin: 1rem 0;
+        font-size: 0.82rem;
+    }
+    .cookie-table thead tr {
+        background: #f8fafc;
+    }
+    .cookie-table thead th {
+        padding: 0.75rem 1rem;
+        font-size: 0.6rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #94a3b8;
+        border-bottom: 1px solid #e2e8f0;
+        white-space: nowrap;
+    }
+    .cookie-table tbody td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        color: #475569;
+        font-weight: 600;
+        vertical-align: top;
+    }
+    .cookie-table tbody tr:last-child td { border-bottom: none; }
+    .cookie-table tbody td strong { color: #0f172a; font-weight: 900; }
+    .cookie-tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 0.5rem;
+        font-weight: 900;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+    .cookie-tag.essential { background: #d1fae5; color: #065f46; }
+    .cookie-tag.functional { background: #dbeafe; color: #1d4ed8; }
+    .cookie-tag.third-party { background: #fef3c7; color: #92400e; }
+    .cookie-tag.local { background: #ede9fe; color: #4c1d95; }
+    .cookies-info {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin: 1rem 0;
+    }
+    .cookies-info p { margin: 0; font-size: 0.85rem; color: #075985; font-weight: 700; }
+    .cookies-warning {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin: 1rem 0;
+    }
+    .cookies-warning p { margin: 0; font-size: 0.85rem; color: #92400e; font-weight: 700; }
+    .cookies-footer {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        margin-top: 3rem;
+    }
+    @@media (max-width: 576px) {
+        .cookies-card { padding: 2rem !important; border-radius: 20px; }
+        .cookies-section p, .cookies-section li { font-size: 0.85rem; }
+        .cookie-table { font-size: 0.75rem; }
+        .cookie-table thead th, .cookie-table tbody td { padding: 0.5rem 0.6rem; }
+    }
+</style>
+
+<div class="cookies-body">
+    <div class="container py-5">
+        <div class="cookies-card mx-auto" style="max-width: 900px; padding: 4rem;">
+            <div class="text-center mb-5">
+                <span class="badge rounded-pill px-3 py-2 fw-black mb-3" style="background: #ede9fe; color: #4c1d95; font-size: 0.65rem; letter-spacing: 1.5px;">COOKIES & STORAGE</span>
+                <h1 class="fw-black" style="letter-spacing: -2px; font-size: 3rem; color: #0f172a;">@ViewData["Title"]</h1>
+                <p class="fw-bold mt-2" style="color: #94a3b8; font-size: 0.85rem;">Issued by YugenLabs &middot; Effective May 5, 2026</p>
+            </div>
+
+            <div class="cookies-body-content">
+
+                <!-- 1. OVERVIEW -->
+                <div class="cookies-section">
+                    <h4>1. Overview</h4>
+                    <p>
+                        This Cookie Policy explains what cookies and browser storage technologies <strong>NipponQuest</strong> uses, why we use them, and how they power the platform's gamification, authentication, flashcard engine, KanaBlitz Arena, and Discover Hub.
+                    </p>
+                    <p>
+                        This policy should be read alongside our <a href="/Home/Privacy" style="color: #0ea5e9; font-weight: 900;">Privacy Policy</a> and <a href="/Home/Terms" style="color: #0ea5e9; font-weight: 900;">Terms of Service</a>. By continuing to use NipponQuest, you acknowledge your understanding of how these technologies are used.
+                    </p>
                 </div>
-            </section>
 
-            <section class="mb-5">
-                <h4 class="text-dark fw-black text-uppercase small mb-3" style="letter-spacing: 1px;">3. External Integrations</h4>
-                <p>
-                    Our use of <strong>Google OAuth</strong> requires third-party cookies to verify your identity.
-                    Please refer to Google's Privacy and Terms for details on their data handling.
-                </p>
-            </section>
+                <!-- 2. WHAT ARE COOKIES -->
+                <div class="cookies-section">
+                    <h4>2. What Are Cookies & Browser Storage?</h4>
+                    <p>
+                        <strong>Cookies</strong> are small text files placed on your device by a website. They are sent back to the originating website on each visit, or to any other website that recognises that cookie, enabling features like staying signed in.
+                    </p>
+                    <p>
+                        <strong>Local Storage</strong> and <strong>Session Storage</strong> are browser-native storage areas that allow web applications to store data directly in your browser without expiry (localStorage) or only for the duration of your tab session (sessionStorage). NipponQuest uses both for gameplay, acknowledgements, and UI preferences.
+                    </p>
+                </div>
 
-            <div class="mt-5 pt-4 border-top text-center">
-                <p class="small opacity-75">
-                    For legal or technical inquiries: <br />
-                    <span class="text-dark fw-black">YugenLabs</span><br />
-                    <span class="text-muted">Lead Developer: Joshua Marc Lourens</span><br />
-                    Westville, South Africa
-                </p>
+                <!-- 3. COOKIE TABLE -->
+                <div class="cookies-section">
+                    <h4>3. Cookies & Storage We Use</h4>
+                    <p>The table below lists the categories of cookies and storage technologies we use across the Platform:</p>
+                    <div style="overflow-x: auto;">
+                        <table class="cookie-table">
+                            <thead>
+                                <tr>
+                                    <th>Name / Type</th>
+                                    <th>Category</th>
+                                    <th>Purpose</th>
+                                    <th>Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>.AspNetCore.Identity.Application</strong></td>
+                                    <td><span class="cookie-tag essential">Essential</span></td>
+                                    <td>Maintains your authenticated login session across the Platform. Required for all signed-in features.</td>
+                                    <td>Session / Up to 14 days</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>__RequestVerificationToken</strong></td>
+                                    <td><span class="cookie-tag essential">Essential</span></td>
+                                    <td>Anti-CSRF (Cross-Site Request Forgery) token that protects form submissions, score submissions, marketplace transactions, and account actions.</td>
+                                    <td>Session</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>.AspNetCore.Antiforgery.*</strong></td>
+                                    <td><span class="cookie-tag essential">Essential</span></td>
+                                    <td>Additional server-side forgery protection for secured routes and authenticated actions.</td>
+                                    <td>Session</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>TempData / FlashMessage</strong></td>
+                                    <td><span class="cookie-tag functional">Functional</span></td>
+                                    <td>Stores brief server messages such as success or error alerts shown after form submissions or account changes.</td>
+                                    <td>Single request</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>kanablitz-rules-acknowledged</strong></td>
+                                    <td><span class="cookie-tag local">LocalStorage</span></td>
+                                    <td>Records whether you have accepted the KanaBlitz rules and photosensitivity warning so the modal is not shown on every session.</td>
+                                    <td>Persistent (browser)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>insanity-acknowledged</strong></td>
+                                    <td><span class="cookie-tag local">LocalStorage</span></td>
+                                    <td>Records whether you have acknowledged the Insanity mode warning (kanji, furigana, advanced difficulty requirements) before first entry.</td>
+                                    <td>Persistent (browser)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Flashcard UI Preferences</strong></td>
+                                    <td><span class="cookie-tag local">LocalStorage</span></td>
+                                    <td>Stores any user-side flashcard interface settings, active deck context, or review UI state to improve continuity across sessions.</td>
+                                    <td>Persistent (browser)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Service Worker Cache</strong></td>
+                                    <td><span class="cookie-tag functional">Functional</span></td>
+                                    <td>Used by the NipponQuest Progressive Web App (PWA) to cache static assets for faster loading and improved offline resilience when the app is installed to a device.</td>
+                                    <td>Until cleared or updated</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Google OAuth Cookies</strong></td>
+                                    <td><span class="cookie-tag third-party">Third-Party</span></td>
+                                    <td>Set by Google during OAuth authentication flows if you choose to sign in using your Google account. Governed by Google's own privacy policy.</td>
+                                    <td>Varies (Google-controlled)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 4. ESSENTIAL COOKIES -->
+                <div class="cookies-section">
+                    <h4>4. Essential Cookies</h4>
+                    <p>
+                        Essential cookies are strictly necessary for the Platform to function. Without them, core features including signing in, submitting scores, performing marketplace transactions, and protecting your account would not work. These cookies cannot be disabled while using NipponQuest.
+                    </p>
+                    <ul class="cookies-list">
+                        <li><strong>Authentication session cookie:</strong> Required to keep you signed in as you navigate between the Arena, Leagues, Flashcards, Discover Hub, and Stats Vault.</li>
+                        <li><strong>Anti-CSRF tokens:</strong> Required for all form submissions, KanaBlitz score submissions, deck purchases and uploads, and account management actions to prevent cross-site attacks.</li>
+                    </ul>
+                </div>
+
+                <!-- 5. FUNCTIONAL & LOCAL STORAGE -->
+                <div class="cookies-section">
+                    <h4>5. Functional Storage & localStorage</h4>
+                    <p>
+                        NipponQuest uses localStorage to persist important gameplay preferences and one-time acknowledgements across sessions without requiring a server round-trip.
+                    </p>
+                    <ul class="cookies-list">
+                        <li><strong>KanaBlitz rule acknowledgements:</strong> We store your acceptance of the KanaBlitz rules, photosensitivity warning, and Insanity mode warning so you are not asked to re-confirm on every session. These preferences are stored locally in your browser and confirmed with our server where applicable.</li>
+                        <li><strong>Flashcard UI state:</strong> Temporary preferences related to the flashcard interface, such as active deck context or review state, may be stored locally to improve continuity.</li>
+                        <li><strong>TempData messages:</strong> Brief server-side messages (e.g., "Deck published successfully") are passed via session-scoped cookies and cleared after display.</li>
+                    </ul>
+                    <div class="cookies-info">
+                        <p>
+                            localStorage data is stored entirely in your browser and is not transmitted to our servers unless we explicitly request it. Clearing your browser site data will erase these preferences and you may be asked to re-acknowledge certain prompts.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 6. PWA SERVICE WORKER -->
+                <div class="cookies-section">
+                    <h4>6. Progressive Web App (PWA) & Service Worker Cache</h4>
+                    <p>
+                        NipponQuest can be installed as a Progressive Web App on mobile and desktop devices. When installed, a <strong>service worker</strong> runs in the background and caches static assets (scripts, styles, images) to improve load speeds and resilience.
+                    </p>
+                    <ul class="cookies-list">
+                        <li>Cached assets are stored locally on your device and do not contain personal data.</li>
+                        <li>The service worker cache is automatically updated when we push new versions of the Platform.</li>
+                        <li>You can clear the service worker cache by clearing your browser's site data or uninstalling the PWA from your device.</li>
+                        <li>The service worker does not intercept or inspect authenticated API calls or personal gameplay data.</li>
+                    </ul>
+                </div>
+
+                <!-- 7. THIRD-PARTY COOKIES -->
+                <div class="cookies-section">
+                    <h4>7. Third-Party Cookies</h4>
+                    <p>
+                        We use <strong>Google OAuth</strong> to provide an optional "Sign in with Google" authentication flow. When you initiate a Google sign-in, Google may set their own cookies on your device to authenticate your Google identity and complete the login.
+                    </p>
+                    <div class="cookies-warning">
+                        <p>
+                            These cookies are controlled entirely by Google and are subject to <a href="https://policies.google.com/privacy" target="_blank" style="color: #92400e; font-weight: 900; text-decoration: underline;">Google's Privacy Policy</a> and their own cookie practices. NipponQuest does not have visibility into or control over how Google manages these cookies on your device.
+                        </p>
+                    </div>
+                    <p>
+                        We do not use advertising cookies, analytics cookies from third-party ad networks, or tracking pixels. NipponQuest does not currently deploy Google Analytics, Facebook Pixel, or similar third-party tracking tools.
+                    </p>
+                </div>
+
+                <!-- 8. WHAT WE DON'T DO -->
+                <div class="cookies-section">
+                    <h4>8. What We Do Not Do</h4>
+                    <ul class="cookies-list">
+                        <li>We do not use cookies to track you across other websites.</li>
+                        <li>We do not sell cookie data or share localStorage data with advertisers.</li>
+                        <li>We do not use cookies for behavioural advertising or interest-based profiling.</li>
+                        <li>We do not use analytics platforms that set third-party cookies (e.g., Google Analytics).</li>
+                        <li>We do not use session recording tools or heatmap trackers.</li>
+                    </ul>
+                </div>
+
+                <!-- 9. MANAGING COOKIES -->
+                <div class="cookies-section">
+                    <h4>9. Managing & Clearing Cookies</h4>
+                    <p>
+                        You can control, disable, or delete cookies through your browser settings. Most browsers allow you to:
+                    </p>
+                    <ul class="cookies-list">
+                        <li>View which cookies are set by a website.</li>
+                        <li>Block all cookies, or only third-party cookies.</li>
+                        <li>Delete cookies for specific sites.</li>
+                        <li>Clear localStorage and site data for a specific domain.</li>
+                        <li>Set cookies to be cleared when you close your browser.</li>
+                    </ul>
+                    <div class="cookies-warning">
+                        <p>
+                            <strong>Important:</strong> Disabling essential cookies will prevent you from signing in, submitting scores, or completing marketplace transactions. Core gameplay features of NipponQuest require essential session and CSRF cookies to function. Clearing localStorage will reset your KanaBlitz acknowledgements and flashcard preferences.
+                        </p>
+                    </div>
+                    <p>
+                        Browser-specific guides for managing cookies can be found at:
+                    </p>
+                    <ul class="cookies-list">
+                        <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" style="color: #0ea5e9; font-weight: 900;">Google Chrome</a></li>
+                        <li><a href="https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox" target="_blank" style="color: #0ea5e9; font-weight: 900;">Mozilla Firefox</a></li>
+                        <li><a href="https://support.apple.com/guide/safari/manage-cookies-sfri11471" target="_blank" style="color: #0ea5e9; font-weight: 900;">Apple Safari</a></li>
+                        <li><a href="https://support.microsoft.com/en-us/microsoft-edge/delete-cookies-in-microsoft-edge" target="_blank" style="color: #0ea5e9; font-weight: 900;">Microsoft Edge</a></li>
+                    </ul>
+                </div>
+
+                <!-- 10. POLICY UPDATES -->
+                <div class="cookies-section">
+                    <h4>10. Policy Updates</h4>
+                    <p>
+                        We may update this Cookie Policy as we add new Platform features (such as new game modes, Discover Hub enhancements, or authentication providers), or as legal requirements evolve. The effective date at the top of this page reflects the most recent update.
+                    </p>
+                    <p>
+                        Continued use of NipponQuest after changes become effective means you accept the updated Cookie Policy.
+                    </p>
+                </div>
+
+                <!-- 11. CONTACT -->
+                <div class="cookies-section">
+                    <h4>11. Contact</h4>
+                    <p>
+                        For questions about this Cookie Policy, requests to understand what data is stored about you, or requests to clear stored preferences:
+                    </p>
+                    <div class="cookies-footer">
+                        <p class="fw-black" style="font-size: 1.1rem; color: #0f172a; margin-bottom: 0.5rem;">YugenLabs</p>
+                        <p class="fw-bold" style="color: #64748b; font-size: 0.85rem; margin-bottom: 0.25rem;">Lead Developer: Joshua Marc Lourens</p>
+                        <p class="fw-bold" style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.5rem;">Westville, KwaZulu-Natal, South Africa</p>
+                        <a href="https://forms.gle/3PhMQDTUEpFpc2hp7" target="_blank" class="btn fw-black px-4 py-2" style="font-size: 0.7rem; letter-spacing: 1px; border-radius: 12px; background: linear-gradient(135deg, #0ea5e9, #2563eb); color: #fff; border: none; box-shadow: 0 4px 16px rgba(14, 165, 233, 0.25); text-decoration: none;">
+                            SUBMIT COOKIE ENQUIRY
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </div>
-        <style>
-        @@media (max-width: 576px) {
-            /* Reduce container vertical padding */
-            .container.py-5 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
-            /* Make auth card full width and reduce padding */
-            .auth-card { max-width: 100% !important; padding: 2rem !important; }
-            /* Scale down main heading */
-            h1.fw-black { font-size: clamp(2rem, 6vw, 3rem) !important; }
-            /* Reduce section spacing */
-            .legal-content .mb-5 { margin-bottom: 1rem !important; }
-            /* Adjust bottom margin */
-            .mt-5.pt-4.border-top { margin-top: 2rem !important; }
-        }
-    </style>
-</div>
+    </div>
 </div>

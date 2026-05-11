@@ -1,104 +1,341 @@
 ﻿@{
     ViewData["Title"] = "Terms of Service";
 }
-<div class="container py-5">
-    <div class="auth-card mx-auto shadow-lg" style="max-width: 900px; padding: 4rem;">
-        <div class="text-center mb-5">
-            <h1 class="fw-black text-dark" style="letter-spacing: -2px; font-size: 3rem;">@ViewData["Title"]</h1>
-            <p class="text-muted fw-bold">Last Revised: May 5, 2026</p>
-        </div>
 
-        <div class="legal-content fw-bold text-muted" style="line-height: 1.8;">
-            
-            <section class="mb-5">
-                <h4 class="text-dark fw-black text-uppercase small mb-3" style="letter-spacing: 1px;">1. Acceptance of Terms</h4>
-                <p>
-                    By accessing NipponQuest, you agree to be bound by these Terms of Service. If you do not agree to all terms,
-                    you are prohibited from using the service. This platform is provided "as is" for educational and
-                    entertainment purposes.
-                </p>
-            </section>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
-            <section class="mb-5">
-                <h4 class="text-dark fw-black text-uppercase small mb-3" style="letter-spacing: 1px;">2. User Conduct & Fair Play</h4>
-                <p>To maintain the integrity of our Leagues, Leaderboards, and Discover Hub, you agree not to:</p>
-                <ul class="list-unstyled ps-3 border-start border-primary border-3">
-                    <li class="mb-2"><strong>Cheat:</strong> Use automated scripts, bots, or exploits to gain XP or Gold.</li>
-                    <li class="mb-2"><strong>Upload Malicious Content:</strong> Distribute viruses, malware, or corrupted data through Anki deck (.apkg) uploads.</li>
-                    <li class="mb-2"><strong>Impersonate:</strong> Choose a GamerTag that is offensive, copyrighted, or impersonates another user or staff member.</li>
-                    <li class="mb-2"><strong>Disrupt:</strong> Attempt to interfere with the site’s security or performance.</li>
-                </ul>
-            </section>
+<style>
+    .terms-body { font-family: 'Nunito', sans-serif; background: #ffffff; }
+    .terms-card {
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 28px;
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+    }
+    .terms-section { margin-bottom: 2.5rem; }
+    .terms-section h4 {
+        font-size: 0.75rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #0f172a;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .terms-section h4::before {
+        content: '';
+        display: block;
+        width: 4px;
+        height: 20px;
+        background: linear-gradient(180deg, #0ea5e9, #2563eb);
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+    .terms-section p, .terms-section li {
+        font-size: 0.9rem;
+        line-height: 1.75;
+        color: #475569;
+        font-weight: 600;
+    }
+    .terms-section strong { color: #0f172a; font-weight: 900; }
+    .terms-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .terms-list li {
+        padding: 0.6rem 0;
+        padding-left: 1.5rem;
+        position: relative;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .terms-list li:last-child { border-bottom: none; }
+    .terms-list li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 1rem;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0ea5e9;
+        flex-shrink: 0;
+    }
+    .terms-warning {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin: 1rem 0;
+    }
+    .terms-warning p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #92400e;
+        font-weight: 700;
+    }
+    .terms-beta {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin: 1rem 0;
+    }
+    .terms-beta p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #075985;
+        font-weight: 700;
+    }
+    .terms-footer {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        margin-top: 3rem;
+    }
+    @@media (max-width: 576px) {
+        .terms-card { padding: 2rem !important; border-radius: 20px; }
+        .terms-section p, .terms-section li { font-size: 0.85rem; }
+    }
+</style>
 
-            <section class="mb-5">
-                <h4 class="text-dark fw-black text-uppercase small mb-3" style="letter-spacing: 1px;">3. User-Generated Content & Discover Hub</h4>
-                <p>
-                    By publishing flashcard decks or any other content to the <strong>Discover Hub</strong>, you grant NipponQuest a non-exclusive, royalty-free license to host, display, and distribute that content to other users.
-                    You represent that you own or have the necessary rights to the content you upload. We reserve the right to remove any decks that violate copyright laws, contain inappropriate material, or are deemed harmful, without prior notice.
-                </p>
-            </section>
-
-            <section class="mb-5">
-                <h4 class="text-dark fw-black text-uppercase small mb-3" style="letter-spacing: 1px;">4. Virtual Economy (Gold)</h4>
-                <p>
-                    "Gold" earned through gameplay, streaks, or selling decks on the Discover Hub is a virtual currency strictly for use within the NipponQuest platform.
-                    It holds <strong>no real-world monetary value</strong>, cannot be redeemed for cash, and cannot be transferred or sold outside of the platform's official ecosystem.
-                </p>
-            </section>
-
-            <section class="mb-5">
-                <h4 class="text-dark fw-black text-uppercase small mb-3" style="letter-spacing: 1px;">5. Intellectual Property</h4>
-                <p>
-                    All code, designs, and brand assets (including the "NipponQuest" name and logos) are the exclusive property of
-                    <strong>Joshua Marc Lourens</strong>. You may not reproduce or distribute any part of this platform without
-                    explicit written consent. You retain ownership of the original educational content you create and upload.
-                </p>
-            </section>
-
-            <section class="mb-5">
-                <h4 class="text-dark fw-black text-uppercase small mb-3" style="letter-spacing: 1px;">6. Account Termination</h4>
-                <p>
-                    We reserve the right to suspend or terminate your account and forfeit all associated XP, uploaded decks, and Gold balances
-                    at our sole discretion, without notice, for conduct that we believe violates these Terms or is harmful to
-                    other users of the platform.
-                </p>
-            </section>
-
-            <section class="mb-5">
-                <h4 class="text-dark fw-black text-uppercase small mb-3" style="letter-spacing: 1px;">7. Limitation of Liability</h4>
-                <p>
-                    In no event shall NipponQuest or its developer be liable for any damages (including, without limitation,
-                    damages for loss of data or profit) arising out of the use or inability to use the materials on this website.
-                    We do not guarantee the accuracy of language translations, user-uploaded flashcards, or quest content.
-                </p>
-            </section>
-
-            <section class="mb-5">
-                <h4 class="text-dark fw-black text-uppercase small mb-3" style="letter-spacing: 1px;">8. Governing Law</h4>
-                <p>
-                    Any claim relating to NipponQuest shall be governed by the laws of <strong>South Africa</strong>, without regard
-                    to its conflict of law provisions. You agree to submit to the personal and exclusive jurisdiction of the
-                    courts located within Westville, KwaZulu-Natal.
-                </p>
-            </section>
-
-            <div class="mt-5 pt-4 border-top text-center">
-                <p class="small opacity-75">
-                    For legal or technical inquiries: <br />
-                    <span class="text-dark fw-black">YugenLabs</span><br />
-                    <span class="text-muted">Lead Developer: Joshua Marc Lourens</span><br />
-                    Westville, South Africa
-                </p>
+<div class="terms-body">
+    <div class="container py-5">
+        <div class="terms-card mx-auto" style="max-width: 900px; padding: 4rem;">
+            <div class="text-center mb-5">
+                <span class="badge rounded-pill px-3 py-2 fw-black mb-3" style="background: #fef3c7; color: #92400e; font-size: 0.65rem; letter-spacing: 1.5px;">LEGAL</span>
+                <h1 class="fw-black" style="letter-spacing: -2px; font-size: 3rem; color: #0f172a;">@ViewData["Title"]</h1>
+                <p class="fw-bold mt-2" style="color: #94a3b8; font-size: 0.85rem;">Last Revised: May 5, 2026 &middot; Effective Immediately</p>
             </div>
-            <style>
-                @@media (max-width: 576px) {
-                    .container.py-5 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
-                    .auth-card { max-width: 100% !important; padding: 2rem !important; }
-                    h1.fw-black { font-size: clamp(2rem, 6vw, 3rem) !important; }
-                    .legal-content .mb-5 { margin-bottom: 1rem !important; }
-                    .mt-5.pt-4.border-top { margin-top: 2rem !important; }
-                }
-            </style>
+
+            <div class="terms-body-content">
+
+                <!-- 1. ACCEPTANCE -->
+                <div class="terms-section">
+                    <h4>1. Acceptance of Terms</h4>
+                    <p>
+                        By creating an account, accessing, or using any part of <strong>NipponQuest</strong> (the "Platform"), you acknowledge that you have read, understood, and agree to be bound by these Terms of Service, our <a href="/Home/Privacy" style="color: #0ea5e9; font-weight: 900;">Privacy Policy</a>, and our <a href="/Home/Cookies" style="color: #0ea5e9; font-weight: 900;">Cookie Policy</a>. If you do not agree to all terms, you must not use the Platform.
+                    </p>
+                    <p>
+                        We reserve the right to modify these Terms at any time. Material changes will be notified via email or a prominent banner on the Platform. Continued use after changes constitutes acceptance.
+                    </p>
+                </div>
+
+                <!-- 2. BETA STATUS -->
+                <div class="terms-section">
+                    <h4>2. Beta Platform Disclaimer</h4>
+                    <div class="terms-beta">
+                        <p>
+                            <strong>BETA V1.0 NOTICE:</strong> NipponQuest is currently in early beta. Features, mechanics, virtual economies, leaderboards, and progression systems are subject to significant change, rebalancing, or full reset at any time without prior notice. Your feedback is actively used to improve the Platform.
+                        </p>
+                    </div>
+                    <p>
+                        During beta, we may perform unscheduled maintenance, experience downtime, or lose data. While we take reasonable precautions, we do not guarantee the preservation of XP, Gold, streaks, deck uploads, or leaderboard positions during the beta period. Full account wipes may occur as we transition out of beta.
+                    </p>
+                </div>
+
+                <!-- 3. ELIGIBILITY -->
+                <div class="terms-section">
+                    <h4>3. Eligibility & Account Registration</h4>
+                    <p>
+                        You must be at least <strong>13 years of age</strong> to create an account. If you are under 18, you represent that you have parental or guardian consent. You are responsible for maintaining the confidentiality of your account credentials and for all activity that occurs under your account.
+                    </p>
+                    <p>
+                        Your <strong>GamerTag</strong> is your public identity on the Platform. It must not be offensive, impersonate another user or staff, infringe trademarks, or contain personal information. We reserve the right to rename or suspend accounts with inappropriate GamerTags without notice.
+                    </p>
+                </div>
+
+                <!-- 4. KANABLITZ ARENA -->
+                <div class="terms-section">
+                    <h4>4. KanaBlitz Arena — Game Mode Terms</h4>
+                    <p>
+                        KanaBlitz is a high-intensity, timed reaction training mode. By entering the Arena, you acknowledge and accept the following:
+                    </p>
+                    <ul class="terms-list">
+                        <li><strong>Photosensitivity Warning:</strong> KanaBlitz includes rapid screen flashes (green/red), pulsing timers, shake animations, motion effects, and bright color transitions. If you have epilepsy, photosensitive epilepsy, or are prone to seizures, migraines, dizziness, nausea, or eye strain, consult a medical professional before playing. Stop immediately if you experience any discomfort.</li>
+                        <li><strong>Sound Effects:</strong> Correct, incorrect, combo, timer tick, victory, and defeat sounds play automatically. You are responsible for adjusting your device volume before starting a session.</li>
+                        <li><strong>Timer-Based Gameplay:</strong> All Arena modes use countdown timers. Hard and Insanity modes feature time banking (correct answers add time; mistakes subtract time). The timer runs continuously during active gameplay and cannot be paused.</li>
+                        <li><strong>Keyboard Shortcuts:</strong> Keys A-D and 1-4 are active during gameplay. Ensure no other application is intercepting these inputs.</li>
+                        <li><strong>Difficulty Locks:</strong> Hard and Insanity modes are locked until specific performance criteria are met. Dev unlock tools are for authorized testing only; abuse may result in account action.</li>
+                        <li><strong>Scoring Integrity:</strong> Scores are calculated server-side based on speed, accuracy, streaks, and difficulty multipliers. Attempts to manipulate scoring through exploits, latency abuse, or client-side tampering are strictly prohibited.</li>
+                    </ul>
+                </div>
+
+                <!-- 5. VIRTUAL ECONOMY -->
+                <div class="terms-section">
+                    <h4>5. Virtual Economy (XP & Gold)</h4>
+                    <p>
+                        NipponQuest operates a dual virtual currency system:
+                    </p>
+                    <ul class="terms-list">
+                        <li><strong>Experience Points (XP):</strong> Earned through gameplay, streaks, and correct answers. Contributes to your Account Level and League placement. XP has no real-world monetary value and cannot be purchased, transferred, or redeemed for cash.</li>
+                        <li><strong>Gold:</strong> Earned through gameplay, streak rewards, selling decks on the Discover Hub, and weekly League payouts. Gold is used exclusively to purchase decks, avatars, and cosmetic items within the Platform's shop. <strong>Gold holds no real-world monetary value</strong>, cannot be redeemed for cash, and cannot be transferred between accounts or sold outside the Platform.</li>
+                    </ul>
+                    <p>
+                        We reserve the right to adjust earn rates, prices, and economic balance at any time to maintain fair play. Virtual currency balances may be reset during beta transitions. No refunds are provided for spent or lost virtual currency.
+                    </p>
+                </div>
+
+                <!-- 6. LEAGUES & LEADERBOARDS -->
+                <div class="terms-section">
+                    <h4>6. Leagues, Leaderboards & Competitive Integrity</h4>
+                    <p>
+                        The League system consists of 9 tiers (Sprout, Wood, Iron, Gold, Diamond, Master, Challenger, Dragon, Legend). Placement and promotion are determined by weekly performance evaluations every Sunday at midnight UTC.
+                    </p>
+                    <ul class="terms-list">
+                        <li><strong>Promotion:</strong> Top 20% of players in a League tier promote to the next tier. Criteria include XP earned, accuracy, and Arena performance.</li>
+                        <li><strong>Demotion:</strong> Bottom 20% may be demoted to the previous tier.</li>
+                        <li><strong>Leaderboard Integrity:</strong> We actively monitor for suspicious activity. Accounts found using bots, scripts, exploits, or any form of automation to inflate scores will be permanently banned and removed from all leaderboards.</li>
+                        <li><strong>Seasonal Resets:</strong> League seasons may reset periodically. Your historical performance data may be archived but your current tier may be adjusted.</li>
+                        <li><strong>Disputes:</strong> All leaderboard and League decisions are final. We do not entertain appeals for promotion/demotion outcomes.</li>
+                    </ul>
+                </div>
+
+                <!-- 7. STREAKS -->
+                <div class="terms-section">
+                    <h4>7. Streaks, Login Bonuses & Forfeiture</h4>
+                    <p>
+                        Login streaks reward consistent daily engagement. Streaks are tracked per calendar day (UTC). Missing a day resets your streak to zero. We do not offer streak restoration for missed days, technical issues, or forgotten logins.
+                    </p>
+                    <p>
+                        Streak bonuses (XP multipliers, Gold rewards) scale with streak length. We reserve the right to cap maximum streak bonuses or rebalance streak mechanics at any time. Streak data may be reset during beta transitions.
+                    </p>
+                </div>
+
+                <!-- 8. FLASHCARDS -->
+                <div class="terms-section">
+                    <h4>8. Flashcard System & Spaced Repetition</h4>
+                    <p>
+                        The Flashcard System uses an algorithmic spaced repetition engine (SRS) based on your self-reported recall quality (Again, Hard, Good, Easy). Intervals are calculated automatically and may be adjusted by us to improve learning outcomes.
+                    </p>
+                    <ul class="terms-list">
+                        <li><strong>Anki Import (.apkg):</strong> You may import Anki deck files. We do not guarantee 100% compatibility with all Anki features, card types, or media formats. Corrupted or malformed imports may fail silently.</li>
+                        <li><strong>Data Loss:</strong> While we strive to preserve your review history, deck data, and scheduling intervals, we do not guarantee against data loss during beta. Regular exports of critical decks are recommended.</li>
+                        <li><strong>Review Accuracy:</strong> The SRS algorithm relies on honest self-assessment. Deliberately misrating cards to game the system may result in degraded learning outcomes and is not prohibited but is discouraged.</li>
+                    </ul>
+                </div>
+
+                <!-- 9. DISCOVER HUB -->
+                <div class="terms-section">
+                    <h4>9. Discover Hub — User-Generated Decks</h4>
+                    <p>
+                        The Discover Hub allows users to publish, sell, and purchase custom flashcard decks using Gold.
+                    </p>
+                    <ul class="terms-list">
+                        <li><strong>Ownership:</strong> You retain ownership of original educational content you create. By publishing a deck, you grant NipponQuest a worldwide, non-exclusive, royalty-free license to host, display, distribute, and promote that deck on the Platform.</li>
+                        <li><strong>Prohibited Content:</strong> Decks may not contain: copyrighted material you do not own, hate speech, explicit/adult content, malware, personal information, or content that violates any law.</li>
+                        <li><strong>Removals:</strong> We may remove any deck without notice if it violates these Terms, receives valid copyright complaints, or is reported by the community. Repeat offenders may have publishing privileges revoked.</li>
+                        <li><strong>Purchases:</strong> All deck purchases are final. Gold spent on decks is non-refundable. If a deck is removed after purchase, you retain access but no refund is issued.</li>
+                        <li><strong>Pricing:</strong> Deck creators set prices in Gold. We reserve the right to impose minimum/maximum price limits or take a platform fee from sales.</li>
+                        <li><strong>Ratings:</strong> Ratings and reviews must be honest. Fake reviews, review bombing, or coordinated manipulation will result in account suspension.</li>
+                    </ul>
+                </div>
+
+                <!-- 10. CONDUCT -->
+                <div class="terms-section">
+                    <h4>10. User Conduct & Fair Play</h4>
+                    <p>To maintain a safe, competitive, and educational environment, you agree not to:</p>
+                    <ul class="terms-list">
+                        <li><strong>Cheat or Exploit:</strong> Use bots, scripts, macros, automation tools, memory editors, packet manipulation, or any unauthorized third-party software to gain XP, Gold, leaderboard position, or any competitive advantage.</li>
+                        <li><strong>Reverse Engineer:</strong> Decompile, disassemble, or attempt to derive source code from the Platform, its APIs, or its game mechanics.</li>
+                        <li><strong>Impersonate:</strong> Pretend to be another user, staff member, or entity. This includes similar GamerTags designed to confuse.</li>
+                        <li><strong>Harass:</strong> Engage in harassment, bullying, hate speech, or targeted abuse toward other users through any Platform feature.</li>
+                        <li><strong>Spam:</strong> Upload duplicate decks, flood the Discover Hub with low-quality content, or engage in any activity that degrades the experience for others.</li>
+                        <li><strong>Account Sharing:</strong> Share your account credentials, sell accounts, or allow others to play under your identity.</li>
+                        <li><strong>Evade Enforcement:</strong> Create new accounts to circumvent bans, suspensions, or restrictions on previous accounts.</li>
+                    </ul>
+                </div>
+
+                <!-- 11. INTELLECTUAL PROPERTY -->
+                <div class="terms-section">
+                    <h4>11. Intellectual Property</h4>
+                    <p>
+                        All code, designs, user interfaces, brand assets, logos, the "NipponQuest" name, the "KanaBlitz" name, the "YugenLabs" name, and all original game mechanics, scoring algorithms, and visual designs are the exclusive intellectual property of <strong>Joshua Marc Lourens</strong> and YugenLabs.
+                    </p>
+                    <p>
+                        You may not reproduce, distribute, modify, create derivative works from, or commercially exploit any part of the Platform without explicit written consent. You retain ownership of original educational content you create and upload, subject to the license grant in Section 9.
+                    </p>
+                </div>
+
+                <!-- 12. TERMINATION -->
+                <div class="terms-section">
+                    <h4>12. Account Suspension & Termination</h4>
+                    <p>
+                        We reserve the right to suspend, restrict, or terminate your account and forfeit all associated XP, Gold, streaks, uploaded decks, leaderboard positions, and virtual items at our sole discretion, without prior notice, for:
+                    </p>
+                    <ul class="terms-list">
+                        <li>Violation of any provision in these Terms</li>
+                        <li>Cheating, exploiting, or manipulating game systems</li>
+                        <li>Uploading prohibited content to the Discover Hub</li>
+                        <li>Harassment or abuse of other users</li>
+                        <li>Any conduct we deem harmful to the Platform or its community</li>
+                    </ul>
+                    <p>
+                        Termination is permanent and irreversible. You may not create new accounts to circumvent a termination. All virtual currency and items are forfeited upon termination with no right to compensation.
+                    </p>
+                </div>
+
+                <!-- 13. DISCLAIMERS -->
+                <div class="terms-section">
+                    <h4>13. Disclaimers & Limitation of Liability</h4>
+                    <p>
+                        The Platform is provided <strong>"as is"</strong> and <strong>"as available"</strong> without warranties of any kind, express or implied. We do not guarantee uninterrupted access, error-free operation, or the accuracy of any language content, translations, or user-generated materials.
+                    </p>
+                    <div class="terms-warning">
+                        <p>
+                            <strong>Medical Disclaimer:</strong> NipponQuest is an educational game, not a certified language course. It does not replace formal Japanese language instruction. The Platform includes flashing lights, rapid motion, and sound effects that may affect individuals with photosensitive conditions. Play at your own risk.
+                        </p>
+                    </div>
+                    <p>
+                        In no event shall NipponQuest, Joshua Marc Lourens, or YugenLabs be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of data, profits, or virtual currency, arising out of your use or inability to use the Platform.
+                    </p>
+                </div>
+
+                <!-- 14. PRIVACY -->
+                <div class="terms-section">
+                    <h4>14. Privacy & Data</h4>
+                    <p>
+                        Your use of the Platform is governed by our <a href="/Home/Privacy" style="color: #0ea5e9; font-weight: 900;">Privacy Policy</a>. By using the Platform, you consent to the collection, processing, and storage of your data as described therein. We use cookies and local storage to maintain sessions, track streaks, and store gameplay preferences.
+                    </p>
+                    <p>
+                        As a registered user, you may request deletion of your account and associated personal data by contacting us. Account deletion is permanent and will result in the loss of all XP, Gold, decks, and progress.
+                    </p>
+                </div>
+
+                <!-- 15. GOVERNING LAW -->
+                <div class="terms-section">
+                    <h4>15. Governing Law & Dispute Resolution</h4>
+                    <p>
+                        These Terms shall be governed by and construed in accordance with the laws of <strong>South Africa</strong>, without regard to its conflict of law provisions. You agree to submit to the personal and exclusive jurisdiction of the courts located within Westville, KwaZulu-Natal.
+                    </p>
+                    <p>
+                        Any disputes arising from these Terms shall first be attempted to be resolved through good-faith negotiation. If unresolved within 30 days, either party may pursue legal remedies in the applicable courts.
+                    </p>
+                </div>
+
+                <!-- 16. CONTACT -->
+                <div class="terms-section">
+                    <h4>16. Contact & Legal Notices</h4>
+                    <p>
+                        For legal inquiries, copyright claims, account issues, or beta feedback:
+                    </p>
+                    <div class="terms-footer">
+                        <p class="fw-black" style="font-size: 1.1rem; color: #0f172a; margin-bottom: 0.5rem;">YugenLabs</p>
+                        <p class="fw-bold" style="color: #64748b; font-size: 0.85rem; margin-bottom: 0.25rem;">Lead Developer: Joshua Marc Lourens</p>
+                        <p class="fw-bold" style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.5rem;">Westville, KwaZulu-Natal, South Africa</p>
+                        <a href="https://forms.gle/3PhMQDTUEpFpc2hp7" target="_blank" class="btn fw-black px-4 py-2" style="font-size: 0.7rem; letter-spacing: 1px; border-radius: 12px; background: linear-gradient(135deg, #0ea5e9, #2563eb); color: #fff; border: none; box-shadow: 0 4px 16px rgba(14, 165, 233, 0.25); text-decoration: none;">
+                            SUBMIT FEEDBACK
+                        </a>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 </div>

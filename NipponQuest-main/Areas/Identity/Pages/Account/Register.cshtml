@@ -4,33 +4,242 @@
     ViewData["Title"] = "Join NipponQuest";
 }
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
 <style>
-    .auth-input-wrapper .bi { z-index: 4; font-size: 1.1rem; }
-    .btn-google { background: #fff; color: #3c4043; border: 1px solid #dadce0; transition: background-color 0.2s, box-shadow 0.2s; font-weight: 700; font-size: 0.95rem; }
-    .btn-google:hover { background: #f8fafc; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #d2d6da; }
-    .btn-google svg { width: 20px; height: 20px; margin-right: 10px; }
-    .auth-input { background-color: #f8fafc; border: 2px solid transparent; transition: border-color 0.3s, background-color 0.3s; }
-    .auth-input:focus { background-color: #ffffff; border-color: #0ea5e9; box-shadow: 0 0 0 4px rgba(14,165,233,0.1); }
-    
-    /* --- FIX: Enforce padding to prevent text from overlapping icons --- */
-    .icon-pad-left { padding-left: 2.8rem !important; }
+    body { font-family: 'Nunito', sans-serif !important; background: #f8fafc; }
+
+    .auth-wrapper {
+        min-height: calc(100vh - 80px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1rem;
+        background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(14,165,233,0.07) 0%, transparent 70%), #f8fafc;
+    }
+
+    .auth-card {
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 28px;
+        padding: 3rem 3rem;
+        width: 100%;
+        max-width: 560px;
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+    }
+
+    /* Inputs */
+    .auth-input {
+        font-family: 'Nunito', sans-serif !important;
+        font-weight: 700;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 14px !important;
+        padding: 0.85rem 1rem;
+        transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+        color: #0f172a;
+    }
+    .auth-input::placeholder { color: #94a3b8; font-weight: 600; }
+    .auth-input:focus {
+        background: #ffffff;
+        border-color: #0ea5e9;
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+        outline: none;
+        color: #0f172a;
+    }
+    .auth-input.is-invalid { border-color: #ef4444 !important; }
+    .icon-pad-left  { padding-left: 2.8rem !important; }
     .icon-pad-right { padding-right: 2.8rem !important; }
+    .auth-input-wrapper .bi { z-index: 4; font-size: 1.1rem; }
+
+    /* Labels */
+    .auth-label {
+        font-family: 'Nunito', sans-serif !important;
+        font-size: 0.65rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-bottom: 0.4rem;
+        display: block;
+    }
+
+    /* Google button */
+    .btn-google {
+        font-family: 'Nunito', sans-serif !important;
+        background: #ffffff;
+        color: #0f172a;
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        font-weight: 900;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        padding: 0.85rem 1.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+    .btn-google:hover {
+        border-color: #cbd5e1 !important;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+        transform: translateY(-1px);
+    }
+    .btn-google svg { width: 20px; height: 20px; margin-right: 10px; }
+
+    /* Divider */
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 1.25rem 0;
+    }
+    .auth-divider hr { flex-grow: 1; margin: 0; border-color: #e2e8f0; opacity: 1; }
+    .auth-divider span {
+        font-size: 0.6rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #94a3b8;
+        white-space: nowrap;
+    }
+
+    /* Submit button */
+    .btn-register {
+        font-family: 'Nunito', sans-serif !important;
+        font-weight: 900;
+        font-size: 0.85rem;
+        letter-spacing: 1.5px;
+        border-radius: 14px !important;
+        border: none !important;
+        padding: 0.9rem 1.5rem;
+        background: linear-gradient(135deg, #0ea5e9, #2563eb);
+        color: #ffffff;
+        box-shadow: 0 4px 20px rgba(14, 165, 233, 0.3);
+        transition: all 0.25s ease;
+    }
+    .btn-register:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(14, 165, 233, 0.4);
+        color: #ffffff;
+    }
+    .btn-register:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* T&Cs checkbox */
+    .terms-check-box {
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1rem 1.25rem;
+        transition: border-color 0.2s, background 0.2s;
+    }
+    .terms-check-box.accepted {
+        border-color: #10b981;
+        background: #f0fdf4;
+    }
+    .terms-check-box .form-check-input {
+        width: 18px;
+        height: 18px;
+        border: 2px solid #cbd5e1;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 2px;
+        flex-shrink: 0;
+        transition: all 0.2s;
+    }
+    .terms-check-box .form-check-input:checked {
+        background-color: #10b981;
+        border-color: #10b981;
+    }
+    .terms-check-box .form-check-input:focus {
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    }
+    .terms-check-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #475569;
+        line-height: 1.5;
+    }
+    .terms-check-label a {
+        color: #0ea5e9;
+        font-weight: 900;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(14, 165, 233, 0.3);
+        transition: border-color 0.2s;
+    }
+    .terms-check-label a:hover { border-color: #0ea5e9; }
+
+    /* Terms not accepted warning */
+    .terms-error {
+        font-size: 0.72rem;
+        color: #ef4444;
+        font-weight: 700;
+        display: none;
+        margin-top: 0.4rem;
+    }
+    .terms-error.show { display: block; }
+
+    /* Password strength */
+    .pw-strength-track {
+        height: 4px;
+        background: #f1f5f9;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+    .pw-strength-fill {
+        height: 100%;
+        border-radius: 4px;
+        width: 0%;
+        transition: width 0.3s, background 0.3s;
+    }
+    .pw-strength-label {
+        font-size: 0.6rem;
+        font-weight: 900;
+        letter-spacing: 1px;
+        margin-top: 0.25rem;
+        color: #94a3b8;
+    }
+
+    /* Validation */
+    .text-danger { font-size: 0.72rem; font-weight: 700; }
+
+    /* Footer link */
+    .auth-footer-link {
+        color: #0ea5e9;
+        font-weight: 900;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(14, 165, 233, 0.3);
+        transition: border-color 0.2s;
+    }
+    .auth-footer-link:hover { border-color: #0ea5e9; color: #0ea5e9; }
+
+    @@media (max-width: 576px) {
+        .auth-card { padding: 2rem 1.5rem; border-radius: 20px; }
+    }
 </style>
 
-<div class="auth-container py-5">
-    <div class="auth-card mx-auto shadow-lg bg-white rounded-4 p-4 p-md-5" style="max-width: 540px; border: 1px solid rgba(0,0,0,0.05);">
-        
-        <div class="text-center mb-5">
-            <div class="mb-3 d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle shadow-sm" style="width: 72px; height: 72px;">
-                <i class="bi bi-person-badge-fill fs-1"></i>
+<div class="auth-wrapper">
+    <div class="auth-card">
+
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <div class="mb-3 d-inline-flex align-items-center justify-content-center rounded-circle"
+                 style="width: 68px; height: 68px; background: #e0f2fe;">
+                <i class="bi bi-person-badge-fill" style="font-size: 2rem; color: #0ea5e9;"></i>
             </div>
-            <h1 class="fw-black text-dark mb-2" style="letter-spacing: -1.5px; font-size: 2.5rem;">Create Profile</h1>
-            <p class="text-muted fw-bold">Your legendary journey begins here.</p>
+            <h1 class="fw-black mb-1" style="letter-spacing: -1.5px; font-size: 2.25rem; color: #0f172a;">Create Profile</h1>
+            <p class="fw-bold mb-0" style="color: #94a3b8; font-size: 0.85rem;">Your legendary journey begins here.</p>
         </div>
 
-        <div class="social-auth-providers mb-4">
+        <!-- Google OAuth -->
+        <div class="mb-3">
             <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                <button type="submit" name="provider" value="Google" class="btn btn-google w-100 rounded-pill py-3 d-flex align-items-center justify-content-center">
+                <button type="submit" name="provider" value="Google" class="btn btn-google w-100 d-flex align-items-center justify-content-center">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
                         <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
                         <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
@@ -42,89 +251,193 @@
             </form>
         </div>
 
-        <div class="d-flex align-items-center mb-4">
-            <hr class="flex-grow-1 opacity-10">
-            <span class="mx-3 text-muted small fw-bold text-uppercase" style="letter-spacing: 1px;">or use email</span>
-            <hr class="flex-grow-1 opacity-10">
+        <!-- Divider -->
+        <div class="auth-divider">
+            <hr /><span>or use email</span><hr />
         </div>
 
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+        <!-- Registration Form -->
+        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" novalidate>
             <div asp-validation-summary="ModelOnly" class="text-danger small mb-3" role="alert"></div>
 
-            <div class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <label asp-for="Input.GamerTag" class="form-label small fw-black text-uppercase opacity-75 mb-0" style="letter-spacing: 1px;">Username</label>
-                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle rounded-pill fw-black" style="font-size: 0.65rem;">MAX 12 CHARS</span>
+            <!-- GamerTag -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label asp-for="Input.GamerTag" class="auth-label mb-0">Username</label>
+                    <span class="badge fw-black"
+                          style="background:#e0f2fe;color:#0369a1;font-size:0.55rem;letter-spacing:1px;border-radius:8px;padding:3px 8px;">
+                        MAX 12 CHARS
+                    </span>
                 </div>
                 <div class="position-relative auth-input-wrapper">
                     <i class="bi bi-controller position-absolute top-50 start-0 translate-middle-y ms-3 text-muted opacity-50"></i>
-                    @* Added icon-pad-left *@
-                    <input asp-for="Input.GamerTag" class="form-control auth-input py-3 icon-pad-left rounded-4 fw-bold" placeholder="Choose your legend name..." aria-required="true" maxlength="12" />
+                    <input asp-for="Input.GamerTag"
+                           class="form-control auth-input icon-pad-left"
+                           placeholder="Choose your legend name..."
+                           aria-required="true"
+                           maxlength="12" />
                 </div>
-                <span asp-validation-for="Input.GamerTag" class="text-danger small mt-1 d-block"></span>
+                <span asp-validation-for="Input.GamerTag" class="text-danger mt-1 d-block"></span>
             </div>
 
-            <div class="mb-4">
-                <label asp-for="Input.Email" class="form-label small fw-black text-uppercase opacity-75 mb-2" style="letter-spacing: 1px;">Email Address</label>
+            <!-- Email -->
+            <div class="mb-3">
+                <label asp-for="Input.Email" class="auth-label">Email Address</label>
                 <div class="position-relative auth-input-wrapper">
                     <i class="bi bi-envelope-fill position-absolute top-50 start-0 translate-middle-y ms-3 text-muted opacity-50"></i>
-                    @* Added icon-pad-left *@
-                    <input asp-for="Input.Email" class="form-control auth-input py-3 icon-pad-left rounded-4 fw-bold" placeholder="name@example.com" aria-required="true" />
+                    <input asp-for="Input.Email"
+                           class="form-control auth-input icon-pad-left"
+                           placeholder="name@example.com"
+                           aria-required="true" />
                 </div>
-                <span asp-validation-for="Input.Email" class="text-danger small mt-1 d-block"></span>
+                <span asp-validation-for="Input.Email" class="text-danger mt-1 d-block"></span>
             </div>
 
-            <div class="row g-3">
-                <div class="col-md-6 mb-3">
-                    <label asp-for="Input.Password" class="form-label small fw-black text-uppercase opacity-75 mb-2" style="letter-spacing: 1px;">Password</label>
+            <!-- Password row -->
+            <div class="row g-3 mb-1">
+                <div class="col-md-6">
+                    <label asp-for="Input.Password" class="auth-label">Password</label>
                     <div class="position-relative auth-input-wrapper">
                         <i class="bi bi-shield-lock-fill position-absolute top-50 start-0 translate-middle-y ms-3 text-muted opacity-50"></i>
-                        @* Added icon-pad-left and icon-pad-right *@
-                        <input asp-for="Input.Password" type="password" class="form-control auth-input py-3 icon-pad-left icon-pad-right rounded-4 fw-bold" placeholder="••••••••" aria-required="true" id="pwdMain" />
-                        <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y border-0 text-muted opacity-50 hover-opacity-100 px-3" onclick="togglePwd('pwdMain')">
+                        <input asp-for="Input.Password"
+                               type="password"
+                               class="form-control auth-input icon-pad-left icon-pad-right"
+                               placeholder="••••••••"
+                               aria-required="true"
+                               id="pwdMain"
+                               oninput="checkStrength(this.value)" />
+                        <button type="button"
+                                class="btn position-absolute top-50 end-0 translate-middle-y border-0 text-muted opacity-50 px-3"
+                                onclick="togglePwd('pwdMain')" tabindex="-1">
                             <i class="bi bi-eye-fill"></i>
                         </button>
                     </div>
+                    <div class="pw-strength-track">
+                        <div class="pw-strength-fill" id="pwStrengthFill"></div>
+                    </div>
+                    <div class="pw-strength-label" id="pwStrengthLabel">Enter a password</div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label asp-for="Input.ConfirmPassword" class="form-label small fw-black text-uppercase opacity-75 mb-2" style="letter-spacing: 1px;">Confirm</label>
+                <div class="col-md-6">
+                    <label asp-for="Input.ConfirmPassword" class="auth-label">Confirm</label>
                     <div class="position-relative auth-input-wrapper">
-                        @* Added an icon here to match the aesthetic of the field next to it! *@
                         <i class="bi bi-shield-check-fill position-absolute top-50 start-0 translate-middle-y ms-3 text-muted opacity-50"></i>
-                        @* Added icon-pad-left *@
-                        <input asp-for="Input.ConfirmPassword" type="password" class="form-control auth-input py-3 icon-pad-left rounded-4 fw-bold" placeholder="••••••••" aria-required="true" />
+                        <input asp-for="Input.ConfirmPassword"
+                               type="password"
+                               class="form-control auth-input icon-pad-left"
+                               placeholder="••••••••"
+                               aria-required="true" />
                     </div>
                 </div>
             </div>
-            <span asp-validation-for="Input.Password" class="text-danger small mb-3 d-block" style="margin-top: -10px;"></span>
+            <span asp-validation-for="Input.Password" class="text-danger mb-3 d-block" style="margin-top:-4px;"></span>
 
-            <button id="registerSubmit" type="submit" class="btn btn-primary btn-lg rounded-pill fw-black w-100 py-3 mt-4 btn-cta-premium d-flex justify-content-center align-items-center gap-2">
+            <!-- Terms & Privacy Acceptance -->
+            <div class="mb-4 mt-3">
+                <div class="terms-check-box d-flex align-items-start gap-3" id="termsBox">
+                    <input class="form-check-input mt-0 flex-shrink-0"
+                           type="checkbox"
+                           id="termsAccepted"
+                           name="TermsAccepted"
+                           onchange="handleTermsChange(this)" />
+                    <label class="terms-check-label" for="termsAccepted">
+                        I have read and agree to the
+                        <a href="/Home/Terms" target="_blank">Terms of Service</a>
+                        and
+                        <a href="/Home/Privacy" target="_blank">Privacy Policy</a>.
+                        I understand that NipponQuest is in beta and certain features, including XP, Gold, and leaderboard data, may be subject to reset.
+                    </label>
+                </div>
+                <div class="terms-error" id="termsError">
+                    <i class="bi bi-exclamation-circle me-1"></i>
+                    You must accept the Terms of Service and Privacy Policy to continue.
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <button id="registerSubmit"
+                    type="submit"
+                    class="btn btn-register w-100 d-flex justify-content-center align-items-center gap-2"
+                    onclick="return validateTerms()">
+                <i class="bi bi-stars" style="color: #fbbf24;"></i>
                 <span>CREATE LEGEND PROFILE</span>
-                <i class="bi bi-stars text-warning"></i>
             </button>
         </form>
 
-        <div class="text-center mt-5 pt-4 border-top" style="border-top-color: rgba(0,0,0,0.05) !important;">
-            <p class="fw-bold text-muted mb-0">
-                Already a legend? <a asp-page="./Login" class="text-primary text-decoration-none border-bottom border-primary pb-1">Login to your account</a>
+        <!-- Footer -->
+        <div class="text-center mt-4 pt-4" style="border-top: 2px solid #f1f5f9;">
+            <p class="fw-bold mb-0" style="color: #94a3b8; font-size: 0.85rem;">
+                Already a legend?
+                <a asp-page="./Login" class="auth-footer-link ms-1">Login to your account</a>
             </p>
         </div>
+
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
+        // ── Toggle password visibility ──
         function togglePwd(id) {
             const input = document.getElementById(id);
             const icon = event.currentTarget.querySelector('i');
-            if (input.type === "password") {
-                input.type = "text";
+            if (input.type === 'password') {
+                input.type = 'text';
                 icon.classList.replace('bi-eye-fill', 'bi-eye-slash-fill');
             } else {
-                input.type = "password";
+                input.type = 'password';
                 icon.classList.replace('bi-eye-slash-fill', 'bi-eye-fill');
             }
+        }
+
+        // ── Password strength meter ──
+        function checkStrength(val) {
+            const fill  = document.getElementById('pwStrengthFill');
+            const label = document.getElementById('pwStrengthLabel');
+            let score = 0;
+            if (val.length >= 6)  score++;
+            if (val.length >= 10) score++;
+            if (/[A-Z]/.test(val)) score++;
+            if (/[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+
+            const levels = [
+                { pct: '0%',   color: '#f1f5f9', text: 'Enter a password',  textColor: '#94a3b8' },
+                { pct: '25%',  color: '#ef4444', text: 'Weak',              textColor: '#ef4444' },
+                { pct: '50%',  color: '#f59e0b', text: 'Fair',              textColor: '#f59e0b' },
+                { pct: '75%',  color: '#0ea5e9', text: 'Good',              textColor: '#0ea5e9' },
+                { pct: '90%',  color: '#10b981', text: 'Strong',            textColor: '#10b981' },
+                { pct: '100%', color: '#10b981', text: 'Excellent',         textColor: '#10b981' },
+            ];
+            const lvl = val.length === 0 ? levels[0] : levels[Math.min(score, 5)];
+            fill.style.width      = lvl.pct;
+            fill.style.background = lvl.color;
+            label.textContent     = lvl.text;
+            label.style.color     = lvl.textColor;
+        }
+
+        // ── Terms checkbox ──
+        function handleTermsChange(checkbox) {
+            const box   = document.getElementById('termsBox');
+            const error = document.getElementById('termsError');
+            if (checkbox.checked) {
+                box.classList.add('accepted');
+                error.classList.remove('show');
+            } else {
+                box.classList.remove('accepted');
+            }
+        }
+
+        // ── Validate terms before submit ──
+        function validateTerms() {
+            const checkbox = document.getElementById('termsAccepted');
+            const error    = document.getElementById('termsError');
+            if (!checkbox.checked) {
+                error.classList.add('show');
+                document.getElementById('termsBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+            return true;
         }
     </script>
 }

@@ -33,7 +33,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 // --- 3. IDENTITY SETUP ---
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => {
+builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
+{
     options.SignIn.RequireConfirmedAccount = false;
     options.Password.RequireDigit = false;
     options.Password.RequiredLength = 6;
@@ -50,7 +51,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
     // Tunnels change the host/proto dynamically, so we clear these to allow any proxy
-    options.KnownNetworks.Clear();
+    options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
 });
 
@@ -124,9 +125,17 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
+
+        // Apply pending EF Core migrations
         context.Database.Migrate();
+
+        // Seed default app data
         SeedData.Initialize(services);
+
+        // Seed KanaBlitz word + character pool (Easy / Normal / Hard / Insanity)
         DbInitializer.SeedKanaBlitzData(context);
+
+        logger.LogInformation("KanaBlitz data seeded successfully.");
     }
     catch (Exception ex)
     {
@@ -162,9 +171,17 @@ app.UseAuthorization();
 
 app.UseMiddleware<NipponQuest.Middleware.LoginStreakMiddleware>();
 
+// --- 9. ROUTES ---
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// Explicit KanaBlitz route (also covered by default, but listed for clarity)
+app.MapControllerRoute(
+    name: "kanablitz",
+    pattern: "KanaBlitz/{action=Index}/{id?}",
+    defaults: new { controller = "KanaBlitz" });
+
 app.MapRazorPages();
 
 app.Run();

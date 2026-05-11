@@ -3,144 +3,290 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 
-<!-- Mobile‑only overrides – keep existing classes untouched -->
 <style>
-    @@media (max-width: 576px) {
-        .hud-bubble {
-            padding: 0.4rem 0.6rem !important;
-            font-size: 0.85rem !important;
-        }
+    /* ══════════════════════════════════════════
+       HUD — Nunito · Clean White Navbar Edition
+       ══════════════════════════════════════════ */
 
-        .rank-text {
-            font-size: 0.7rem !important;
-            padding: 2px 4px !important;
-        }
+    .hud-pill {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 7px 14px;
+        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+        position: relative;
+        overflow: hidden;
+        font-family: 'Nunito', sans-serif;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hud-pill:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+    }
 
-        .gold-coin {
-            width: 1rem !important;
-            height: 1rem !important;
-        }
+    .hud-sep {
+        width: 1px;
+        height: 22px;
+        background: #e2e8f0;
+        margin: 0 10px;
+        flex-shrink: 0;
+    }
 
-        .progress {
-            height: 6px !important;
-        }
+    /* ── Streak ───────────────────────────────── */
+    .hud-streak { display: flex; align-items: center; gap: 5px; }
+    .streak-flame-active {
+        color: #f97316;
+        filter: drop-shadow(0 0 4px rgba(249, 115, 22, 0.4));
+        font-size: 1rem;
+    }
+    .streak-frozen {
+        color: #94a3b8;
+        font-size: 1rem;
+    }
+    .hud-streak-val {
+        font-weight: 900;
+        font-size: 0.85rem;
+        color: #0f172a;
+        line-height: 1;
+    }
 
-        .level-label-sync {
-            min-width: 35px !important;
-            font-size: 0.75rem !important;
-        }
+    /* ── League — uses existing rank-text classes unchanged ── */
+    .hud-rank-link {
+        text-decoration: none;
+        transition: opacity 150ms ease, transform 150ms ease;
+    }
+    .hud-rank-link:hover { opacity: 0.85; transform: translateY(-1px); }
 
-        .streak-flame-active,
-        .streak-frozen {
-            font-size: 0.9rem !important;
-        }
+    /* ── Level ────────────────────────────────── */
+    .hud-lv { display: flex; flex-direction: column; align-items: center; }
+    .hud-lv-tag {
+        font-size: 0.46rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #94a3b8;
+        line-height: 1;
+    }
+    .hud-lv-num {
+        font-size: 0.9rem;
+        font-weight: 900;
+        color: #0ea5e9;
+        line-height: 1;
+        margin-top: 2px;
+    }
+
+    /* ── Gold value ───────────────────────────── */
+    .hud-gold { display: flex; align-items: center; gap: 5px; }
+    .hud-gold-val {
+        font-weight: 900;
+        font-size: 0.85rem;
+        color: #0f172a;
+        line-height: 1;
+    }
+
+    /* ── XP bar (desktop only) ────────────────── */
+    .hud-xp { display: flex; flex-direction: column; gap: 3px; min-width: 108px; }
+    .hud-xp-top { display: flex; justify-content: space-between; align-items: center; }
+    .hud-xp-label {
+        font-size: 0.46rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #94a3b8;
+    }
+    .hud-xp-pct { font-size: 0.46rem; font-weight: 900; color: #0ea5e9; }
+    .hud-xp-track {
+        height: 6px;
+        background: #f1f5f9;
+        border-radius: 50px;
+        overflow: hidden;
+    }
+    .hud-xp-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+        border-radius: 50px;
+        box-shadow: 0 0 6px rgba(14, 165, 233, 0.35);
+        transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ── Logout ───────────────────────────────── */
+    .hud-logout {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        background: #ffffff;
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 14px;
+        padding: 8px 18px;
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.65rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 200ms ease;
+        white-space: nowrap;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+    }
+    .hud-logout:hover {
+        background: #fef2f2;
+        border-color: #fca5a5 !important;
+        color: #dc2626;
+        box-shadow: 0 4px 16px rgba(220, 53, 69, 0.12);
+        transform: translateY(-2px);
+    }
+
+    /* ── Auth buttons ─────────────────────────── */
+    .hud-auth-login {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        padding: 6px 18px;
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.62rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #0f172a;
+        text-decoration: none;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        transition: all 200ms ease;
+    }
+    .hud-auth-login:hover {
+        border-color: #0ea5e9;
+        color: #0ea5e9;
+        box-shadow: 0 4px 14px rgba(14, 165, 233, 0.12);
+        transform: translateY(-1px);
+    }
+
+    .hud-auth-register {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        padding: 6px 18px;
+        background: linear-gradient(135deg, #0ea5e9, #2563eb);
+        border: none;
+        border-radius: 12px;
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.62rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #ffffff;
+        text-decoration: none;
+        box-shadow: 0 4px 16px rgba(14, 165, 233, 0.3);
+        transition: all 200ms ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .hud-auth-register:hover {
+        box-shadow: 0 6px 22px rgba(14, 165, 233, 0.4);
+        transform: translateY(-2px);
+        color: #ffffff;
+    }
+
+    /* ── Responsive ───────────────────────────── */
+    @@media (max-width: 767px) {
+        .hud-pill           { padding: 5px 10px; border-radius: 13px; }
+        .hud-sep            { margin: 0 7px; height: 18px; }
+        .hud-lv-num         { font-size: 0.8rem; }
+        .hud-streak-val     { font-size: 0.78rem; }
+        .hud-gold-val       { font-size: 0.78rem; }
+        .hud-logout         { padding: 6px 12px; border-radius: 12px; min-height: 40px; }
+        .hud-auth-login,
+        .hud-auth-register  { padding: 5px 12px; border-radius: 10px; min-height: 34px; }
     }
 </style>
 
-<ul class="navbar-nav d-flex flex-row align-items-center gap-1 gap-md-3 mb-0 p-0">
+<ul class="navbar-nav d-flex flex-row align-items-center gap-2 mb-0 p-0">
+
     @if (SignInManager.IsSignedIn(User))
     {
         var player = await UserManager.GetUserAsync(User);
-        var currentRankClass = player?.CurrentLeague.ToString().ToLower() ?? "sprout";
-        bool hasActiveStreak = player?.LoginStreak > 0;
+        var leagueKey = player?.CurrentLeague.ToString().ToLower() ?? "sprout";
+        bool hasStreak = player?.LoginStreak > 0;
+        var xpPct = player?.XPPercentage ?? 0;
 
         <li class="nav-item">
-            <div class="hud-bubble px-1 px-md-3 py-1 py-md-2" style="display: flex; align-items: center;">
+            <div class="d-flex align-items-center gap-2">
 
-                <div class="d-flex align-items-center justify-content-between gap-1 gap-md-3 pe-0 pe-md-3 border-end-0
-                    border-md-end border-secondary border-opacity-10">
+                <!-- ── Stats pill ────────────────────────── -->
+                <div class="hud-pill">
 
-                    <div class="d-flex align-items-center gap-1">
-                        <i class="bi bi-fire fs-6 d-md-none @(hasActiveStreak ? "streak-flame-active" :
-                                                       "streak-frozen")"></i>
-                        <span class="fw-black d-md-none @(hasActiveStreak ? "streak-flame-active" : "streak-frozen")"
-                              style="font-size: 0.8rem;">@player?.LoginStreak</span>
-
-                        <i class="bi bi-fire fs-5 d-none d-md-inline-block @(hasActiveStreak ? "streak-flame-active" :
-                                                        "streak-frozen")"></i>
-                        <span class="fw-black d-none d-md-inline-block @(hasActiveStreak ? "streak-flame-active" :
-                                                          "streak-frozen")" style="font-size: 0.95rem;">@player?.LoginStreak</span>
+                    <!-- Streak -->
+                    <div class="hud-streak">
+                        <i class="bi bi-fire @(hasStreak ? "streak-flame-active" : "streak-frozen")"></i>
+                        <span class="hud-streak-val">@player?.LoginStreak</span>
                     </div>
 
-                    <a asp-controller="Leagues" asp-action="Index" class="text-decoration-none d-none d-sm-block">
-                        <span class="rank-text @currentRankClass d-md-none" style="font-size: 0.75rem; padding: 2px
-                        6px;">@player?.CurrentLeague</span>
-                        <span class="rank-text @currentRankClass d-none
-                        d-md-inline-block">@player?.CurrentLeague</span>
+                    <div class="hud-sep"></div>
+
+                    <!-- League — uses your existing rank-text CSS, hidden on xs -->
+                    <a asp-controller="Leagues" asp-action="Index"
+                       class="hud-rank-link d-none d-sm-inline-flex">
+                        <span class="rank-text @leagueKey">@player?.CurrentLeague</span>
                     </a>
+                    <div class="hud-sep d-none d-sm-block"></div>
 
-                    <div class="level-label-sync mx-1 mx-md-0 px-1" style="font-size: 0.8rem; min-width: 40px;
-                        text-align: center;">
-                        LV.@player?.Level
-                    </div>
-
-                    <div class="d-flex d-md-none align-items-center gap-1">
-                        <span class="fw-black text-dark" style="font-size: 0.85rem;">@player?.Gold</span>
+                    <!-- Gold -->
+                    <div class="hud-gold">
+                        <span class="hud-gold-val">@player?.Gold</span>
                         <div class="gold-coin"></div>
                     </div>
 
-                    <div class="d-none d-md-flex align-items-center gap-1">
-                        <span class="fw-black text-dark" style="font-size: 0.85rem;">@player?.Gold</span>
-                        <div class="gold-coin"></div>
-                    </div>
-                </div>
+                    <div class="hud-sep"></div>
 
-                <div class="d-none d-md-block ms-3" style="width: 140px;">
-                    <div class="d-flex justify-content-between mb-1" style="font-size: 0.65rem;">
-                        <span class="fw-black text-muted">EXP</span>
-                        <span class="text-muted fw-bold">@(player?.XPPercentage ?? 0)%</span>
+                    <!-- Level -->
+                    <div class="hud-lv">
+                        <span class="hud-lv-tag">LVL</span>
+                        <span class="hud-lv-num">@player?.Level</span>
                     </div>
-                    <div class="progress" style="height: 8px; background: rgba(0,0,0,0.06); border-radius: 10px;">
-                        <div class="progress-bar bg-info progress-bar-striped progress-bar-animated"
-                             style="width: @(player?.XPPercentage ?? 0)%"></div>
+
+                    <!-- XP bar — desktop only -->
+                    <div class="hud-sep d-none d-md-block"></div>
+                    <div class="hud-xp d-none d-md-flex">
+                        <div class="hud-xp-top">
+                            <span class="hud-xp-label">EXP</span>
+                            <span class="hud-xp-pct">@xpPct%</span>
+                        </div>
+                        <div class="hud-xp-track">
+                            <div class="hud-xp-fill" style="width: @xpPct%;"></div>
+                        </div>
                     </div>
-                </div>
+
+                </div><!-- /hud-pill -->
+
+                <!-- ── Logout ─────────────────────────────── -->
+                <form class="m-0" asp-area="Identity"
+                      asp-page="/Account/Logout"
+                      asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button type="submit" class="hud-logout">
+                        <span class="d-none d-md-inline">Logout</span>
+                        <i class="bi bi-box-arrow-right d-md-none" style="font-size: 1rem;"></i>
+                    </button>
+                </form>
+
             </div>
-        </li>
-
-        <li class="nav-item">
-            <form class="form-inline m-0 ms-1" asp-area="Identity"
-                  asp-page="/Account/Logout"
-                  asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                <!-- Use the same bubble classes as the other items -->
-                <button type="submit"
-                        class="hud-bubble px-1 px-md-3 py-1 py-md-2 d-flex align-items-center justify-content-center
-                    border-0 shadow-sm"
-                        style="background: #fff;">
-                    <!-- Desktop (visible on md+) -->
-                    <span class="logout-text small d-none d-md-block">LOGOUT</span>
-                    <!-- Mobile (visible on <md) -->
-                    <i class="bi bi-box-arrow-right d-md-none fw-bold"
-                       style="font-size: 1.1rem; color: #dc3545;"></i>
-                </button>
-            </form>
         </li>
     }
     else
     {
         <li class="nav-item">
-            <a class="hud-bubble text-decoration-none px-2 d-flex d-md-none align-items-center justify-content-center"
-                   style="min-height: 36px;" asp-area="Identity" asp-page="/Account/Login">
-                <span class="fw-black text-primary" style="font-size: 0.8rem;">LOGIN</span>
-            </a>
-            <a class="hud-bubble text-decoration-none px-4 d-none d-md-flex align-items-center justify-content-center"
-                   style="min-height: 40px;" asp-area="Identity" asp-page="/Account/Login">
-                <span class="fw-black text-primary small">LOGIN</span>
-            </a>
+            <a class="hud-auth-login" asp-area="Identity" asp-page="/Account/Login">Login</a>
         </li>
         <li class="nav-item">
-            <a class="hud-bubble text-decoration-none shadow-sm px-2 border-0 d-flex d-md-none align-items-center
-                justify-content-center ms-1"
-                   style="background-color: #0d6efd !important; min-height: 36px;"
-                   asp-area="Identity" asp-page="/Account/Register">
-                <span class="fw-black text-white" style="font-size: 0.8rem;">JOIN</span>
-            </a>
-            <a class="hud-bubble text-decoration-none shadow-sm px-4 d-none d-md-flex align-items-center
-                justify-content-center ms-md-2"
-                   style="background-color: #0d6efd !important; min-height: 40px;"
-                   asp-area="Identity" asp-page="/Account/Register">
-                <span class="fw-black small text-white">REGISTER</span>
-            </a>
+            <a class="hud-auth-register" asp-area="Identity" asp-page="/Account/Register">Register</a>
         </li>
     }
+
 </ul>
