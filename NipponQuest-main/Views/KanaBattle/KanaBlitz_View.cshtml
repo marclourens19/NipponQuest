@@ -1,0 +1,2145 @@
+﻿@model NipponQuest.Models.KanaBattleModel
+@{
+    ViewData["Title"] = "KanaBattle Arena";
+    Layout = null;
+    var script = Model?.Script ?? "hiragana";
+    var diff = Model?.Difficulty ?? "normal";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0
+            }
+
+            body {
+                font-family: 'Nunito', sans-serif;
+                background: #020617;
+                color: #e2e8f0;
+                min-height: 100vh;
+                overflow-x: hidden
+            }
+
+            .container {
+                max-width: 860px;
+                margin: 0 auto;
+                padding: 1rem;
+                position: relative;
+                z-index: 10
+            }
+
+            .ct {
+                padding-bottom: .5rem
+            }
+
+            .bl {
+                position: fixed;
+                inset: 0;
+                z-index: 0;
+                pointer-events: none
+            }
+
+            .ba2 {
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(135deg,#020617,#2d1b4b15,#0f172a);
+                background-size: 300% 300%;
+                animation: au 12s ease infinite
+            }
+
+            .bv {
+                position: fixed;
+                inset: 0;
+                pointer-events: none;
+                z-index: 1;
+                box-shadow: inset 0 0 120px rgba(0,0,0,.55)
+            }
+
+            .pt {
+                position: absolute;
+                border-radius: 50%;
+                animation: pf linear infinite;
+                opacity: 0
+            }
+
+            @@keyframes au {
+                0% {
+                    background-position: 0% 50%
+                }
+
+                50% {
+                    background-position: 100% 50%
+                }
+
+                100% {
+                    background-position: 0% 50%
+                }
+            }
+
+            @@keyframes pf {
+                0% {
+                    transform: translateY(0);
+                    opacity: 0
+                }
+
+                10% {
+                    opacity: 1
+                }
+
+                90% {
+                    opacity: 1
+                }
+
+                100% {
+                    transform: translateY(-400px);
+                    opacity: 0
+                }
+            }
+
+            @@keyframes su {
+                0% {
+                    opacity: 0;
+                    transform: translateY(14px)
+                }
+
+                100% {
+                    opacity: 1;
+                    transform: translateY(0)
+                }
+            }
+
+            .su {
+                animation: su .4s ease both
+            }
+
+            @@keyframes pu {
+                0%, 100% {
+                    opacity: 1
+                }
+
+                50% {
+                    opacity: .4
+                }
+            }
+
+            @@keyframes sk {
+                0%, 100% {
+                    transform: translateX(0)
+                }
+
+                15% {
+                    transform: translateX(-4px)
+                }
+
+                30% {
+                    transform: translateX(4px)
+                }
+
+                45% {
+                    transform: translateX(-3px)
+                }
+
+                60% {
+                    transform: translateX(3px)
+                }
+            }
+
+            @@keyframes cp {
+                0% {
+                    transform: scale(.5);
+                    opacity: 0
+                }
+
+                50% {
+                    transform: scale(1.2)
+                }
+
+                100% {
+                    transform: scale(1);
+                    opacity: 1
+                }
+            }
+
+            @@keyframes fu {
+                0% {
+                    transform: translateY(0);
+                    opacity: 1
+                }
+
+                100% {
+                    transform: translateY(-60px);
+                    opacity: 0
+                }
+            }
+
+            @@keyframes fi {
+                0% {
+                    transform: translateY(-12px);
+                    opacity: 0
+                }
+
+                100% {
+                    transform: translateY(0);
+                    opacity: 1
+                }
+            }
+
+            @@keyframes ar {
+                0% {
+                    transform: translate(0,0) scale(1);
+                    opacity: 1
+                }
+
+                60% {
+                    transform: translate(80px,-10px) scale(1.4);
+                    opacity: 1
+                }
+
+                100% {
+                    transform: translate(160px,-20px) scale(.4);
+                    opacity: 0
+                }
+            }
+
+            @@keyframes al {
+                0% {
+                    transform: translate(0,0) scale(1);
+                    opacity: 1
+                }
+
+                60% {
+                    transform: translate(-80px,-10px) scale(1.4);
+                    opacity: 1
+                }
+
+                100% {
+                    transform: translate(-160px,-20px) scale(.4);
+                    opacity: 0
+                }
+            }
+
+            @@keyframes skpop {
+                0% {
+                    transform: translate(-50%,-50%) scale(.5);
+                    opacity: 0
+                }
+
+                30% {
+                    transform: translate(-50%,-50%) scale(1.2);
+                    opacity: 1
+                }
+
+                100% {
+                    transform: translate(-50%,-50%) scale(1);
+                    opacity: 0
+                }
+            }
+
+            @@keyframes confetti-fall {
+                0% {
+                    transform: translateY(-10px) rotate(0deg);
+                    opacity: 1
+                }
+
+                100% {
+                    transform: translateY(110vh) rotate(720deg);
+                    opacity: 0
+                }
+            }
+
+            @@keyframes hp-flash {
+                0% {
+                    filter: brightness(1)
+                }
+
+                50% {
+                    filter: brightness(2)
+                }
+
+                100% {
+                    filter: brightness(1)
+                }
+            }
+
+            @@keyframes char-attack-r {
+                0% {
+                    transform: translateX(0)
+                }
+
+                30% {
+                    transform: translateX(30px) scaleX(1.1)
+                }
+
+                60% {
+                    transform: translateX(60px)
+                }
+
+                100% {
+                    transform: translateX(0)
+                }
+            }
+
+            @@keyframes char-attack-l {
+                0% {
+                    transform: translateX(0)
+                }
+
+                30% {
+                    transform: translateX(-30px) scaleX(1.1)
+                }
+
+                60% {
+                    transform: translateX(-60px)
+                }
+
+                100% {
+                    transform: translateX(0)
+                }
+            }
+
+            @@keyframes char-hit {
+                0%, 100% {
+                    transform: translateX(0)
+                }
+
+                25% {
+                    transform: translateX(-8px)
+                }
+
+                50% {
+                    transform: translateX(8px)
+                }
+
+                75% {
+                    transform: translateX(-4px)
+                }
+            }
+
+            .sf {
+                position: fixed;
+                inset: 0;
+                z-index: 50;
+                pointer-events: none;
+                transition: opacity .18s;
+                opacity: 0
+            }
+
+            .sfs {
+                opacity: 1
+            }
+
+            .green {
+                background: radial-gradient(circle,rgba(16,185,129,.28),transparent 65%)
+            }
+
+            .red {
+                background: radial-gradient(circle,rgba(239,68,68,.28),transparent 65%)
+            }
+
+            .ae {
+                position: fixed;
+                top: 38%;
+                font-size: 3.5rem;
+                pointer-events: none;
+                z-index: 45
+            }
+
+            .aep {
+                left: 25%;
+                animation: ar .55s ease-out forwards
+            }
+
+            .aeo {
+                right: 25%;
+                animation: al .55s ease-out forwards
+            }
+
+            .aet {
+                filter: drop-shadow(0 0 12px rgba(255,255,255,.3))
+            }
+
+            .dp {
+                position: fixed;
+                top: 28%;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 2.4rem;
+                font-weight: 900;
+                pointer-events: none;
+                z-index: 46;
+                animation: fu .9s ease-out forwards;
+                text-shadow: 0 2px 8px rgba(0,0,0,.5)
+            }
+
+            .dpp {
+                color: #ef4444;
+                text-shadow: 0 0 16px rgba(239,68,68,.7)
+            }
+
+            .dpe {
+                color: #34d399;
+                text-shadow: 0 0 16px rgba(16,185,129,.7)
+            }
+
+            .skp {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%,-50%);
+                font-size: 1.6rem;
+                font-weight: 900;
+                pointer-events: none;
+                z-index: 48;
+                animation: skpop 1.4s ease-out forwards;
+                text-shadow: 0 0 20px currentColor;
+                display: flex;
+                align-items: center;
+                gap: .4rem
+            }
+
+            .skpi {
+                font-size: 2.5rem
+            }
+
+            .ifb {
+                background: rgba(15,23,42,.92);
+                border: 1px solid rgba(239,68,68,.15);
+                border-radius: 1.2rem;
+                padding: 2rem 2.5rem;
+                text-align: center;
+                max-width: 400px;
+                width: 100%
+            }
+
+            .ift {
+                font-size: 1.5rem;
+                font-weight: 900;
+                color: #fff;
+                margin-bottom: .3rem
+            }
+
+            .ifs {
+                color: #64748b;
+                font-size: .78rem;
+                font-weight: 700;
+                margin-bottom: 1rem
+            }
+
+            .avr {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 1.2rem;
+                margin-bottom: .8rem
+            }
+
+            .avc {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: .15rem
+            }
+
+            .avi {
+                width: 52px;
+                height: 52px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.6rem
+            }
+
+            .avc span {
+                font-size: .48rem;
+                font-weight: 900;
+                text-transform: uppercase
+            }
+
+            .avvs {
+                font-size: 1rem;
+                font-weight: 900;
+                color: #ef4444
+            }
+
+            .ifc {
+                font-size: .55rem;
+                color: #475569;
+                font-weight: 700
+            }
+
+            .cdn {
+                font-size: 7rem;
+                font-weight: 900;
+                color: #ef4444;
+                animation: cp .5s ease-out both;
+                text-align: center
+            }
+
+            .cds {
+                color: #64748b;
+                font-size: .72rem;
+                font-weight: 700;
+                text-align: center;
+                margin-top: .5rem
+            }
+
+            .ah {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: .35rem
+            }
+
+            .ex {
+                display: flex;
+                align-items: center;
+                gap: .2rem;
+                padding: .25rem .5rem;
+                border-radius: 999px;
+                background: rgba(15,23,42,.7);
+                border: 1px solid #1e293b;
+                color: #64748b;
+                font-size: .48rem;
+                font-weight: 900;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                cursor: pointer;
+                font-family: inherit;
+                transition: all .2s
+            }
+
+                .ex:hover {
+                    background: rgba(127,29,29,.25);
+                    border-color: rgba(239,68,68,.25);
+                    color: #fca5a5
+                }
+
+            .at {
+                display: flex;
+                gap: .2rem;
+                align-items: center
+            }
+
+                .at span {
+                    padding: .15rem .35rem;
+                    border-radius: .3rem;
+                    background: rgba(15,23,42,.6);
+                    border: 1px solid #1e293b;
+                    font-size: .42rem;
+                    font-weight: 700
+                }
+
+            .hud {
+                background: rgba(15,23,42,.75);
+                backdrop-filter: blur(10px);
+                border: 1px solid #1e293b;
+                border-radius: .8rem;
+                padding: .5rem .7rem;
+                margin-bottom: .35rem
+            }
+
+            .tb2 {
+                height: 4px;
+                background: #0f172a;
+                border-radius: 2px;
+                overflow: hidden;
+                margin-bottom: .35rem
+            }
+
+            .tbf {
+                height: 100%;
+                border-radius: 2px;
+                transition: width .3s linear
+            }
+
+            .hr {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: .3rem
+            }
+
+            .pi {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: .1rem
+            }
+
+            .po {
+                text-align: right;
+                align-items: flex-end
+            }
+
+            .pn {
+                font-size: .52rem;
+                font-weight: 900;
+                letter-spacing: 1px;
+                text-transform: uppercase
+            }
+
+            .hpb {
+                width: 100%;
+                height: 9px;
+                background: #0f172a;
+                border-radius: 4px;
+                overflow: hidden
+            }
+
+            .hpf {
+                height: 100%;
+                border-radius: 4px;
+                transition: width .3s, background .3s
+            }
+
+            .hpt {
+                font-size: .45rem;
+                font-weight: 700;
+                color: #475569
+            }
+
+            .pup {
+                display: flex;
+                gap: .15rem;
+                font-size: .55rem;
+                margin-top: .05rem;
+                flex-wrap: wrap
+            }
+
+            .po .pup {
+                justify-content: flex-end
+            }
+
+            .pub {
+                animation: pu .6s infinite;
+                display: flex;
+                align-items: center;
+                gap: 1px;
+                font-size: .5rem;
+                font-weight: 900
+            }
+
+            .tmw {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: .15rem;
+                min-width: 60px
+            }
+
+            .tm {
+                font-size: 1.3rem;
+                font-weight: 900;
+                font-variant-numeric: tabular-nums
+            }
+
+            .cb2 {
+                font-size: .42rem;
+                font-weight: 900;
+                padding: .12rem .35rem;
+                border-radius: 999px
+            }
+
+            .cl {
+                background: rgba(245,158,11,.2);
+                color: #fcd34d;
+                border: 1px solid rgba(245,158,11,.2)
+            }
+
+            .ch2 {
+                background: linear-gradient(135deg,#f59e0b,#ea580c);
+                color: #fff
+            }
+
+            .cm {
+                background: linear-gradient(135deg,#ef4444,#f59e0b);
+                color: #fff;
+                animation: pu .35s infinite
+            }
+
+            .arena {
+                position: relative;
+                height: 290px;
+                background: linear-gradient(180deg,rgba(10,15,30,.95),rgba(20,30,50,.7));
+                border: 1px solid #1e293b;
+                border-radius: .8rem;
+                overflow: hidden;
+                margin-bottom: .35rem
+            }
+
+                .arena.arh {
+                    border-color: rgba(239,68,68,.3)
+                }
+
+            .arena-floor {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: rgba(239,68,68,.15)
+            }
+
+            .ch3 {
+                position: absolute;
+                bottom: 6px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: .08rem;
+                transition: transform .15s
+            }
+
+            .cp {
+                left: 3%
+            }
+
+            .co {
+                right: 3%
+            }
+
+            .ca {
+                font-size: 2.8rem;
+                filter: drop-shadow(0 3px 6px rgba(0,0,0,.4))
+            }
+
+            .cn {
+                font-size: .42rem;
+                font-weight: 900;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                background: rgba(10,15,30,.7);
+                padding: .08rem .3rem;
+                border-radius: .2rem
+            }
+
+            .chh .ca {
+                filter: drop-shadow(0 0 16px rgba(239,68,68,.6)) brightness(1.4);
+                animation: char-hit .3s ease
+            }
+
+            .ch3.attacking-r {
+                animation: char-attack-r .4s ease
+            }
+
+            .ch3.attacking-l {
+                animation: char-attack-l .4s ease
+            }
+
+            .avs {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%,-50%);
+                font-size: .7rem;
+                font-weight: 900;
+                color: rgba(239,68,68,.15);
+                letter-spacing: 4px
+            }
+
+            .fw {
+                position: absolute;
+                transform: translateX(-50%);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: .3rem .55rem;
+                background: rgba(10,15,30,.92);
+                border: 2px solid #1e293b;
+                border-radius: .7rem;
+                cursor: default;
+                animation: fi .25s ease-out;
+                backdrop-filter: blur(4px);
+                min-width: 44px
+            }
+
+            .fwa {
+                border-color: #0ea5e9;
+                box-shadow: 0 0 16px rgba(14,165,233,.3)
+            }
+
+            .fwsk {
+                box-shadow: 0 0 14px rgba(255,255,255,.1)
+            }
+
+            .fwdanger {
+                border-color: rgba(239,68,68,.6) !important;
+                box-shadow: 0 0 12px rgba(239,68,68,.2)
+            }
+
+            .fk {
+                font-size: 1.85rem;
+                font-weight: 900;
+                color: #fff;
+                line-height: 1;
+                transition: color .15s
+            }
+
+            .ft {
+                font-size: .52rem;
+                font-weight: 900;
+                color: #0ea5e9;
+                letter-spacing: 1px;
+                margin-top: .03rem
+            }
+
+            .fsi {
+                font-size: .8rem;
+                line-height: 1;
+                margin-top: .1rem
+            }
+
+            .fw-meaning {
+                font-size: .42rem;
+                font-weight: 700;
+                color: #64748b;
+                margin-top: .05rem;
+                text-align: center;
+                max-width: 80px
+            }
+
+            .clg {
+                position: absolute;
+                bottom: 6px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 1px;
+                pointer-events: none
+            }
+
+            .cli {
+                font-size: .42rem;
+                font-weight: 800;
+                padding: .08rem .35rem;
+                border-radius: .2rem;
+                background: rgba(0,0,0,.6);
+                white-space: nowrap;
+                animation: fi .2s ease-out
+            }
+
+            .ia {
+                background: rgba(15,23,42,.85);
+                backdrop-filter: blur(12px);
+                border: 1px solid #1e293b;
+                border-radius: .8rem;
+                padding: .6rem .7rem
+            }
+
+            .iaf {
+                display: flex;
+                flex-direction: column;
+                gap: .4rem
+            }
+
+            .tgt {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: .5rem;
+                flex-wrap: wrap;
+                min-height: 1.8rem
+            }
+
+            .tgl {
+                font-size: .45rem;
+                font-weight: 900;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+                color: #475569
+            }
+
+            .tgk {
+                font-size: 2.4rem;
+                font-weight: 900;
+                line-height: 1
+            }
+
+            .tgm {
+                font-size: .5rem;
+                font-weight: 700;
+                color: #64748b
+            }
+
+            .tgsk {
+                font-size: .45rem;
+                font-weight: 900;
+                padding: .12rem .4rem;
+                border-radius: 999px;
+                border: 1px solid;
+                display: flex;
+                align-items: center;
+                gap: .2rem
+            }
+
+            .ir {
+                display: flex;
+                gap: .35rem
+            }
+
+            .ii {
+                flex: 1;
+                padding: .55rem .7rem;
+                border-radius: .6rem;
+                border: 2px solid #1e293b;
+                background: rgba(2,6,23,.7);
+                color: #fff;
+                font-size: 1.1rem;
+                font-weight: 700;
+                font-family: inherit;
+                text-align: center;
+                outline: none;
+                transition: border-color .15s;
+                letter-spacing: 2px
+            }
+
+                .ii:focus {
+                    border-color: #0ea5e9;
+                    box-shadow: 0 0 12px rgba(14,165,233,.12)
+                }
+
+                .ii:disabled {
+                    opacity: .25;
+                    cursor: not-allowed
+                }
+
+                .ii::placeholder {
+                    color: #1e293b;
+                    letter-spacing: 0
+                }
+
+            .ib {
+                padding: .55rem 1rem;
+                border-radius: .6rem;
+                border: none;
+                background: linear-gradient(135deg,#ef4444,#b91c1c);
+                color: #fff;
+                font-weight: 900;
+                font-size: .7rem;
+                letter-spacing: 1px;
+                cursor: pointer;
+                transition: all .18s;
+                font-family: inherit;
+                white-space: nowrap
+            }
+
+                .ib:hover:not(:disabled) {
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 14px rgba(239,68,68,.3)
+                }
+
+                .ib:disabled {
+                    opacity: .3;
+                    cursor: not-allowed
+                }
+
+            .ih {
+                display: flex;
+                justify-content: center;
+                gap: .5rem;
+                font-size: .4rem;
+                color: #334155;
+                font-weight: 700
+            }
+
+            .ihs {
+                color: #1e293b
+            }
+
+            .skill-hint {
+                font-size: .42rem;
+                font-weight: 900;
+                color: #f59e0b;
+                text-align: center;
+                animation: pu .8s infinite
+            }
+
+            .rc {
+                max-width: 460px;
+                margin: 1.5rem auto 0;
+                text-align: center
+            }
+
+            .ri {
+                width: 64px;
+                height: 64px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto .5rem
+            }
+
+            .riw {
+                background: rgba(16,185,129,.18);
+                box-shadow: 0 0 24px rgba(16,185,129,.15)
+            }
+
+            .ril {
+                background: rgba(239,68,68,.18);
+                box-shadow: 0 0 24px rgba(239,68,68,.15)
+            }
+
+            .rt {
+                font-size: 1.8rem;
+                font-weight: 900;
+                letter-spacing: -1px;
+                margin-bottom: .15rem
+            }
+
+            .rsu {
+                font-size: .68rem;
+                color: #64748b;
+                font-weight: 700;
+                margin-bottom: .4rem
+            }
+
+            .rb {
+                display: flex;
+                gap: .25rem;
+                justify-content: center;
+                flex-wrap: wrap;
+                margin-bottom: .6rem
+            }
+
+                .rb span {
+                    padding: .15rem .4rem;
+                    border-radius: 999px;
+                    font-size: .42rem;
+                    font-weight: 900;
+                    letter-spacing: 1px;
+                    text-transform: uppercase;
+                    border: 1px solid
+                }
+
+            .rbt {
+                background: rgba(30,41,59,.5);
+                border-color: #1e293b;
+                color: #64748b
+            }
+
+            .rbw {
+                background: rgba(120,53,15,.3);
+                border-color: rgba(245,158,11,.25);
+                color: #fcd34d
+            }
+
+            .rbr {
+                background: rgba(239,68,68,.15);
+                border-color: rgba(239,68,68,.25);
+                color: #fca5a5
+            }
+
+            .rg {
+                display: grid;
+                grid-template-columns: repeat(3,1fr);
+                gap: .4rem;
+                margin-bottom: .5rem
+            }
+
+            .rs2 {
+                background: rgba(15,23,42,.6);
+                border: 1px solid #1e293b;
+                border-radius: .6rem;
+                padding: .5rem .3rem;
+                text-align: center
+            }
+
+            .rsl {
+                font-size: .35rem;
+                font-weight: 900;
+                letter-spacing: 1.5px;
+                text-transform: uppercase;
+                color: #475569;
+                margin-bottom: .15rem;
+                display: block
+            }
+
+            .rsv {
+                font-size: 1.2rem;
+                font-weight: 900;
+                color: #fff
+            }
+
+            .rew {
+                background: rgba(15,23,42,.6);
+                border: 1px solid #1e293b;
+                border-radius: .8rem;
+                padding: .8rem;
+                margin-bottom: .8rem
+            }
+
+            .rewh {
+                font-size: .35rem;
+                font-weight: 900;
+                letter-spacing: 3px;
+                text-transform: uppercase;
+                color: #475569;
+                text-align: center;
+                margin-bottom: .5rem
+            }
+
+            .rewg {
+                display: grid;
+                grid-template-columns: repeat(4,1fr);
+                gap: .35rem
+            }
+
+            .rewt {
+                background: rgba(30,41,59,.3);
+                border: 1px solid rgba(51,65,85,.2);
+                border-radius: .45rem;
+                padding: .45rem .35rem;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                min-height: 84px
+            }
+
+            .rewi {
+                width: 22px;
+                height: 22px;
+                margin: 0 auto .2rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: .6rem;
+                flex-shrink: 0
+            }
+
+                .rewi.xp {
+                    background: #0ea5e9;
+                    color: #fff;
+                    border-radius: 3px;
+                    font-size: .35rem;
+                    font-weight: 900
+                }
+
+                .rewi.gd {
+                    background: #fbbf24;
+                    color: #92400e;
+                    border-radius: 50%;
+                    border: 2px solid #d97706;
+                    font-size: .35rem;
+                    font-weight: 900
+                }
+
+                .rewi.st {
+                    background: rgba(255,255,255,.06);
+                    border: 1px solid rgba(71,85,105,.35);
+                    border-radius: 6px;
+                    font-size: .65rem
+                }
+
+                    .rewi.st.deal {
+                        color: #34d399
+                    }
+
+                    .rewi.st.taken {
+                        color: #f87171
+                    }
+
+            .rewv {
+                font-size: .85rem;
+                font-weight: 900;
+                color: #fff;
+                line-height: 1.1;
+                min-height: 18px;
+                display: flex;
+                align-items: center;
+                justify-content: center
+            }
+
+            .rewl {
+                font-size: .32rem;
+                font-weight: 900;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                color: #475569;
+                margin-top: .12rem;
+                line-height: 1.1
+            }
+
+            .ra {
+                display: flex;
+                gap: .35rem;
+                justify-content: center;
+                flex-wrap: wrap
+            }
+
+                .ra button {
+                    padding: .5rem 1rem;
+                    border-radius: 999px;
+                    font-weight: 900;
+                    font-size: .65rem;
+                    border: none;
+                    cursor: pointer;
+                    transition: all .18s;
+                    font-family: inherit;
+                    color: #fff
+                }
+
+            .rap:hover {
+                transform: translateY(-2px);
+                filter: brightness(1.1)
+            }
+
+            .ras {
+                background: rgba(30,41,59,.5);
+                color: #94a3b8;
+                border: 1px solid #1e293b
+            }
+
+                .ras:hover {
+                    background: rgba(51,65,85,.6)
+                }
+
+            .elo-change {
+                font-size: 1rem;
+                font-weight: 900;
+                margin-top: .5rem;
+                margin-bottom: .5rem
+            }
+
+            @@media(max-width:640px) {
+                .arena {
+                    height: 230px
+                }
+
+                .fk {
+                    font-size: 1.5rem
+                }
+
+                .tgk {
+                    font-size: 1.8rem
+                }
+
+                .ca {
+                    font-size: 2.2rem
+                }
+
+                .ii {
+                    font-size: .95rem
+                }
+
+                .rewg {
+                    grid-template-columns: repeat(2,1fr)
+                }
+            }
+    </style>
+</head>
+<body>
+    <div class="bl" id="bg-layer"><div class="ba2"></div><div id="bp"></div></div>
+    <div class="bv"></div>
+    <div id="sf-green" class="sf green"></div>
+    <div id="sf-red" class="sf red"></div>
+
+    <div class="container ct" id="main-ct">
+        <div class="ah">
+            <button class="ex" onclick="onBack()" title="Exit the battle and return to the matchmaking lobby">← Exit</button>
+            <div class="at">
+                <span id="script-tag">@script</span>
+                <span id="diff-tag">@diff</span>
+            </div>
+        </div>
+
+        <div class="hud">
+            <div class="tb2">
+                <div class="tbf" id="timer-bar" style="width:100%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div>
+            </div>
+            <div class="hr">
+                <div class="pi">
+                    <div class="pn" style="color:#0ea5e9">You</div>
+                    <div class="hpb"><div class="hpf" id="player-hp" style="width:100%;background:#10b981"></div></div>
+                    <div class="hpt" id="player-hp-text">1000/1000</div>
+                    <div class="pup" id="player-buffs"></div>
+                </div>
+                <div class="tmw">
+                    <div class="tm" id="timer" style="color:#22c55e">3:00</div>
+                    <div class="cb2 cl" id="combo-badge" style="display:none">🔥 0x</div>
+                </div>
+                <div class="pi po">
+                    <div class="pn" style="color:#ef4444" id="opponent-name">Opponent</div>
+                    <div class="hpb"><div class="hpf" id="opponent-hp" style="width:100%;background:#10b981"></div></div>
+                    <div class="hpt" id="opponent-hp-text">1000/1000</div>
+                    <div class="pup" id="opponent-buffs" style="justify-content:flex-end"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="arena" id="arena">
+            <div class="ch3 cp" id="player-char">
+                <div class="ca">🧙</div>
+                <div class="cn" style="color:#0ea5e9">You</div>
+            </div>
+            <div class="avs">VS</div>
+            <div class="ch3 co" id="opponent-char">
+                <div class="ca" id="opponent-avatar">👹</div>
+                <div class="cn" style="color:#ef4444" id="opponent-avatar-name">Enemy</div>
+            </div>
+            <div id="falling-words"></div>
+            <div class="clg" id="combat-log"></div>
+            <div class="arena-floor"></div>
+        </div>
+
+        <div class="ia">
+            <form class="iaf" onsubmit="handleSubmit(event)">
+                <div class="tgt">
+                    <span class="tgl">Target:</span>
+                    <span class="tgk" id="target-kana" style="color:#0ea5e9">あ</span>
+                    <span class="tgm" id="target-meaning"></span>
+                    <span class="tgsk" id="target-skill" style="display:none"></span>
+                </div>
+                <div id="skill-hint" class="skill-hint" style="display:none"></div>
+                <div class="ir">
+                    <input type="text" class="ii" id="input-field"
+                           placeholder="Type romaji…" autofocus autocomplete="off"
+                           autocorrect="off" autocapitalize="off" spellcheck="false" disabled />
+                    <button type="submit" class="ib" id="submit-btn" disabled title="Submit your answer and attack the opponent">⚔ Attack</button>
+                </div>
+                <div class="ih">
+                    <span id="correct-count">0 correct</span>
+                    <span class="ihs">·</span>
+                    <span id="falling-count">0 falling</span>
+                    <span class="ihs">·</span>
+                    <span id="streak-display">🔥 0x</span>
+                    <span class="ihs">·</span>
+                    <span id="dmg-display">0 dmg</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+            const SCRIPT = '@script';
+            const DIFF   = '@diff';
+            const SCRIPT_COLOR = { hiragana:'#0ea5e9', katakana:'#f43f5e', dakuten:'#8b5cf6', mixed:'#f59e0b' };
+            const DIFF_COLOR   = { easy:'#10b981', normal:'#3b82f6', hard:'#8b5cf6', insanity:'#ef4444' };
+            const SCRIPT_LABEL = { hiragana:'Hiragana', katakana:'Katakana', dakuten:'Dakuten', mixed:'Mixed' };
+            const DIFF_LABEL   = { easy:'Easy', normal:'Normal', hard:'Hard', insanity:'Insanity' };
+
+            const BATTLE_HP         = { easy:1000, normal:920, hard:860, insanity:820 };
+            const BATTLE_BASE_DMG   = { easy:10,   normal:13,  hard:16,  insanity:19  };
+            const BATTLE_DURATION   = { easy:180,  normal:135, hard:105, insanity:90  };
+            const BATTLE_SPAWN_RATE = { easy:2000, normal:1600, hard:1150, insanity:780 };
+            const BATTLE_FALL_SPEED = { easy:0.40, normal:0.54, hard:0.70, insanity:0.88 };
+            const ELO_GAINS         = { easy:{win:12,loss:-8}, normal:{win:20,loss:-15}, hard:{win:32,loss:-24}, insanity:{win:50,loss:-38} };
+
+            const SKILLS = [
+                { id:'sword',     icon:'⚔️', name:'Sword',     desc:'2× dmg 15s',       color:'#f59e0b', chance:.035 },
+                { id:'shield',    icon:'🛡️', name:'Shield',    desc:'Block 3 hits',      color:'#3b82f6', chance:.030 },
+                { id:'fireball',  icon:'🔥', name:'Fireball',  desc:'AoE 2.5× burst',   color:'#ef4444', chance:.025 },
+                { id:'lightning', icon:'⚡', name:'Lightning', desc:'Instant 1.8× hit',  color:'#8b5cf6', chance:.022 },
+                { id:'ice',       icon:'❄️', name:'Ice',       desc:'Freeze AI 5s',     color:'#67e8f9', chance:.022 },
+                { id:'poison',    icon:'☠️', name:'Poison',    desc:'DoT 5×8 dmg',      color:'#a3e635', chance:.018 },
+                { id:'heal',      icon:'💚', name:'Heal',      desc:'Restore 80 HP',    color:'#34d399', chance:.018 },
+                { id:'critical',  icon:'🎯', name:'Critical',  desc:'Next hit 3×',      color:'#fb923c', chance:.018 },
+                { id:'double',    icon:'✨', name:'Double',    desc:'Strike twice',      color:'#e879f9', chance:.012 },
+            ];
+
+            const KANA_POOLS = {
+                hiragana: ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を','ん'],
+                katakana: ['ア','イ','ウ','エ','オ','カ','キ','ク','ケ','コ','サ','シ','ス','セ','ソ','タ','チ','ツ','テ','ト','ナ','ニ','ヌ','ネ','ノ','ハ','ヒ','フ','ヘ','ホ','マ','ミ','ム','メ','モ','ヤ','ユ','ヨ','ラ','リ','ル','レ','ロ','ワ','ヲ','ン'],
+                dakuten:  ['が','ぎ','ぐ','げ','ご','ざ','じ','ず','ぜ','ぞ','だ','ぢ','づ','で','ど','ば','び','ぶ','べ','ぼ','ぱ','ぴ','ぷ','ぺ','ぽ','ガ','ギ','グ','ゲ','ゴ','ザ','ジ','ズ','ゼ','ゾ','ダ','デ','ド','バ','ビ','ブ','ベ','ボ','パ','ピ','プ','ペ','ポ'],
+            };
+            KANA_POOLS.mixed = [...KANA_POOLS.hiragana, ...KANA_POOLS.katakana, ...KANA_POOLS.dakuten];
+
+            const ROMAJI_MAP = {
+                'あ':'a','い':'i','う':'u','え':'e','お':'o','か':'ka','き':'ki','く':'ku','け':'ke','こ':'ko',
+                'さ':'sa','し':'shi','す':'su','せ':'se','そ':'so','た':'ta','ち':'chi','つ':'tsu','て':'te','と':'to',
+                'な':'na','に':'ni','ぬ':'nu','ね':'ne','の':'no','は':'ha','ひ':'hi','ふ':'fu','へ':'he','ほ':'ho',
+                'ま':'ma','み':'mi','む':'mu','め':'me','も':'mo','や':'ya','ゆ':'yu','よ':'yo',
+                'ら':'ra','り':'ri','る':'ru','れ':'re','ろ':'ro','わ':'wa','を':'wo','ん':'n',
+                'が':'ga','ぎ':'gi','ぐ':'gu','げ':'ge','ご':'go','ざ':'za','じ':'ji','ず':'zu','ぜ':'ze','ぞ':'zo',
+                'だ':'da','ぢ':'ji','づ':'zu','で':'de','ど':'do','ば':'ba','び':'bi','ぶ':'bu','べ':'be','ぼ':'bo',
+                'ぱ':'pa','ぴ':'pi','ぷ':'pu','ぺ':'pe','ぽ':'po',
+                'ア':'a','イ':'i','ウ':'u','エ':'e','オ':'o','カ':'ka','キ':'ki','ク':'ku','ケ':'ke','コ':'ko',
+                'サ':'sa','シ':'shi','ス':'su','セ':'se','ソ':'so','タ':'ta','チ':'chi','ツ':'tsu','テ':'te','ト':'to',
+                'ナ':'na','ニ':'ni','ヌ':'nu','ネ':'ne','ノ':'no','ハ':'ha','ヒ':'hi','フ':'fu','ヘ':'he','ホ':'ho',
+                'マ':'ma','ミ':'mi','ム':'mu','メ':'me','モ':'mo','ヤ':'ya','ユ':'yu','ヨ':'yo',
+                'ラ':'ra','リ':'ri','ル':'ru','レ':'re','ロ':'ro','ワ':'wa','ヲ':'wo','ン':'n',
+                'ガ':'ga','ギ':'gi','グ':'gu','ゲ':'ge','ゴ':'go','ザ':'za','ジ':'ji','ズ':'zu','ゼ':'ze','ゾ':'zo',
+                'ダ':'da','デ':'de','ド':'do','バ':'ba','ビ':'bi','ブ':'bu','ベ':'be','ボ':'bo',
+                'パ':'pa','ピ':'pi','プ':'pu','ペ':'pe','ポ':'po',
+            };
+
+            const OPPONENT_NAMES = ['Kaze_no_Tsuki','Yamato_Damashii','Ryuujin','Hinata_Sensei','Sakura_Blade','Dragon_Miko','Shadow_Ninja','Zen_Master','Thunder_Ken','Moon_Slasher','Iron_Will','Crimson_Fox','Silver_Sword','Dark_Lotus','Storm_Bringer','Night_Hawk','Jade_Samurai','Phantom_Oni','Void_Ronin','Spirit_Miko'];
+            const AVATARS_MAP = { Samurai:'🥷', Ninja:'🗡️', Miko:'⛩️', Shogun:'🏯', Monk:'🧘', Dragon:'🐉', Spirit:'👻', Oni:'👹' };
+            const AVATAR_KEYS = Object.keys(AVATARS_MAP);
+
+            // ── STATE ────────────────────────────────────────────────────────────
+            let phase = 'intro';
+            const maxHp = BATTLE_HP[DIFF];
+            let player   = makeChar('You', 0);
+            let opponent = makeChar(OPPONENT_NAMES[Math.floor(Math.random() * OPPONENT_NAMES.length)], 1);
+
+            function makeChar(name, seed) {
+                const avatarKey = AVATAR_KEYS[Math.floor(Math.random() * AVATAR_KEYS.length)];
+                return { name, hp: maxHp, maxHp, avatarKey,
+                         sword:0, shield:0, shieldHits:0, lightning:0,
+                         ice:0, critical:false, poisonTicks:0, totalDmgDealt:0 };
+            }
+
+            let words = [], streak = 0, maxCombo = 0;
+            let totalC = 0, totalW = 0, totalDmgDealt = 0;
+            let timer = BATTLE_DURATION[DIFF], result = 'win';
+            let log = [], nid = 0, active = true;
+            let spawnI = null, timerI = null, loopI = null, aiI = null;
+            let inpEl = null;
+
+            // ── BOOT ─────────────────────────────────────────────────────────────
+            document.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('script-tag').textContent = SCRIPT_LABEL[SCRIPT];
+                document.getElementById('diff-tag').textContent   = DIFF_LABEL[DIFF];
+                document.getElementById('opponent-name').textContent        = opponent.name;
+                document.getElementById('opponent-avatar-name').textContent = opponent.avatarKey;
+                document.getElementById('opponent-avatar').textContent      = AVATARS_MAP[opponent.avatarKey] ?? '👹';
+                inpEl = document.getElementById('input-field');
+                inpEl.addEventListener('input', () => renderWords());
+
+                const bp = document.getElementById('bp');
+                for (let i = 0; i < 18; i++) {
+                    const d = document.createElement('div'); d.className = 'pt';
+                    const s = 2 + Math.random() * 3;
+                    d.style.cssText = `left:${Math.random()*100}%;bottom:-5px;width:${s}px;height:${s}px;`
+                        + `background:${Math.random() > .5 ? 'rgba(239,68,68,.25)' : 'rgba(139,92,246,.2)'};`
+                        + `animation-duration:${8+Math.random()*12}s;animation-delay:${Math.random()*8}s;`;
+                    bp.appendChild(d);
+                }
+                setTimeout(() => { phase = 'intro'; renderIntro(); }, 500);
+                setInterval(() => { if (phase === 'play' && inpEl) inpEl.focus(); }, 500);
+            });
+
+            // ── INTRO / COUNTDOWN ────────────────────────────────────────────────
+            function renderIntro() {
+                const pAvatar = AVATARS_MAP[player.avatarKey]   ?? '🧙';
+                const oAvatar = AVATARS_MAP[opponent.avatarKey] ?? '👹';
+                document.getElementById('main-ct').innerHTML = `
+                    <div style="display:flex;align-items:center;justify-content:center;min-height:72vh">
+                        <div class="ifb su">
+                            <div style="font-size:3rem;margin-bottom:.6rem">⚔️</div>
+                            <h2 class="ift">Opponent Found!</h2>
+                            <p class="ifs">You vs <span style="color:#ef4444;font-weight:900">${opponent.name}</span></p>
+                            <div class="avr">
+                                <div class="avc">
+                                    <div class="avi" style="background:rgba(14,165,233,.18)">${pAvatar}</div>
+                                    <span style="color:#0ea5e9">${player.avatarKey}</span>
+                                </div>
+                                <span class="avvs">VS</span>
+                                <div class="avc">
+                                    <div class="avi" style="background:rgba(239,68,68,.18)">${oAvatar}</div>
+                                    <span style="color:#ef4444">${opponent.avatarKey}</span>
+                                </div>
+                            </div>
+                            <p class="ifc">${SCRIPT_LABEL[SCRIPT]} · ${DIFF_LABEL[DIFF]} · ${maxHp}HP · ${fmtTime(BATTLE_DURATION[DIFF])}</p>
+                            <div style="margin-top:.6rem;font-size:.52rem;color:#334155;font-weight:700">Type romaji to attack — skills drop on special kana!</div>
+                        </div>
+                    </div>`;
+                setTimeout(() => { phase = 'countdown'; renderCountdown(); }, 2400);
+            }
+
+            function renderCountdown() {
+                let c = 3;
+                document.getElementById('main-ct').innerHTML =
+                    `<div style="display:flex;align-items:center;justify-content:center;min-height:72vh;flex-direction:column">
+                        <div class="cdn" id="cd-num">${c}</div>
+                        <p class="cds">${SCRIPT_LABEL[SCRIPT]} · ${DIFF_LABEL[DIFF]}</p>
+                        <p style="font-size:.55rem;color:#334155;margin-top:.5rem;font-weight:700">Get ready to type!</p>
+                    </div>`;
+                const iv = setInterval(() => {
+                    c--;
+                    if (c <= 0) { clearInterval(iv); phase = 'play'; rebuildArena(); boot(); }
+                    else {
+                        const el = document.getElementById('cd-num');
+                        if (el) { el.textContent = c; el.style.animation = 'none'; void el.offsetWidth; el.style.animation = 'cp .5s ease-out both'; }
+                    }
+                }, 750);
+            }
+
+            function rebuildArena() {
+                document.getElementById('main-ct').innerHTML = `
+                    <div class="ah">
+                        <button class="ex" onclick="onBack()" title="Exit and return to lobby">← Exit</button>
+                        <div class="at">
+                            <span id="script-tag">${SCRIPT_LABEL[SCRIPT]}</span>
+                            <span id="diff-tag">${DIFF_LABEL[DIFF]}</span>
+                        </div>
+                    </div>
+                    <div class="hud">
+                        <div class="tb2"><div class="tbf" id="timer-bar" style="width:100%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div>
+                        <div class="hr">
+                            <div class="pi">
+                                <div class="pn" style="color:#0ea5e9">You</div>
+                                <div class="hpb"><div class="hpf" id="player-hp" style="width:100%;background:#10b981"></div></div>
+                                <div class="hpt" id="player-hp-text">${maxHp}/${maxHp}</div>
+                                <div class="pup" id="player-buffs"></div>
+                            </div>
+                            <div class="tmw">
+                                <div class="tm" id="timer" style="color:#22c55e">${fmtTime(timer)}</div>
+                                <div class="cb2 cl" id="combo-badge" style="display:none">🔥 0x</div>
+                            </div>
+                            <div class="pi po">
+                                <div class="pn" style="color:#ef4444" id="opponent-name">${opponent.name}</div>
+                                <div class="hpb"><div class="hpf" id="opponent-hp" style="width:100%;background:#10b981"></div></div>
+                                <div class="hpt" id="opponent-hp-text">${maxHp}/${maxHp}</div>
+                                <div class="pup" id="opponent-buffs" style="justify-content:flex-end"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="arena" id="arena">
+                        <div class="ch3 cp" id="player-char">
+                            <div class="ca">${AVATARS_MAP[player.avatarKey] ?? '🧙'}</div>
+                            <div class="cn" style="color:#0ea5e9">You</div>
+                        </div>
+                        <div class="avs">VS</div>
+                        <div class="ch3 co" id="opponent-char">
+                            <div class="ca">${AVATARS_MAP[opponent.avatarKey] ?? '👹'}</div>
+                            <div class="cn" style="color:#ef4444">${opponent.name}</div>
+                        </div>
+                        <div id="falling-words"></div>
+                        <div class="clg" id="combat-log"></div>
+                        <div class="arena-floor"></div>
+                    </div>
+                    <div class="ia">
+                        <form class="iaf" onsubmit="handleSubmit(event)">
+                            <div class="tgt">
+                                <span class="tgl">Target:</span>
+                                <span class="tgk" id="target-kana" style="color:${SCRIPT_COLOR[SCRIPT]}">…</span>
+                                <span class="tgm" id="target-meaning"></span>
+                                <span class="tgsk" id="target-skill" style="display:none"></span>
+                            </div>
+                            <div id="skill-hint" class="skill-hint" style="display:none"></div>
+                            <div class="ir">
+                                <input type="text" class="ii" id="input-field"
+                                       placeholder="Type romaji…" autofocus autocomplete="off"
+                                       autocorrect="off" autocapitalize="off" spellcheck="false" disabled/>
+                                <button type="submit" class="ib" id="submit-btn" disabled title="Submit your answer">⚔ Attack</button>
+                            </div>
+                            <div class="ih">
+                                <span id="correct-count">0 correct</span>
+                                <span class="ihs">·</span>
+                                <span id="falling-count">0 falling</span>
+                                <span class="ihs">·</span>
+                                <span id="streak-display">🔥 0x</span>
+                                <span class="ihs">·</span>
+                                <span id="dmg-display">0 dmg</span>
+                            </div>
+                        </form>
+                    </div>`;
+                inpEl = document.getElementById('input-field');
+                inpEl.addEventListener('input', () => renderWords());
+            }
+
+            // ── UTILS ────────────────────────────────────────────────────────────
+            function fmtTime(s) {
+                const m = Math.floor(Math.max(0, s) / 60);
+                const sec = Math.ceil(Math.max(0, s)) % 60;
+                return `${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+            }
+            function rollSkill() {
+                const r = Math.random(); let cum = 0;
+                for (const s of SKILLS) { cum += s.chance; if (r < cum) return s.id; }
+                return undefined;
+            }
+            function skillInfo(id) { return SKILLS.find(s => s.id === id); }
+            function addLog(txt, color) {
+                log = [...log.slice(-8), { txt, color }];
+                const el = document.getElementById('combat-log');
+                if (el) el.innerHTML = log.slice(-4).map(l => `<div class="cli" style="color:${l.color}">${l.txt}</div>`).join('');
+            }
+
+            // ── SPAWN ────────────────────────────────────────────────────────────
+            function spawn() {
+                if (!active) return;
+                const pool   = KANA_POOLS[SCRIPT];
+                const kana   = pool[Math.floor(Math.random() * pool.length)];
+                const answer = (ROMAJI_MAP[kana] || kana).toLowerCase();
+                const skill  = rollSkill();
+
+                const live = words.filter(w => !w.answered);
+                if (live.length >= 6) return;
+
+                let x = 12 + Math.random() * 76;
+                for (let attempt = 0; attempt < 8; attempt++) {
+                    const tooClose = live.some(w => Math.abs(w.x - x) < 14);
+                    if (!tooClose) break;
+                    x = 12 + Math.random() * 76;
+                }
+
+                words = [...words, {
+                    id: nid++, kana, answer, x,
+                    y: -8 + Math.random() * -4,
+                    speed: BATTLE_FALL_SPEED[DIFF] * (.65 + Math.random() * .55),
+                    skill, answered: false, born: Date.now()
+                }];
+                renderWords();
+            }
+
+            // ── BOOT GAME ────────────────────────────────────────────────────────
+            function boot() {
+                resumeAudio();
+                setTimeout(spawn, 600);
+                spawnI = setInterval(spawn, BATTLE_SPAWN_RATE[DIFF]);
+
+                timerI = setInterval(() => {
+                    timer -= 0.1;
+                    if (timer <= 0.1) { end('time'); timer = 0; }
+                    renderTimer();
+                }, 100);
+
+                loopI = setInterval(() => {
+                    const prevLen = words.length;
+                    words = words.map(w => ({ ...w, y: w.y + w.speed })).filter(w => {
+                        if (!w.answered && w.y > 92) {
+                            const chipDmg = Math.round(BATTLE_BASE_DMG[DIFF] * .25 + 6);
+                            dmgPlayer(chipDmg, 'missed kana');
+                            streak = 0;
+                            renderStats();
+                            return false;
+                        }
+                        return w.y <= 95;
+                    });
+                    if (words.length !== prevLen) renderWords();
+
+                    if (player.sword     > 0) player.sword     = Math.max(0, player.sword     - .5);
+                    if (player.lightning > 0) player.lightning = Math.max(0, player.lightning - .5);
+                    if (player.ice       > 0) player.ice       = Math.max(0, player.ice       - .5);
+                    if (player.shield    > 0 && player.shieldHits <= 0) player.shield = 0;
+                    if (opponent.sword   > 0) opponent.sword   = Math.max(0, opponent.sword   - .5);
+                    if (opponent.ice     > 0) opponent.ice     = Math.max(0, opponent.ice     - .5);
+                    if (opponent.shield  > 0 && opponent.shieldHits <= 0) opponent.shield = 0;
+
+                    if (opponent.poisonTicks > 0) {
+                        const pdmg = 5; opponent.poisonTicks--;
+                        opponent.hp = Math.max(0, opponent.hp - pdmg);
+                        totalDmgDealt += pdmg;
+                        if (opponent.hp <= 0) setTimeout(() => end('win'), 300);
+                        addLog(`☠️ Poison dealt ${pdmg}!`, '#a3e635');
+                        renderHP();
+                    }
+                    renderBuffs();
+                }, 500);
+
+                const firstDelay = { easy:4500, normal:3000, hard:2000, insanity:1000 }[DIFF];
+                aiI = setTimeout(aiAttack, firstDelay + Math.random() * 1000);
+            }
+
+            function end(r) {
+                if (!active) return; active = false; result = r;
+                clearInterval(spawnI); clearInterval(timerI); clearInterval(loopI); clearTimeout(aiI);
+                if (r === 'win') { playVictorySound(); spawnConfetti(); } else { playDefeatSound(); }
+                setTimeout(renderResults, 600);
+            }
+
+            // ── DAMAGE ───────────────────────────────────────────────────────────
+            function dmgPlayer(amt, src) {
+                if (player.shield > 0 && player.shieldHits > 0) {
+                    addLog(`🛡️ Shield absorbed ${amt}! (${player.shieldHits - 1} left)`, '#3b82f6');
+                    player.shieldHits--;
+                    if (player.shieldHits <= 0) player.shield = 0;
+                    renderBuffs(); return;
+                }
+                player.hp = Math.max(0, player.hp - amt);
+                if (player.hp <= 0) setTimeout(() => end('loss'), 400);
+                flashScreen('red');
+                spawnDamagePopup(amt, true);
+                addLog(`-${amt} from ${src}`, '#f87171');
+                playHitSound();
+                const pc = document.getElementById('player-char');
+                if (pc) { pc.classList.add('chh'); setTimeout(() => pc.classList.remove('chh'), 350); }
+                renderHP();
+            }
+
+            function dmgOpponent(amt, type) {
+                spawnAttackEmoji(type, true);
+                const pc = document.getElementById('player-char');
+                if (pc) { pc.classList.add('attacking-r'); setTimeout(() => pc.classList.remove('attacking-r'), 450); }
+
+                if (opponent.shield > 0 && opponent.shieldHits > 0) {
+                    opponent.shieldHits--;
+                    if (opponent.shieldHits <= 0) opponent.shield = 0;
+                    addLog(`🛡️ Enemy shield blocked ${amt}!`, '#3b82f6');
+                    renderBuffs(); return;
+                }
+                opponent.hp = Math.max(0, opponent.hp - amt);
+                totalDmgDealt += amt;
+                if (opponent.hp <= 0) setTimeout(() => end('win'), 400);
+                spawnDamagePopup(amt, false);
+                addLog(`${type} dealt ${amt} damage!`, '#34d399');
+                const oc = document.getElementById('opponent-char');
+                if (oc) { oc.classList.add('chh'); setTimeout(() => oc.classList.remove('chh'), 350); }
+                renderHP();
+            }
+
+            function spawnAttackEmoji(icon, fromPlayer) {
+                const el = document.createElement('div');
+                el.className = `ae ${fromPlayer ? 'aep' : 'aeo'}`;
+                el.innerHTML = `<span class="aet">${icon}</span>`;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 620);
+            }
+
+            function spawnDamagePopup(val, isPlayer) {
+                const el = document.createElement('div');
+                el.className = `dp ${isPlayer ? 'dpp' : 'dpe'}`;
+                el.textContent = `-${val}`;
+                el.style.top  = (25 + Math.random() * 10) + '%';
+                el.style.left = (40 + Math.random() * 20) + '%';
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 950);
+            }
+
+            // ── AI ───────────────────────────────────────────────────────────────
+            function aiAttack() {
+                if (!active) return;
+                if (opponent.ice > 0) {
+                    const frozen = { insanity:800, hard:1300, normal:2000, easy:3000 }[DIFF];
+                    aiI = setTimeout(aiAttack, frozen + Math.random() * 600); return;
+                }
+                const [dmin, dmax] = { easy:[.35,.55], normal:[.55,.85], hard:[.85,1.3], insanity:[1.25,1.9] }[DIFF];
+                const swordMult = opponent.sword > 0 ? 1.4 : 1;
+                const dmg = Math.round(BATTLE_BASE_DMG[DIFF] * (dmin + Math.random() * (dmax - dmin)) * swordMult);
+                const attackTypes = ['⚔️','🗡️','🔥','⚡'];
+                const tp = attackTypes[Math.floor(Math.random() * attackTypes.length)];
+                spawnAttackEmoji(tp, false);
+
+                const oc = document.getElementById('opponent-char');
+                if (oc) { oc.classList.add('attacking-l'); setTimeout(() => oc.classList.remove('attacking-l'), 450); }
+
+                dmgPlayer(dmg, opponent.name);
+                if (tp === '🔥') playFireballSound();
+                else if (tp === '⚡') playLightningSound();
+                else playAttackSound();
+
+                if (DIFF === 'insanity' && Math.random() < .28) {
+                    setTimeout(() => {
+                        if (!active) return;
+                        const d2 = Math.round(dmg * .6);
+                        spawnAttackEmoji('⚔️', false);
+                        dmgPlayer(d2, `${opponent.name} combo`);
+                        playSlashSound();
+                    }, 300);
+                }
+
+                if      (DIFF === 'insanity' && Math.random() < .30) opponent.sword = 10;
+                else if (DIFF === 'hard'     && Math.random() < .16) opponent.sword = 8;
+                else if (DIFF === 'normal'   && Math.random() < .07) opponent.sword = 6;
+                renderBuffs();
+
+                const [base, jitter] = { easy:[4500,2000], normal:[2800,1400], hard:[1800,1000], insanity:[900,500] }[DIFF];
+                aiI = setTimeout(aiAttack, base + Math.random() * jitter);
+            }
+
+            // ── SUBMIT ───────────────────────────────────────────────────────────
+            function handleSubmit(e) {
+                e.preventDefault();
+                const val = (inpEl?.value ?? '').trim().toLowerCase();
+                if (!val) return;
+
+                const live = words.filter(w => !w.answered);
+                const w    = live.length ? live.reduce((a, b) => a.y > b.y ? a : b) : null;
+                if (!w) { if (inpEl) inpEl.value = ''; return; }
+
+                const ok = val === w.answer;
+                words = words.map(x => x.id === w.id ? { ...x, answered: true, correct: ok } : x);
+
+                if (ok) {
+                    const ns = streak + 1; streak = ns;
+                    if (ns > maxCombo) maxCombo = ns;
+                    totalC++;
+
+                    const speedB  = Math.max(0, 1 - (Date.now() - w.born) / 24000);
+                    let   swordM  = player.sword > 0 ? 1.4 : player.lightning > 0 ? 1.25 : 1;
+                    if (player.critical) { swordM *= 2; player.critical = false; addLog('🎯 CRITICAL HIT!', '#fb923c'); }
+                    const comboM = 1 + Math.min(ns, 25) * .05;
+                    let   dmg    = Math.round(BATTLE_BASE_DMG[DIFF] * (1 + speedB) * swordM * comboM);
+                    const tp     = ns >= 12 ? '🔥' : ns >= 7 ? '💥' : ns >= 4 ? '⚡' : '⚔️';
+                    let isDouble = false;
+
+                    if (w.skill) {
+                        const si = skillInfo(w.skill);
+                        const sp = document.createElement('div');
+                        sp.className   = 'skp';
+                        sp.style.color = si.color;
+                        sp.innerHTML   = `<span class="skpi">${si.icon}</span>${si.name}`;
+                        document.body.appendChild(sp);
+                        setTimeout(() => sp.remove(), 1450);
+                        playPowerUpSound();
+
+                        switch (w.skill) {
+                            case 'sword':
+                                player.sword = 14;
+                                addLog(`${si.icon} Sword active! 1.4× damage`, '#f59e0b');
+                                break;
+                            case 'shield':
+                                player.shield = 20; player.shieldHits = 3;
+                                addLog(`${si.icon} Shield! Blocks 3 hits`, '#3b82f6');
+                                break;
+                            case 'fireball': {
+                                const fd = Math.round(BATTLE_BASE_DMG[DIFF] * 1.7);
+                                dmgOpponent(fd, '🔥');
+                                addLog(`${si.icon} Fireball! ${fd} burst dmg`, '#ef4444');
+                                break;
+                            }
+                            case 'lightning': {
+                                const ld = Math.round(BATTLE_BASE_DMG[DIFF] * 1.25);
+                                dmgOpponent(ld, '⚡');
+                                addLog(`${si.icon} Lightning! ${ld} dmg`, '#8b5cf6');
+                                break;
+                            }
+                            case 'ice':
+                                opponent.ice = 8;
+                                addLog(`${si.icon} Frozen! AI paused 5s`, '#67e8f9');
+                                break;
+                            case 'poison':
+                                opponent.poisonTicks = 6;
+                                addLog(`${si.icon} Poisoned! DoT active`, '#a3e635');
+                                break;
+                            case 'heal':
+                                player.hp = Math.min(player.maxHp, player.hp + 80);
+                                addLog(`${si.icon} Healed +80 HP!`, '#34d399');
+                                renderHP();
+                                break;
+                            case 'critical':
+                                player.critical = true;
+                                addLog(`${si.icon} Next hit deals 2×!`, '#fb923c');
+                                break;
+                            case 'double':
+                                isDouble = true;
+                                addLog(`${si.icon} Double strike!`, '#e879f9');
+                                break;
+                        }
+                        renderBuffs();
+                    }
+
+                    dmgOpponent(dmg, tp);
+                    if (isDouble) setTimeout(() => { if (active) { dmgOpponent(Math.round(dmg * .45), '✨'); playSlashSound(); } }, 280);
+
+                    flashScreen('green');
+                    playCorrectSound();
+                    if (ns >= 3)  playAttackSound();
+                    if (ns >= 6)  playSlashSound();
+                    if (ns >= 9)  playFireballSound();
+                    if (ns >= 12) playLightningSound();
+
+                } else {
+                    streak = 0; totalW++;
+                    const wrongDmg = Math.round(BATTLE_BASE_DMG[DIFF] * .45);
+                    dmgPlayer(wrongDmg, 'wrong answer');
+                    flashScreen('red');
+                    playWrongSound();
+                    addLog('✕ Wrong answer!', '#f87171');
+                }
+
+                setTimeout(() => { words = words.filter(x => x.id !== w.id); renderWords(); }, 250);
+                if (inpEl) { inpEl.value = ''; inpEl.focus(); }
+                renderStats();
+            }
+
+            // ── FLASH ────────────────────────────────────────────────────────────
+            function flashScreen(color) {
+                const el = document.getElementById(color === 'green' ? 'sf-green' : 'sf-red');
+                if (!el) return;
+                el.classList.add('sfs');
+                setTimeout(() => el.classList.remove('sfs'), 220);
+            }
+
+            // ── RENDER ───────────────────────────────────────────────────────────
+            function renderHP() {
+                const pPct = player.hp   / player.maxHp   * 100;
+                const oPct = opponent.hp / opponent.maxHp * 100;
+                const hpColor = pct => pct > 50 ? '#10b981' : pct > 25 ? '#f59e0b' : '#ef4444';
+
+                const php = document.getElementById('player-hp');
+                const ohp = document.getElementById('opponent-hp');
+                if (php) { php.style.width = pPct + '%'; php.style.background = hpColor(pPct); }
+                if (ohp) { ohp.style.width = oPct + '%'; ohp.style.background = hpColor(oPct); }
+
+                const pht = document.getElementById('player-hp-text');
+                const oht = document.getElementById('opponent-hp-text');
+                if (pht) pht.textContent = `${Math.max(0,player.hp)}/${player.maxHp}`;
+                if (oht) oht.textContent = `${Math.max(0,opponent.hp)}/${opponent.maxHp}`;
+            }
+
+            function renderBuffs() {
+                const pb = document.getElementById('player-buffs');
+                const ob = document.getElementById('opponent-buffs');
+                if (pb) pb.innerHTML =
+                    `${player.sword    > 0 ? '<span class="pub" style="color:#f59e0b">⚔️</span>' : ''}`
+                  + `${player.shield   > 0 ? `<span class="pub" style="color:#3b82f6">🛡️×${player.shieldHits}</span>` : ''}`
+                  + `${player.critical     ? '<span class="pub" style="color:#fb923c">🎯</span>' : ''}`
+                  + `${player.ice      > 0 ? '<span class="pub" style="color:#67e8f9">❄️</span>' : ''}`;
+                if (ob) ob.innerHTML =
+                    `${opponent.sword  > 0 ? '<span class="pub" style="color:#f59e0b">⚔️</span>' : ''}`
+                  + `${opponent.shield > 0 ? `<span class="pub" style="color:#3b82f6">🛡️×${opponent.shieldHits}</span>` : ''}`
+                  + `${opponent.ice    > 0 ? '<span class="pub" style="color:#67e8f9">❄️</span>' : ''}`
+                  + `${opponent.poisonTicks > 0 ? `<span class="pub" style="color:#a3e635">☠️${opponent.poisonTicks}</span>` : ''}`;
+            }
+
+            function renderTimer() {
+                const el  = document.getElementById('timer');
+                const bar = document.getElementById('timer-bar');
+                if (!el) return;
+                const tc = timer <= 10 ? '#ef4444' : timer <= 30 ? '#f59e0b' : '#22c55e';
+                el.textContent = fmtTime(timer);
+                el.style.color = tc;
+                if (bar) {
+                    const pct = timer / BATTLE_DURATION[DIFF] * 100;
+                    bar.style.width = pct + '%';
+                    bar.style.background = tc === '#ef4444'
+                        ? 'linear-gradient(90deg,#ef4444,#dc2626)'
+                        : tc === '#f59e0b'
+                        ? 'linear-gradient(90deg,#f59e0b,#d97706)'
+                        : 'linear-gradient(90deg,#22c55e,#16a34a)';
+                }
+            }
+
+            function renderWords() {
+                const live   = words.filter(w => !w.answered);
+                const target = live.length ? live.reduce((a, b) => a.y > b.y ? a : b) : null;
+                const typed  = (inpEl?.value ?? '').toLowerCase();
+                const fwEl   = document.getElementById('falling-words');
+                if (!fwEl) return;
+
+                fwEl.innerHTML = live.map(w => {
+                    const isTgt  = target?.id === w.id;
+                    const si     = w.skill ? skillInfo(w.skill) : null;
+                    const danger = w.y > 70;
+                    return `<div class="fw${isTgt ? ' fwa' : ''}${w.skill ? ' fwsk' : ''}${danger ? ' fwdanger' : ''}"
+                                 style="left:${w.x}%;top:${Math.max(0, Math.min(w.y, 90))}%;${si ? `border-color:${si.color}88;` : ''}">
+                                <div class="fk" style="${isTgt ? `color:${SCRIPT_COLOR[SCRIPT]}` : ''}">${w.kana}</div>
+                                ${isTgt && typed ? `<div class="ft">${typed}</div>` : ''}
+                                ${si ? `<div class="fsi" style="color:${si.color}">${si.icon}</div>` : ''}
+                            </div>`;
+                }).join('');
+
+                // Update target display
+                const tgEl  = document.getElementById('target-kana');
+                const tmEl  = document.getElementById('target-meaning');
+                const skEl  = document.getElementById('target-skill');
+                const shEl  = document.getElementById('skill-hint');
+                const inp2  = document.getElementById('input-field');
+                const sbtn  = document.getElementById('submit-btn');
+
+                if (target) {
+                    if (tgEl) { tgEl.textContent = target.kana; tgEl.style.color = SCRIPT_COLOR[SCRIPT]; }
+                    if (tmEl) { tmEl.textContent = `(${target.answer})`; }
+                    if (skEl) {
+                        if (target.skill) {
+                            const si = skillInfo(target.skill);
+                            skEl.style.display    = 'inline-flex';
+                            skEl.textContent      = `${si.icon} ${si.name}`;
+                            skEl.style.background = `${si.color}22`;
+                            skEl.style.color      = si.color;
+                            skEl.style.borderColor= `${si.color}44`;
+                            if (shEl) { shEl.style.display = 'block'; shEl.textContent = `✨ Skill drop! Answer correctly to activate ${si.name}: ${si.desc}`; }
+                        } else {
+                            skEl.style.display = 'none';
+                            if (shEl) shEl.style.display = 'none';
+                        }
+                    }
+                    if (inp2) inp2.disabled = false;
+                    if (sbtn) sbtn.disabled = false;
+                } else {
+                    if (tgEl) tgEl.textContent = '…';
+                    if (tmEl) tmEl.textContent = '';
+                    if (skEl) skEl.style.display = 'none';
+                    if (shEl) shEl.style.display = 'none';
+                    if (inp2) inp2.disabled = true;
+                    if (sbtn) sbtn.disabled = true;
+                }
+            }
+
+            function renderStats() {
+                const cc = document.getElementById('correct-count');
+                const fc = document.getElementById('falling-count');
+                const sd = document.getElementById('streak-display');
+                const dd = document.getElementById('dmg-display');
+                const cb = document.getElementById('combo-badge');
+                if (cc) cc.textContent = `${totalC} correct`;
+                if (fc) fc.textContent = `${words.filter(w => !w.answered).length} falling`;
+                if (sd) sd.textContent = `🔥 ${streak}x`;
+                if (dd) dd.textContent = `${totalDmgDealt} dmg`;
+                if (cb) {
+                    if (streak >= 3) {
+                        cb.style.display = 'inline-flex';
+                        cb.textContent   = `🔥 ${streak}x`;
+                        cb.className     = `cb2 ${streak >= 12 ? 'cm' : streak >= 7 ? 'ch2' : 'cl'}`;
+                    } else { cb.style.display = 'none'; }
+                }
+            }
+
+            // ── RESULTS ──────────────────────────────────────────────────────────
+            function renderResults() {
+                const acc    = totalC + totalW > 0 ? Math.round(totalC / (totalC + totalW) * 100) : 0;
+                const dealt  = totalDmgDealt;
+                const taken  = player.maxHp - player.hp;
+                const xp     = Math.round(totalC * 12 * (result === 'win' ? 2 : 1) * (1 + Math.min(maxCombo, 10) * .1));
+                const gold   = totalC * 6  * (result === 'win' ? 2 : 1);
+                const eloChg = ELO_GAINS[DIFF][result === 'win' ? 'win' : 'loss'];
+                const win    = result === 'win';
+                const color  = win ? '#34d399' : '#f87171';
+                const sc     = SCRIPT_COLOR[SCRIPT];
+                const dc     = DIFF_COLOR[DIFF];
+
+                document.getElementById('main-ct').innerHTML = `
+                    <div class="rc su">
+                        <div class="ri ${win ? 'riw' : 'ril'}">
+                            <span style="font-size:2rem">${win ? '🏆' : '💀'}</span>
+                        </div>
+                        <h1 class="rt" style="color:${color}">${win ? 'Victory!' : result === 'loss' ? 'Defeat' : "Time's Up!"}</h1>
+                        <p class="rsu">${win ? `You defeated ${opponent.name}!` : `${opponent.name} defeated you.`}</p>
+                        <div class="elo-change" style="color:${eloChg > 0 ? '#34d399' : '#f87171'}">
+                            ${eloChg > 0 ? '+' : ''}${eloChg} ELO
+                        </div>
+                        <div class="rb">
+                            <span class="rbt">${SCRIPT_LABEL[SCRIPT]} · ${DIFF_LABEL[DIFF]}</span>
+                            ${win && maxCombo > 0 ? `<span class="rbw">🔥 ${maxCombo}x Streak</span>` : ''}
+                            ${acc >= 90 ? '<span class="rbw">🎯 Sharp Shooter</span>' : ''}
+                            ${result === 'loss' ? `<span class="rbr">Next time!</span>` : ''}
+                        </div>
+                        <div class="rg">
+                            <div class="rs2"><span class="rsl">Correct</span><span class="rsv">${totalC}</span></div>
+                            <div class="rs2"><span class="rsl">Accuracy</span><span class="rsv">${acc}%</span></div>
+                            <div class="rs2"><span class="rsl">Max Combo</span><span class="rsv">${maxCombo}x</span></div>
+                        </div>
+                        <div class="rew">
+                            <h3 class="rewh">Battle Rewards</h3>
+                            <div class="rewg">
+                                <div class="rewt">
+                                    <div class="rewi xp">XP</div>
+                                    <div class="rewv">+${xp}</div>
+                                    <div class="rewl">Experience</div>
+                                </div>
+                                <div class="rewt">
+                                    <div class="rewi gd">G</div>
+                                    <div class="rewv">+${gold}</div>
+                                    <div class="rewl">Gold</div>
+                                </div>
+                                <div class="rewt">
+                                    <div class="rewi st deal">⚔️</div>
+                                    <div class="rewv" style="color:#34d399">${dealt}</div>
+                                    <div class="rewl">Dmg Dealt</div>
+                                </div>
+                                <div class="rewt">
+                                    <div class="rewi st taken">🛡️</div>
+                                    <div class="rewv" style="color:#f87171">${taken}</div>
+                                    <div class="rewl">Dmg Taken</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ra">
+                            <button class="rap" style="background:linear-gradient(135deg,${sc},${dc})" onclick="location.reload()">⚔️ Rematch</button>
+                            <button class="ras" onclick="onBack()">← Lobby</button>
+                        </div>
+                    </div>`;
+
+                // Submit to server
+                fetch('/KanaBattle/SubmitBattleResult', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        Script: SCRIPT, Difficulty: DIFF, Result: result,
+                        CorrectAnswers: totalC, Mistakes: totalW,
+                        MaxCombo: maxCombo, DamageDealt: dealt, DamageTaken: taken,
+                        XpEarned: xp, GoldEarned: gold, EloChange: eloChg
+                    })
+                }).catch(() => {});
+            }
+
+            function onBack() { window.location.href = '@Url.Action("MainView", "KanaBattle")'; }
+
+            // ── AUDIO ────────────────────────────────────────────────────────────
+            let _audioCtx = null;
+            function getCtx() {
+                if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                return _audioCtx;
+            }
+            function resumeAudio() { try { getCtx().resume(); } catch {} }
+
+            function playTone(type, freq, dur, vol = 0.12) {
+                try {
+                    const a = getCtx(), o = a.createOscillator(), g = a.createGain();
+                    o.type = type; o.frequency.value = freq;
+                    g.gain.setValueAtTime(0, a.currentTime);
+                    g.gain.linearRampToValueAtTime(vol, a.currentTime + .03);
+                    g.gain.exponentialRampToValueAtTime(.001, a.currentTime + dur);
+                    o.connect(g).connect(a.destination);
+                    o.start(); o.stop(a.currentTime + dur + .05);
+                } catch {}
+            }
+
+            function playSweep(type, f1, f2, dur, vol = 0.15) {
+                try {
+                    const a = getCtx(), o = a.createOscillator(), g = a.createGain();
+                    o.type = type;
+                    o.frequency.setValueAtTime(f1, a.currentTime);
+                    o.frequency.linearRampToValueAtTime(f2, a.currentTime + dur);
+                    g.gain.setValueAtTime(vol, a.currentTime);
+                    g.gain.exponentialRampToValueAtTime(.001, a.currentTime + dur + .05);
+                    o.connect(g).connect(a.destination);
+                    o.start(); o.stop(a.currentTime + dur + .1);
+                } catch {}
+            }
+
+            function playCorrectSound()   { playTone('sine',    523.25, .25, .15); setTimeout(() => playTone('sine', 659.25, .2, .1), 80); }
+            function playWrongSound()     { playSweep('sawtooth', 180, 80, .35, .2); }
+            function playAttackSound()    { playTone('square',  220, .15, .1); }
+            function playHitSound()       { playSweep('square', 320, 60, .2, .2); }
+            function playSlashSound()     { playSweep('sawtooth', 900, 120, .15, .15); }
+            function playLightningSound() { playSweep('square', 2200, 200, .1, .12); }
+            function playPowerUpSound()   { [380, 480, 580, 780].forEach((f, i) => setTimeout(() => playTone('sine', f, .15, .1), i * 55)); }
+            function playVictorySound()   { [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => setTimeout(() => playTone('sine', f, .45, .12), i * 120)); }
+            function playDefeatSound()    { [392, 349.23, 293.66, 220].forEach((f, i) => setTimeout(() => playTone('triangle', f, .55, .12), i * 130)); }
+            function playFireballSound()  {
+                try {
+                    const a = getCtx(), o = a.createOscillator(), g = a.createGain();
+                    o.type = 'sawtooth';
+                    o.frequency.setValueAtTime(100, a.currentTime);
+                    o.frequency.linearRampToValueAtTime(320, a.currentTime + .1);
+                    o.frequency.linearRampToValueAtTime(55, a.currentTime + .42);
+                    g.gain.setValueAtTime(.16, a.currentTime);
+                    g.gain.exponentialRampToValueAtTime(.001, a.currentTime + .52);
+                    o.connect(g).connect(a.destination);
+                    o.start(); o.stop(a.currentTime + .57);
+                } catch {}
+            }
+
+            function spawnConfetti() {
+                const c = document.createElement('div');
+                c.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:60';
+                const cols = ['#f43f5e','#0ea5e9','#f59e0b','#10b981','#8b5cf6','#ec4899'];
+                for (let i = 0; i < 50; i++) {
+                    const d = document.createElement('div');
+                    const s = 5 + Math.random() * 8;
+                    d.style.cssText = `position:absolute;left:${Math.random()*100}%;top:-10px;`
+                        + `width:${s}px;height:${s}px;background:${cols[Math.floor(Math.random()*cols.length)]};`
+                        + `border-radius:${Math.random()>.5?'50%':'2px'};`
+                        + `animation:confetti-fall ${2+Math.random()*3}s ease-out ${Math.random()*2}s both`;
+                    c.appendChild(d);
+                }
+                document.body.appendChild(c);
+                setTimeout(() => c.remove(), 6000);
+            }
+
+            // ── KEYBOARD ─────────────────────────────────────────────────────────
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') onBack();
+            });
+    </script>
+</body>
+</html>

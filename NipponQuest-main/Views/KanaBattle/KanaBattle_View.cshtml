@@ -1,0 +1,1201 @@
+﻿@{
+    ViewData["Title"] = "KanaBattle — Find Match";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0
+            }
+
+            body {
+                font-family: 'Nunito', sans-serif;
+                background: #020617;
+                color: #e2e8f0;
+                min-height: 100vh;
+                overflow-x: hidden
+            }
+
+            .wrap {
+                max-width: 720px;
+                margin: 0 auto;
+                padding: 2rem 1rem;
+                position: relative;
+                z-index: 10
+            }
+
+            .bg {
+                position: fixed;
+                inset: 0;
+                z-index: 0;
+                pointer-events: none
+            }
+
+            .bg-a {
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(135deg,#020617,#2d1b4b18,#020617);
+                background-size: 200% 200%;
+                animation: au 8s ease infinite
+            }
+
+            .bg-p {
+                position: absolute;
+                border-radius: 50%;
+                animation: pf linear infinite;
+                opacity: 0
+            }
+
+            .bv {
+                position: fixed;
+                inset: 0;
+                pointer-events: none;
+                z-index: 1;
+                box-shadow: inset 0 0 150px rgba(0,0,0,.6)
+            }
+
+            @@keyframes au {
+                0% {
+                    background-position: 0% 50%
+                }
+
+                50% {
+                    background-position: 100% 50%
+                }
+
+                100% {
+                    background-position: 0% 50%
+                }
+            }
+
+            @@keyframes pf {
+                0% {
+                    transform: translateY(0);
+                    opacity: 0
+                }
+
+                10% {
+                    opacity: 1
+                }
+
+                90% {
+                    opacity: 1
+                }
+
+                100% {
+                    transform: translateY(-400px);
+                    opacity: 0
+                }
+            }
+
+            @@keyframes spin {
+                0% {
+                    transform: rotate(0deg)
+                }
+
+                100% {
+                    transform: rotate(360deg)
+                }
+            }
+
+            @@keyframes slide-up {
+                0% {
+                    opacity: 0;
+                    transform: translateY(24px)
+                }
+
+                100% {
+                    opacity: 1;
+                    transform: translateY(0)
+                }
+            }
+
+            @@keyframes pulse {
+                0%, 100% {
+                    opacity: 1
+                }
+
+                50% {
+                    opacity: .4
+                }
+            }
+
+            /* ── TOP BAR ── */
+            .tb {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 1.5rem
+            }
+
+            .tb-title {
+                font-weight: 900;
+                color: #64748b;
+                letter-spacing: 2px;
+                font-size: .6rem;
+                text-transform: uppercase
+            }
+
+            .tb a {
+                text-decoration: none;
+                font-weight: 900;
+                font-size: .65rem;
+                transition: opacity .2s
+            }
+
+                .tb a:hover {
+                    opacity: .75
+                }
+
+            /* ── NAV TABS ── */
+            .nav-tabs {
+                display: flex;
+                gap: .4rem;
+                margin-bottom: 1.5rem;
+                background: rgba(15,23,42,.6);
+                border: 1px solid #1e293b;
+                border-radius: .8rem;
+                padding: .3rem
+            }
+
+            .nav-tab {
+                flex: 1;
+                padding: .5rem;
+                border-radius: .6rem;
+                border: none;
+                background: transparent;
+                color: #64748b;
+                font-size: .58rem;
+                font-weight: 900;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                cursor: pointer;
+                font-family: inherit;
+                transition: all .2s
+            }
+
+                .nav-tab.active {
+                    background: rgba(239,68,68,.15);
+                    color: #fca5a5;
+                    border: 1px solid rgba(239,68,68,.2)
+                }
+
+                .nav-tab:hover:not(.active) {
+                    color: #94a3b8
+                }
+
+            .tab-panel {
+                display: none
+            }
+
+                .tab-panel.active {
+                    display: block
+                }
+
+            /* ── HERO ── */
+            .hero {
+                text-align: center;
+                margin-bottom: 2rem
+            }
+
+            .hero-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: .4rem;
+                padding: .35rem .75rem;
+                border-radius: 999px;
+                background: rgba(127,29,29,.3);
+                border: 1px solid rgba(239,68,68,.2);
+                color: #fca5a5;
+                font-size: .6rem;
+                font-weight: 900;
+                letter-spacing: 1.5px;
+                text-transform: uppercase;
+                margin-bottom: .9rem
+            }
+
+                .hero-badge .dot {
+                    width: 6px;
+                    height: 6px;
+                    border-radius: 50%;
+                    background: #ef4444;
+                    animation: pulse 1.2s infinite
+                }
+
+            .hero h1 {
+                font-size: 3rem;
+                font-weight: 900;
+                color: #fff;
+                margin-bottom: .4rem;
+                letter-spacing: -1.5px
+            }
+
+                .hero h1 span {
+                    color: #ef4444
+                }
+
+            .hero p {
+                color: #94a3b8;
+                font-size: .85rem;
+                font-weight: 700
+            }
+
+            /* ── STATS STRIP ── */
+            .stats-strip {
+                display: flex;
+                justify-content: center;
+                gap: 1.5rem;
+                margin-bottom: 1.75rem;
+                flex-wrap: wrap
+            }
+
+            .stat-pill {
+                display: flex;
+                align-items: center;
+                gap: .35rem;
+                padding: .3rem .7rem;
+                border-radius: 999px;
+                background: rgba(30,41,59,.6);
+                border: 1px solid #1e293b;
+                font-size: .5rem;
+                font-weight: 900;
+                color: #64748b;
+                text-transform: uppercase;
+                letter-spacing: 1px
+            }
+
+                .stat-pill .val {
+                    color: #fff
+                }
+
+            /* ── CARDS ── */
+            .card {
+                background: rgba(30,41,59,.55);
+                backdrop-filter: blur(12px);
+                border: 1px solid rgba(51,65,85,.5);
+                border-radius: 1.1rem;
+                padding: 1.35rem;
+                margin-bottom: .85rem
+            }
+
+            .card-h {
+                font-size: .6rem;
+                font-weight: 900;
+                text-transform: uppercase;
+                color: #94a3b8;
+                margin-bottom: .9rem;
+                display: flex;
+                align-items: center;
+                gap: .4rem
+            }
+
+                .card-h::before {
+                    content: '';
+                    display: block;
+                    width: 3px;
+                    height: 14px;
+                    border-radius: 2px
+                }
+
+                .card-h.blue::before {
+                    background: #0ea5e9
+                }
+
+                .card-h.red::before {
+                    background: #ef4444
+                }
+
+            .card-desc {
+                font-size: .58rem;
+                font-weight: 700;
+                color: #475569;
+                margin-bottom: .75rem;
+                line-height: 1.5
+            }
+
+            /* ── CHIPS ── */
+            .chips {
+                display: flex;
+                gap: .45rem;
+                flex-wrap: wrap
+            }
+
+            .chip {
+                flex: 1;
+                min-width: 90px;
+                padding: .65rem .4rem;
+                border-radius: .75rem;
+                border: 2px solid #1e293b;
+                background: rgba(10,15,30,.5);
+                text-align: center;
+                cursor: pointer;
+                transition: all .18s;
+                color: #fff;
+                position: relative
+            }
+
+                .chip:hover:not(.sel) {
+                    border-color: #475569;
+                    transform: translateY(-1px)
+                }
+
+                .chip.sel-s {
+                    border-color: #0ea5e9;
+                    background: rgba(14,165,233,.15);
+                    box-shadow: 0 0 14px rgba(14,165,233,.12)
+                }
+
+                .chip.sel-d {
+                    border-color: #ef4444;
+                    background: rgba(239,68,68,.15);
+                    box-shadow: 0 0 14px rgba(239,68,68,.12)
+                }
+
+            .chip-icon {
+                font-size: 1.6rem;
+                margin-bottom: .4rem;
+                display: block;
+                line-height: 1
+            }
+
+            .chip-label {
+                font-size: .65rem;
+                font-weight: 900;
+                letter-spacing: 1px;
+                text-transform: uppercase
+            }
+
+            .chip-sub {
+                font-size: .45rem;
+                font-weight: 700;
+                color: #64748b;
+                margin-top: .2rem
+            }
+
+            .chip-detail {
+                font-size: .42rem;
+                font-weight: 700;
+                color: #334155;
+                margin-top: .1rem;
+                line-height: 1.3
+            }
+
+            .dgrid {
+                display: grid;
+                grid-template-columns: repeat(4,1fr);
+                gap: .45rem
+            }
+
+            @@media(max-width:520px) {
+                .chips {
+                    display: grid;
+                    grid-template-columns: repeat(2,1fr)
+                }
+
+                .dgrid {
+                    grid-template-columns: repeat(2,1fr)
+                }
+            }
+
+            /* ── FIND BUTTON ── */
+            .find-btn {
+                width: 100%;
+                padding: 1rem;
+                border-radius: .9rem;
+                font-weight: 900;
+                font-size: .95rem;
+                letter-spacing: 1px;
+                border: none;
+                cursor: pointer;
+                color: #fff;
+                transition: all .25s;
+                font-family: inherit;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: .5rem
+            }
+
+                .find-btn:not(:disabled) {
+                    background: linear-gradient(135deg,#ef4444,#dc2626);
+                    box-shadow: 0 4px 24px rgba(239,68,68,.25)
+                }
+
+                    .find-btn:not(:disabled):hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 32px rgba(239,68,68,.35);
+                        filter: brightness(1.08)
+                    }
+
+                .find-btn:disabled {
+                    background: rgba(30,41,59,.5);
+                    color: #475569;
+                    cursor: not-allowed;
+                    border: 1px solid #334155
+                }
+
+            /* ── SUMMARY TAGS ── */
+            .sel-summary {
+                display: flex;
+                justify-content: center;
+                gap: .5rem;
+                margin-bottom: .75rem;
+                flex-wrap: wrap;
+                min-height: 1.5rem
+            }
+
+            .sel-tag {
+                padding: .2rem .55rem;
+                border-radius: 999px;
+                font-size: .45rem;
+                font-weight: 900;
+                letter-spacing: 1.5px;
+                text-transform: uppercase;
+                border: 1px solid;
+                opacity: 0;
+                transform: translateY(4px);
+                transition: all .2s
+            }
+
+                .sel-tag.show {
+                    opacity: 1;
+                    transform: translateY(0)
+                }
+
+                .sel-tag.s {
+                    border-color: rgba(14,165,233,.4);
+                    background: rgba(14,165,233,.1);
+                    color: #7dd3fc
+                }
+
+                .sel-tag.d {
+                    border-color: rgba(239,68,68,.4);
+                    background: rgba(239,68,68,.1);
+                    color: #fca5a5
+                }
+
+            /* ── MATCHMAKING OVERLAY ── */
+            .mmover {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,.85);
+                z-index: 200;
+                align-items: center;
+                justify-content: center;
+                backdrop-filter: blur(6px)
+            }
+
+                .mmover.show {
+                    display: flex
+                }
+
+            .mmbox {
+                background: #0f172a;
+                border: 1px solid rgba(239,68,68,.2);
+                border-radius: 1.4rem;
+                padding: 2.5rem 2rem;
+                text-align: center;
+                max-width: 360px;
+                width: 100%;
+                box-shadow: 0 0 60px rgba(239,68,68,.08)
+            }
+
+            .mm-spinner {
+                width: 56px;
+                height: 56px;
+                margin: 0 auto 1.25rem;
+                border: 4px solid rgba(239,68,68,.15);
+                border-top-color: #ef4444;
+                border-radius: 50%;
+                animation: spin .85s linear infinite
+            }
+
+            .mm-title {
+                color: #fff;
+                font-weight: 900;
+                font-size: 1.25rem;
+                margin-bottom: .6rem
+            }
+
+            .mm-sub {
+                color: #94a3b8;
+                font-size: .75rem;
+                font-weight: 700;
+                margin-bottom: 1rem
+            }
+
+            .mm-detail {
+                color: #475569;
+                font-size: .6rem;
+                font-weight: 700;
+                margin-bottom: 1rem
+            }
+
+            .mm-dots {
+                display: flex;
+                justify-content: center;
+                gap: .35rem
+            }
+
+            .mm-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: rgba(239,68,68,.25);
+                animation: pulse 1.2s infinite
+            }
+
+                .mm-dot:nth-child(2) {
+                    animation-delay: .2s
+                }
+
+                .mm-dot:nth-child(3) {
+                    animation-delay: .4s
+                }
+
+            .mm-cancel {
+                margin-top: 1.25rem;
+                padding: .5rem 1.2rem;
+                background: none;
+                border: 1px solid #334155;
+                border-radius: 999px;
+                color: #64748b;
+                font-size: .55rem;
+                font-weight: 900;
+                cursor: pointer;
+                font-family: inherit;
+                transition: all .2s
+            }
+
+                .mm-cancel:hover {
+                    border-color: #475569;
+                    color: #94a3b8
+                }
+
+            /* ── RANKS TAB ── */
+            .ranks-hero {
+                text-align: center;
+                margin-bottom: 1.5rem
+            }
+
+                .ranks-hero h2 {
+                    font-size: 2rem;
+                    font-weight: 900;
+                    color: #fff;
+                    margin-bottom: .4rem
+                }
+
+                .ranks-hero p {
+                    font-size: .75rem;
+                    color: #64748b;
+                    font-weight: 700
+                }
+
+            .ranks-grid {
+                display: grid;
+                gap: .6rem;
+                margin-bottom: 1rem
+            }
+
+            .rank-card {
+                background: rgba(15,23,42,.7);
+                border: 1px solid rgba(51,65,85,.4);
+                border-radius: 1rem;
+                padding: 1rem 1.25rem;
+                display: flex;
+                align-items: center;
+                gap: 1rem
+            }
+
+            .rank-icon {
+                font-size: 2rem;
+                flex-shrink: 0;
+                width: 48px;
+                text-align: center
+            }
+
+            .rank-info {
+                flex: 1
+            }
+
+            .rank-name {
+                font-size: .85rem;
+                font-weight: 900;
+                margin-bottom: .1rem
+            }
+
+            .rank-desc {
+                font-size: .57rem;
+                font-weight: 700;
+                color: #64748b;
+                line-height: 1.4
+            }
+
+            .rank-elo {
+                font-size: .5rem;
+                font-weight: 900;
+                padding: .2rem .5rem;
+                border-radius: 999px;
+                border: 1px solid;
+                text-transform: uppercase;
+                white-space: nowrap
+            }
+
+            .elo-info-card {
+                background: rgba(15,23,42,.7);
+                border: 1px solid rgba(51,65,85,.4);
+                border-radius: 1rem;
+                padding: 1.25rem;
+                margin-bottom: 1rem
+            }
+
+                .elo-info-card h4 {
+                    font-size: .7rem;
+                    font-weight: 900;
+                    color: #fff;
+                    margin-bottom: .5rem
+                }
+
+                .elo-info-card p {
+                    font-size: .62rem;
+                    font-weight: 700;
+                    color: #64748b;
+                    line-height: 1.6
+                }
+
+            .elo-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: .75rem
+            }
+
+                .elo-table th, .elo-table td {
+                    padding: .4rem .6rem;
+                    font-size: .55rem;
+                    font-weight: 700;
+                    text-align: left;
+                    border-bottom: 1px solid rgba(51,65,85,.3)
+                }
+
+                .elo-table th {
+                    color: #475569;
+                    text-transform: uppercase;
+                    letter-spacing: 1px
+                }
+
+                .elo-table td {
+                    color: #94a3b8
+                }
+
+                    .elo-table td:first-child {
+                        color: #fff;
+                        font-weight: 900
+                    }
+
+            /* ── ABOUT TAB ── */
+            .about-section {
+                margin-bottom: 1.5rem
+            }
+
+            .about-title {
+                font-size: .65rem;
+                font-weight: 900;
+                color: #475569;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                margin-bottom: .75rem;
+                display: flex;
+                align-items: center;
+                gap: .4rem
+            }
+
+                .about-title::before {
+                    content: '';
+                    display: block;
+                    width: 3px;
+                    height: 14px;
+                    border-radius: 2px;
+                    background: #ef4444
+                }
+
+            .about-card {
+                background: rgba(15,23,42,.7);
+                border: 1px solid rgba(51,65,85,.4);
+                border-radius: 1rem;
+                padding: 1rem 1.25rem;
+                margin-bottom: .6rem
+            }
+
+                .about-card h4 {
+                    font-size: .72rem;
+                    font-weight: 900;
+                    color: #fff;
+                    margin-bottom: .4rem
+                }
+
+                .about-card p {
+                    font-size: .62rem;
+                    font-weight: 700;
+                    color: #64748b;
+                    line-height: 1.6
+                }
+
+            .skill-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: .45rem
+            }
+
+            .skill-card {
+                background: rgba(15,23,42,.5);
+                border: 1px solid rgba(51,65,85,.3);
+                border-radius: .75rem;
+                padding: .65rem .85rem;
+                display: flex;
+                align-items: flex-start;
+                gap: .5rem
+            }
+
+            .skill-icon {
+                font-size: 1.4rem;
+                flex-shrink: 0
+            }
+
+            .skill-name {
+                font-size: .62rem;
+                font-weight: 900;
+                color: #fff;
+                margin-bottom: .15rem
+            }
+
+            .skill-desc {
+                font-size: .52rem;
+                font-weight: 700;
+                color: #64748b;
+                line-height: 1.4
+            }
+
+            .diff-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: .5rem
+            }
+
+            .diff-card {
+                background: rgba(15,23,42,.6);
+                border: 1px solid rgba(51,65,85,.4);
+                border-radius: .85rem;
+                padding: .85rem;
+                text-align: center
+            }
+
+            .diff-icon {
+                font-size: 1.6rem;
+                margin-bottom: .35rem
+            }
+
+            .diff-name {
+                font-size: .68rem;
+                font-weight: 900;
+                color: #fff;
+                margin-bottom: .25rem
+            }
+
+            .diff-detail {
+                font-size: .55rem;
+                font-weight: 700;
+                color: #64748b;
+                line-height: 1.4
+            }
+    </style>
+</head>
+<body>
+    <div class="bg" id="bg"><div class="bg-a"></div></div>
+    <div class="bv"></div>
+
+    <!-- MATCHMAKING OVERLAY -->
+    <div class="mmover" id="mmover">
+        <div class="mmbox">
+            <div class="mm-spinner"></div>
+            <h3 class="mm-title">🔍 Finding Opponent</h3>
+            <p class="mm-sub" id="mmtxt">Searching for a worthy challenger…</p>
+            <p class="mm-detail" id="mm-detail"></p>
+            <div class="mm-dots">
+                <div class="mm-dot"></div><div class="mm-dot"></div><div class="mm-dot"></div>
+            </div>
+            <button class="mm-cancel" onclick="cancelSearch()">✕ Cancel</button>
+        </div>
+    </div>
+
+    <div class="wrap" style="animation:slide-up .5s ease both">
+        <!-- TOP BAR -->
+        <div class="tb">
+            <a href="@Url.Action("Index", "Home")"
+               style="color:#64748b;font-size:.6rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;text-decoration:none;border:1px solid #1e293b;padding:.3rem .65rem;border-radius:999px;transition:all .2s"
+               title="Return to the NipponQuest home page">← Home</a>
+            <div class="tb-title">KanaBattle Multiplayer</div>
+            <a href="@Url.Action("Index", "KanaBlitz")" style="color:#0ea5e9;font-size:.6rem;font-weight:900" title="Switch to solo training mode">Solo Mode →</a>
+        </div>
+
+        <!-- NAV TABS -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('match')" title="Find a match and enter the battle arena">⚔ Play</button>
+            <button class="nav-tab" onclick="showTab('ranks')" title="View all league ranks, ELO requirements and rewards">🏆 Ranks</button>
+            <button class="nav-tab" onclick="showTab('about')" title="Read about game modes, skills, combat and how ELO works">📖 About</button>
+        </div>
+
+        <!-- ═══ PLAY TAB ═══ -->
+        <div id="tab-match" class="tab-panel active">
+            <!-- HERO -->
+            <div class="hero">
+                <div class="hero-badge"><span class="dot"></span>Live Arena</div>
+                <h1>Kana<span>Battle</span></h1>
+                <p>Type romaji to attack your opponent — first to KO wins!<br>Collect power-up skills from falling kana to turn the tide.</p>
+            </div>
+
+            <!-- STATS STRIP -->
+            <div class="stats-strip">
+                <div class="stat-pill">Players online <span class="val" id="online-count">—</span></div>
+                <div class="stat-pill">Matches today <span class="val" id="match-count">—</span></div>
+                <div class="stat-pill">Your ELO <span class="val" id="player-elo">—</span></div>
+            </div>
+
+            <!-- SCRIPT SELECTION -->
+            <div class="card">
+                <div class="card-h blue">① Choose Your Script</div>
+                <div class="card-desc">Select which kana alphabet you want to practice in battle. Mixed includes all scripts for maximum challenge.</div>
+                <div class="chips" id="script-chips">
+                    <div class="chip" data-s="hiragana" onclick="selScript(this)" title="Battle using hiragana — the 46 core Japanese syllabic characters">
+                        <span class="chip-icon" style="color:#0ea5e9">あ</span>
+                        <div class="chip-label">Hiragana</div>
+                        <div class="chip-sub">46 characters</div>
+                        <div class="chip-detail">Core native script</div>
+                    </div>
+                    <div class="chip" data-s="katakana" onclick="selScript(this)" title="Battle using katakana — used for foreign loanwords and onomatopoeia">
+                        <span class="chip-icon" style="color:#f43f5e">ア</span>
+                        <div class="chip-label">Katakana</div>
+                        <div class="chip-sub">46 characters</div>
+                        <div class="chip-detail">Foreign & tech words</div>
+                    </div>
+                    <div class="chip" data-s="dakuten" onclick="selScript(this)" title="Battle with voiced and semi-voiced kana (が、ざ、だ、ば、ぱ)">
+                        <span class="chip-icon" style="color:#8b5cf6">が</span>
+                        <div class="chip-label">Dakuten</div>
+                        <div class="chip-sub">Voiced marks</div>
+                        <div class="chip-detail">Advanced variant sounds</div>
+                    </div>
+                    <div class="chip" data-s="mixed" onclick="selScript(this)" title="All scripts combined — hiragana, katakana and dakuten mixed together">
+                        <span class="chip-icon" style="color:#f59e0b">混</span>
+                        <div class="chip-label">Mixed</div>
+                        <div class="chip-sub">All scripts</div>
+                        <div class="chip-detail">Ultimate challenge</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DIFFICULTY SELECTION -->
+            <div class="card">
+                <div class="card-h red">② Choose Intensity</div>
+                <div class="card-desc">Difficulty affects word spawn speed, AI attack power, HP pool and ELO gains. Higher difficulty = more ELO at stake!</div>
+                <div class="dgrid" id="diff-chips">
+                    <div class="chip" data-d="easy" onclick="selDiff(this)" title="Easy: Slow pace, 1000HP, AI attacks every 4s — great for beginners. ±12 ELO">
+                        <span class="chip-icon">🌿</span>
+                        <div class="chip-label" style="color:#10b981">Easy</div>
+                        <div class="chip-sub">Relaxed pace</div>
+                        <div class="chip-detail">3 min · ±12 ELO</div>
+                    </div>
+                    <div class="chip" data-d="normal" onclick="selDiff(this)" title="Normal: Balanced challenge, AI attacks every 2.7s — best for intermediate players. ±20 ELO">
+                        <span class="chip-icon">⚡</span>
+                        <div class="chip-label" style="color:#3b82f6">Normal</div>
+                        <div class="chip-sub">Balanced</div>
+                        <div class="chip-detail">2:15 · ±20 ELO</div>
+                    </div>
+                    <div class="chip" data-d="hard" onclick="selDiff(this)" title="Hard: Fast words, AI attacks every 1.7s — for experienced players. ±32 ELO">
+                        <span class="chip-icon">🔥</span>
+                        <div class="chip-label" style="color:#8b5cf6">Hard</div>
+                        <div class="chip-sub">Fast & furious</div>
+                        <div class="chip-detail">1:45 · ±32 ELO</div>
+                    </div>
+                    <div class="chip" data-d="insanity" onclick="selDiff(this)" title="Insanity: Extreme speed, AI attacks every 0.9s — masters only. ±50 ELO">
+                        <span class="chip-icon">💀</span>
+                        <div class="chip-label" style="color:#ef4444">Insanity</div>
+                        <div class="chip-sub">No mercy</div>
+                        <div class="chip-detail">1:30 · ±50 ELO</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SELECTION SUMMARY -->
+            <div class="sel-summary">
+                <span class="sel-tag s" id="tag-s">—</span>
+                <span class="sel-tag d" id="tag-d">—</span>
+            </div>
+
+            <!-- FIND MATCH BUTTON -->
+            <button class="find-btn" id="find-btn" onclick="findMatch()" disabled title="Select a script and difficulty, then click to be matched with an opponent">
+                ⚔ FIND MATCH
+            </button>
+        </div>
+
+        <!-- ═══ RANKS TAB ═══ -->
+        <div id="tab-ranks" class="tab-panel">
+            <div class="ranks-hero">
+                <h2>🏆 <span style="color:#fbbf24">League</span> Ranks</h2>
+                <p>Win battles to earn ELO and climb the ranks. Each rank unlocks new titles and profile badges.</p>
+            </div>
+            <div class="ranks-grid" id="ranks-grid"></div>
+            <div class="elo-info-card">
+                <h4>📊 ELO & Matchmaking</h4>
+                <p>KanaBattle uses an ELO rating system. Win → gain ELO. Lose → lose ELO. The amount depends on difficulty chosen:</p>
+                <table class="elo-table">
+                    <thead><tr><th>Difficulty</th><th>Win</th><th>Loss</th><th>Duration</th></tr></thead>
+                    <tbody>
+                        <tr><td>🌿 Easy</td><td style="color:#4ade80">+12</td><td style="color:#f87171">-8</td><td>3 min</td></tr>
+                        <tr><td>⚡ Normal</td><td style="color:#4ade80">+20</td><td style="color:#f87171">-15</td><td>2:15</td></tr>
+                        <tr><td>🔥 Hard</td><td style="color:#4ade80">+32</td><td style="color:#f87171">-24</td><td>1:45</td></tr>
+                        <tr><td>💀 Insanity</td><td style="color:#4ade80">+50</td><td style="color:#f87171">-38</td><td>1:30</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="elo-info-card">
+                <h4>🤖 Current Matchmaking</h4>
+                <p>All battles are currently fought against AI opponents tuned to the difficulty you select. The AI difficulty scales precisely — Easy AI is patient and slow, while Insanity AI attacks relentlessly with double strikes. Real multiplayer with ELO-based matchmaking is coming in a future update!</p>
+            </div>
+        </div>
+
+        <!-- ═══ ABOUT TAB ═══ -->
+        <div id="tab-about" class="tab-panel">
+            <div class="ranks-hero">
+                <h2>📖 <span style="color:#0ea5e9">How</span> To Play</h2>
+                <p>Master kana to attack. Skills to dominate. ELO to rise.</p>
+            </div>
+
+            <div class="about-section">
+                <div class="about-title">Battle Mechanics</div>
+                <div class="about-card">
+                    <h4>⚔️ Core Combat Loop</h4>
+                    <p>Kana cards fall from the top of the arena. The lowest card is your current target — it shows in the input area below. Type the romaji answer (e.g. "ka" for か) and press Enter or tap Attack to deal damage. The faster you answer, the more damage you deal (speed bonus). Build combos by answering correctly in a row for multiplied damage.</p>
+                </div>
+                <div class="about-card">
+                    <h4>🤖 AI Opponent</h4>
+                    <p>Your AI opponent attacks on a timer. Difficulty controls both how fast kana falls AND how often the AI attacks. On Insanity, the AI can double-strike and gains sword buffs. If kana reaches the bottom without being answered, you take chip damage. Protect your HP!</p>
+                </div>
+                <div class="about-card">
+                    <h4>❤️ HP & Winning</h4>
+                    <p>Both you and the opponent start with 1000 HP (adjusted slightly per difficulty). Reduce the opponent's HP to 0 to win. If your HP reaches 0, you lose. If time runs out, the player with more HP wins. Wrong answers deal small self-damage — accuracy matters!</p>
+                </div>
+            </div>
+
+            <div class="about-section">
+                <div class="about-title">Difficulty Breakdown</div>
+                <div class="diff-grid">
+                    <div class="diff-card">
+                        <div class="diff-icon">🌿</div>
+                        <div class="diff-name" style="color:#10b981">Easy</div>
+                        <div class="diff-detail">Slow fall speed, AI attacks every ~4s, low damage. Great for beginners. 3 minute matches.</div>
+                    </div>
+                    <div class="diff-card">
+                        <div class="diff-icon">⚡</div>
+                        <div class="diff-name" style="color:#3b82f6">Normal</div>
+                        <div class="diff-detail">Medium fall speed, AI attacks every ~2.7s. Balanced damage. 2:15 matches.</div>
+                    </div>
+                    <div class="diff-card">
+                        <div class="diff-icon">🔥</div>
+                        <div class="diff-name" style="color:#8b5cf6">Hard</div>
+                        <div class="diff-detail">Fast fall speed, AI attacks every ~1.7s. Higher damage. Sword buffs for AI. 1:45 matches.</div>
+                    </div>
+                    <div class="diff-card">
+                        <div class="diff-icon">💀</div>
+                        <div class="diff-name" style="color:#ef4444">Insanity</div>
+                        <div class="diff-detail">Extreme speed, AI attacks every ~0.9s with double strikes. Maximum chaos. 1:30 matches.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="about-section">
+                <div class="about-title">Skills & Power-Ups</div>
+                <p style="font-size:.63rem;color:#64748b;font-weight:700;margin-bottom:.75rem">Some falling kana carry special power-up skills (shown with a glowing border). Answer them correctly to activate the skill. Wrong answers on skill kana do NOT activate the skill.</p>
+                <div class="skill-grid" id="about-skills"></div>
+            </div>
+
+            <div class="about-section">
+                <div class="about-title">Combo System</div>
+                <div class="about-card">
+                    <h4>🔥 Damage Multipliers</h4>
+                    <p>Answer correctly in a row to build your combo streak. Each combo level adds 5% bonus damage (up to 25x = 2.25× total). On top of combos, answer quickly for a speed bonus. At streak ≥4 you get ⚡, ≥7 you get 🔥, ≥12 you get 💥. Wrong answer resets your streak to 0.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+            // ── PARTICLES ────────────────────────────────────────────────────────
+            const bg = document.getElementById('bg');
+            for (let i = 0; i < 22; i++) {
+                const d = document.createElement('div'); d.className = 'bg-p';
+                const s = 2 + Math.random() * 4;
+                d.style.cssText = `left:${Math.random()*100}%;bottom:-6px;width:${s}px;height:${s}px;`
+                    + `background:${Math.random() > .5 ? 'rgba(239,68,68,.2)' : 'rgba(139,92,246,.15)'};`
+                    + `animation-duration:${9+Math.random()*14}s;animation-delay:${Math.random()*10}s;`;
+                bg.appendChild(d);
+            }
+
+            // ── RANK DATA ────────────────────────────────────────────────────────
+            const RANKS = [
+                { name:'Sprout',     icon:'🌱', min:0,    max:799,   color:'#4ade80', desc:'Your kana journey begins. Build your foundation one character at a time.' },
+                { name:'Wood',       icon:'🪵', min:800,  max:1199,  color:'#a3a3a3', desc:'Getting comfortable with the basics. Speed and accuracy improving steadily.' },
+                { name:'Iron',       icon:'⚔️', min:1200, max:1599,  color:'#94a3b8', desc:'Sharp reflexes forming. Combos feel natural and consistent.' },
+                { name:'Gold',       icon:'🥇', min:1600, max:1999,  color:'#fbbf24', desc:'Top-tier accuracy and speed. Above average in all areas.' },
+                { name:'Diamond',    icon:'💎', min:2000, max:2399,  color:'#38bdf8', desc:'Elite kana warrior. Very few players reach this tier.' },
+                { name:'Master',     icon:'🧙', min:2400, max:2799,  color:'#a78bfa', desc:'Near-perfect mastery. You answer without hesitation.' },
+                { name:'Challenger', icon:'🏆', min:2800, max:3199,  color:'#f97316', desc:'Among the absolute best. Your presence intimidates opponents.' },
+                { name:'Dragon',     icon:'🐉', min:3200, max:3699,  color:'#f43f5e', desc:'Legendary speed and precision. The kana flows through you.' },
+                { name:'Legend',     icon:'⭐', min:3700, max:Infinity, color:'#fef08a', desc:'The pinnacle of kana mastery. An immortal name in the arena.' },
+            ];
+
+            const ABOUT_SKILLS = [
+                { icon:'⚔️', name:'Sword',      desc:'2× damage for 15 seconds',             color:'#f59e0b' },
+                { icon:'🛡️', name:'Shield',     desc:'Block next 3 incoming hits',            color:'#3b82f6' },
+                { icon:'🔥', name:'Fireball',   desc:'Instant AoE burst — 2.5× base damage', color:'#ef4444' },
+                { icon:'⚡', name:'Lightning',  desc:'Instant strike — 1.8× base damage',    color:'#8b5cf6' },
+                { icon:'❄️', name:'Ice',        desc:'Freeze AI — no attacks for 5 seconds',  color:'#67e8f9' },
+                { icon:'☠️', name:'Poison',     desc:'DoT — 5 damage × 8 ticks',             color:'#a3e635' },
+                { icon:'💚', name:'Heal',       desc:'Restore 80 HP instantly',              color:'#34d399' },
+                { icon:'🎯', name:'Critical',   desc:'Next hit deals 3× damage',             color:'#fb923c' },
+                { icon:'✨', name:'Double',     desc:'Strike twice — 45% followup hit',       color:'#e879f9' },
+            ];
+
+            // ── TAB NAVIGATION ───────────────────────────────────────────────────
+            function showTab(name) {
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.getElementById('tab-' + name).classList.add('active');
+                const tabs = ['match','ranks','about'];
+                const idx = tabs.indexOf(name);
+                document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+                if (name === 'ranks') buildRanks();
+                if (name === 'about') buildAbout();
+            }
+
+            function buildRanks() {
+                const grid = document.getElementById('ranks-grid');
+                if (grid.children.length) return;
+                grid.innerHTML = RANKS.map(r => `
+                    <div class="rank-card" style="border-left:4px solid ${r.color}33">
+                        <div class="rank-icon">${r.icon}</div>
+                        <div class="rank-info">
+                            <div class="rank-name" style="color:${r.color}">${r.name}</div>
+                            <div class="rank-desc">${r.desc}</div>
+                        </div>
+                        <div class="rank-elo" style="color:${r.color};border-color:${r.color}44;background:${r.color}11">
+                            ${r.max === Infinity ? r.min + '+' : r.min + '–' + r.max}
+                        </div>
+                    </div>`).join('');
+            }
+
+            function buildAbout() {
+                const sg = document.getElementById('about-skills');
+                if (sg && !sg.children.length) {
+                    sg.innerHTML = ABOUT_SKILLS.map(s => `
+                        <div class="skill-card">
+                            <div class="skill-icon">${s.icon}</div>
+                            <div>
+                                <div class="skill-name" style="color:${s.color}">${s.name}</div>
+                                <div class="skill-desc">${s.desc}</div>
+                            </div>
+                        </div>`).join('');
+                }
+            }
+
+            // ── STATE ────────────────────────────────────────────────────────────
+            let chosenScript = null, chosenDiff = null, mmTimer = null;
+            const SCRIPT_LABELS = { hiragana:'Hiragana', katakana:'Katakana', dakuten:'Dakuten', mixed:'Mixed' };
+            const DIFF_LABELS   = { easy:'Easy', normal:'Normal', hard:'Hard', insanity:'Insanity' };
+
+            // ── SELECTIONS ───────────────────────────────────────────────────────
+            function selScript(el) {
+                document.querySelectorAll('[data-s]').forEach(c => c.classList.remove('sel-s'));
+                el.classList.add('sel-s');
+                chosenScript = el.dataset.s;
+                updateSummary(); checkReady();
+            }
+            function selDiff(el) {
+                document.querySelectorAll('[data-d]').forEach(c => c.classList.remove('sel-d'));
+                el.classList.add('sel-d');
+                chosenDiff = el.dataset.d;
+                updateSummary(); checkReady();
+            }
+            function updateSummary() {
+                const ts = document.getElementById('tag-s');
+                const td = document.getElementById('tag-d');
+                if (chosenScript) { ts.textContent = SCRIPT_LABELS[chosenScript]; ts.classList.add('show'); }
+                if (chosenDiff)   { td.textContent = DIFF_LABELS[chosenDiff];   td.classList.add('show'); }
+            }
+            function checkReady() {
+                document.getElementById('find-btn').disabled = !(chosenScript && chosenDiff);
+            }
+
+            // ── MATCHMAKING ──────────────────────────────────────────────────────
+            const MM_MESSAGES = [
+                'Searching for a worthy challenger…',
+                'Scanning the dojo ranks…',
+                'Checking player skill levels…',
+                'Almost there — opponent spotted!',
+                'Preparing the arena…',
+            ];
+            const MM_DETAILS = [
+                '', '🌿 Sprouting challengers detected…', '⚔️ Iron-ranked opponents in queue…',
+                '🔥 Loading battle arena…', '🎌 Match found — get ready!',
+            ];
+
+            function findMatch() {
+                if (!chosenScript || !chosenDiff) return;
+                document.getElementById('mmover').classList.add('show');
+                let idx = 0;
+                const detail = document.getElementById('mm-detail');
+                mmTimer = setInterval(() => {
+                    idx = (idx + 1) % MM_MESSAGES.length;
+                    const el = document.getElementById('mmtxt');
+                    if (el) el.textContent = MM_MESSAGES[idx];
+                    if (detail) detail.textContent = MM_DETAILS[idx] || '';
+                }, 800);
+                // Simulate matchmaking delay then navigate
+                const delay = 1800 + Math.random() * 1200;
+                setTimeout(() => {
+                    clearInterval(mmTimer);
+                    window.location.href = `/KanaBattle/Battle?difficulty=${chosenDiff}&script=${chosenScript}`;
+                }, delay);
+            }
+
+            function cancelSearch() {
+                clearInterval(mmTimer);
+                document.getElementById('mmover').classList.remove('show');
+            }
+
+            // ── LIVE STATS ───────────────────────────────────────────────────────
+            (async () => {
+                try {
+                    const r = await fetch('/KanaBattle/LiveStats');
+                    if (r.ok) {
+                        const j = await r.json();
+                        const oc = document.getElementById('online-count');
+                        const mc = document.getElementById('match-count');
+                        const ec = document.getElementById('player-elo');
+                        if (oc && j.onlinePlayers !== undefined) oc.textContent = j.onlinePlayers;
+                        if (mc && j.matchesToday !== undefined) mc.textContent = j.matchesToday;
+                        if (ec && j.playerElo !== undefined) ec.textContent = j.playerElo;
+                    }
+                } catch {}
+            })();
+    </script>
+</body>
+</html>
