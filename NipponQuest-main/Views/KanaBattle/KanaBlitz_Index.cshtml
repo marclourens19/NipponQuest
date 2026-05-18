@@ -1,1527 +1,936 @@
-﻿@using Microsoft.AspNetCore.Identity
-@inject UserManager<NipponQuest.Models.ApplicationUser> UserManager
+﻿@*
+    ╔══════════════════════════════════════════════════════════════╗
+    ║  KanaBlitz_Index.cshtml  —  Solo KanaBlitz Game             ║
+    ║  Controller : KanaBlitzController → Index()                 ║
+    ║  Route      : /KanaBlitz/Index  (or /KanaBlitz)             ║
+    ║  Data       : KanaBlitzController → GetWords(diff, alpha)   ║
+    ╚══════════════════════════════════════════════════════════════╝
+*@
 @{
-    ViewData["Title"] = "KanaBlitz Arena";
-    Layout = null;
-    var currentUser = await UserManager.GetUserAsync(User);
-    var isDev = currentUser?.GamerTag == "NQDev" ? "true" : "false";
+    ViewData["Title"] = "KanaBlitz Solo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>KanaBlitz Arena</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-            * {
-                box-sizing: border-box;
-                margin: 0;
-                padding: 0
-            }
-
-            body {
-                font-family: 'Nunito', sans-serif;
-                background: #020617;
-                color: #e2e8f0;
-                min-height: 100vh;
-                overflow-x: hidden
-            }
-
-            .container {
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 1.5rem 1rem;
-                position: relative;
-                z-index: 10
-            }
-
-            .nq-back-btn {
-                position: fixed;
-                top: 1.5rem;
-                left: 1.5rem;
-                z-index: 100;
-                display: flex;
-                align-items: center;
-                gap: .4rem;
-                padding: .4rem .8rem;
-                border-radius: 999px;
-                background: rgba(30,41,59,.8);
-                border: 1px solid #334155;
-                color: #94a3b8;
-                font-size: .65rem;
-                font-weight: 900;
-                letter-spacing: 1px;
-                text-transform: uppercase;
-                text-decoration: none;
-                backdrop-filter: blur(8px);
-                transition: all .2s
-            }
-
-                .nq-back-btn:hover {
-                    background: rgba(51,65,85,.8);
-                    color: #e2e8f0;
-                    transform: translateX(-3px)
-                }
-
-            .bg-layer {
-                position: fixed;
-                inset: 0;
-                z-index: 0;
-                pointer-events: none
-            }
-
-            .bg-aurora {
-                position: absolute;
-                inset: 0;
-                background: linear-gradient(135deg,#020617,#1e1b4b22,#020617);
-                background-size: 200% 200%;
-                animation: aurora 8s ease infinite
-            }
-
-            .bg-vignette {
-                position: fixed;
-                inset: 0;
-                pointer-events: none;
-                z-index: 1;
-                box-shadow: inset 0 0 150px rgba(0,0,0,.6), inset 0 0 50px rgba(0,0,0,.3)
-            }
-
-            .bg-particle {
-                position: absolute;
-                border-radius: 50%;
-                animation: particle-float linear infinite;
-                opacity: 0
-            }
-
-            @@keyframes aurora {
-                0% {
-                    background-position: 0% 50%
-                }
-
-                50% {
-                    background-position: 100% 50%
-                }
-
-                100% {
-                    background-position: 0% 50%
-                }
-            }
-
-            @@keyframes particle-float {
-                0% {
-                    transform: translateY(0);
-                    opacity: 0
-                }
-
-                10% {
-                    opacity: 1
-                }
-
-                90% {
-                    opacity: 1
-                }
-
-                100% {
-                    transform: translateY(-400px);
-                    opacity: 0
-                }
-            }
-
-            @@keyframes slide-up {
-                0% {
-                    opacity: 0;
-                    transform: translateY(24px)
-                }
-
-                100% {
-                    opacity: 1;
-                    transform: translateY(0)
-                }
-            }
-
-            @@keyframes shake {
-                0%, 100% {
-                    transform: translateX(0)
-                }
-
-                10% {
-                    transform: translateX(-6px)
-                }
-
-                20% {
-                    transform: translateX(6px)
-                }
-
-                30% {
-                    transform: translateX(-4px)
-                }
-
-                40% {
-                    transform: translateX(4px)
-                }
-
-                50% {
-                    transform: translateX(-2px)
-                }
-
-                60% {
-                    transform: translateX(2px)
-                }
-            }
-
-            @@keyframes pulse {
-                0%, 100% {
-                    opacity: 1
-                }
-
-                50% {
-                    opacity: .5
-                }
-            }
-
-            @@keyframes combo-flash {
-                0% {
-                    transform: scale(1);
-                    filter: brightness(1)
-                }
-
-                50% {
-                    transform: scale(1.15);
-                    filter: brightness(1.4)
-                }
-
-                100% {
-                    transform: scale(1);
-                    filter: brightness(1)
-                }
-            }
-
-            @@keyframes pop-in {
-                0% {
-                    transform: scale(0.5);
-                    opacity: 0
-                }
-
-                70% {
-                    transform: scale(1.1)
-                }
-
-                100% {
-                    transform: scale(1);
-                    opacity: 1
-                }
-            }
-
-            .anim-slide-up {
-                animation: slide-up .5s ease both
-            }
-
-            .screen-flash {
-                position: fixed;
-                inset: 0;
-                z-index: 50;
-                pointer-events: none;
-                transition: opacity .2s;
-                opacity: 0
-            }
-
-                .screen-flash.show {
-                    opacity: 1
-                }
-
-                .screen-flash.green {
-                    background: radial-gradient(circle,rgba(16,185,129,.2),transparent 70%)
-                }
-
-                .screen-flash.red {
-                    background: radial-gradient(circle,rgba(239,68,68,.2),transparent 70%)
-                }
-
-            /* ── TOP BAR ── */
-            .top-bar {
-                text-align: center;
-                margin-bottom: 1.25rem;
-                display: flex;
-                justify-content: space-between;
-                align-items: center
-            }
-
-            .top-bar-inner {
-                display: inline-flex;
-                align-items: center;
-                gap: .5rem;
-                font-size: .5rem;
-                font-weight: 900;
-                letter-spacing: .3em;
-                text-transform: uppercase;
-                color: #475569;
-                margin: 0 auto
-            }
-
-            .top-bar-line {
-                width: 48px;
-                height: 1px;
-                background: linear-gradient(90deg,transparent,rgba(56,189,248,.3),transparent)
-            }
-
-            .mp-btn {
-                color: #fbbf24;
-                font-size: .6rem;
-                font-weight: 900;
-                text-decoration: none;
-                text-transform: uppercase;
-                border: 1px solid #fbbf24;
-                padding: .3rem .65rem;
-                border-radius: 4px;
-                transition: all .2s;
-                display: inline-flex;
-                align-items: center;
-                gap: .25rem
-            }
-
-                .mp-btn:hover {
-                    background: rgba(251,191,36,.1);
-                    transform: translateY(-1px)
-                }
-
-            /* ── NAV TABS ── */
-            .nav-tabs {
-                display: flex;
-                gap: .5rem;
-                margin-bottom: 1.5rem;
-                background: rgba(15,23,42,.6);
-                border: 1px solid #1e293b;
-                border-radius: .8rem;
-                padding: .3rem
-            }
-
-            .nav-tab {
-                flex: 1;
-                padding: .5rem;
-                border-radius: .6rem;
-                border: none;
-                background: transparent;
-                color: #64748b;
-                font-size: .6rem;
-                font-weight: 900;
-                letter-spacing: 1px;
-                text-transform: uppercase;
-                cursor: pointer;
-                font-family: inherit;
-                transition: all .2s
-            }
-
-                .nav-tab.active {
-                    background: rgba(14,165,233,.15);
-                    color: #38bdf8;
-                    border: 1px solid rgba(14,165,233,.2)
-                }
-
-                .nav-tab:hover:not(.active) {
-                    color: #94a3b8
-                }
-
-            /* ── TAB PANELS ── */
-            .tab-panel {
-                display: none
-            }
-
-                .tab-panel.active {
-                    display: block
-                }
-
-            /* ── LOBBY ── */
-            .lobby-header {
-                text-align: center;
-                margin-bottom: 2rem
-            }
-
-            .lobby-badge {
-                display: inline-flex;
-                align-items: center;
-                gap: .4rem;
-                padding: .35rem .75rem;
-                border-radius: 999px;
-                background: rgba(120,53,15,.3);
-                border: 1px solid rgba(245,158,11,.2);
-                color: #fcd34d;
-                font-size: .6rem;
-                font-weight: 900;
-                letter-spacing: 1.5px;
-                text-transform: uppercase;
-                margin-bottom: 1rem
-            }
-
-                .lobby-badge .dot {
-                    width: 6px;
-                    height: 6px;
-                    border-radius: 50%;
-                    background: #fbbf24;
-                    animation: pulse 1.5s infinite
-                }
-
-            .lobby-header h1 {
-                font-size: 3.2rem;
-                font-weight: 900;
-                letter-spacing: -2px;
-                color: #fff
-            }
-
-                .lobby-header h1 span {
-                    color: #fbbf24
-                }
-
-            .lobby-header .sub {
-                color: #64748b;
-                font-weight: 700;
-                font-size: .85rem;
-                margin-bottom: .75rem
-            }
-
-            .section-header {
-                display: flex;
-                align-items: center;
-                gap: .5rem;
-                margin-bottom: .5rem
-            }
-
-                .section-header h3 {
-                    font-size: .6rem;
-                    font-weight: 900;
-                    color: #475569;
-                    text-transform: uppercase;
-                    letter-spacing: 2px
-                }
-
-            .choice-grid {
-                display: grid;
-                grid-template-columns: repeat(4,1fr);
-                gap: .75rem;
-                margin-bottom: 1.5rem
-            }
-
-            @@media(max-width:640px) {
-                .choice-grid {
-                    grid-template-columns: repeat(2,1fr)
-                }
-            }
-
-            .choice-card {
-                padding: 1rem .5rem;
-                border-radius: 1rem;
-                border: 2px solid #334155;
-                background: rgba(30,41,59,.5);
-                text-align: center;
-                cursor: pointer;
-                transition: all .2s
-            }
-
-                .choice-card:hover:not(.selected) {
-                    border-color: #475569;
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 16px rgba(0,0,0,.3)
-                }
-
-                .choice-card.selected {
-                    transform: translateY(-3px) scale(1.02)
-                }
-
-                .choice-card .kana-display {
-                    font-size: 1.8rem;
-                    font-weight: 900;
-                    margin-bottom: .25rem;
-                    line-height: 1.2
-                }
-
-                .choice-card .label {
-                    font-size: .7rem;
-                    font-weight: 900;
-                    letter-spacing: 1px;
-                    text-transform: uppercase;
-                    color: #fff
-                }
-
-                .choice-card .time-row {
-                    font-size: .55rem;
-                    font-weight: 700;
-                    color: #64748b;
-                    margin-top: .2rem
-                }
-
-                .choice-card .desc-row {
-                    font-size: .5rem;
-                    font-weight: 700;
-                    color: #475569;
-                    margin-top: .15rem;
-                    line-height: 1.3
-                }
-
-            .cta-btn {
-                width: 100%;
-                padding: .85rem;
-                border-radius: 1rem;
-                font-weight: 900;
-                font-size: .85rem;
-                letter-spacing: 1px;
-                border: none;
-                cursor: pointer;
-                transition: all .3s;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: .5rem;
-                color: #fff;
-                font-family: inherit
-            }
-
-                .cta-btn.disabled {
-                    background: rgba(30,41,59,.5);
-                    color: #475569;
-                    cursor: not-allowed;
-                    border: 1px solid #334155
-                }
-
-                .cta-btn:not(.disabled):hover {
-                    transform: translateY(-2px);
-                    filter: brightness(1.1)
-                }
-
-            /* ── ARENA ── */
-            .arena {
-                display: none
-            }
-
-            .arena-header {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-bottom: .75rem
-            }
-
-            .exit-btn {
-                padding: .35rem .6rem;
-                border-radius: 999px;
-                background: rgba(30,41,59,.5);
-                border: 1px solid #334155;
-                color: #94a3b8;
-                font-size: .55rem;
-                font-weight: 900;
-                cursor: pointer;
-                font-family: inherit
-            }
-
-            .hud {
-                background: rgba(30,41,59,.6);
-                border: 1px solid rgba(51,65,85,.5);
-                border-radius: 1rem;
-                padding: .75rem 1rem;
-                margin-bottom: .75rem
-            }
-
-            .timer-bar {
-                height: 6px;
-                background: rgba(51,65,85,.5);
-                border-radius: 3px;
-                overflow: hidden;
-                margin-bottom: .6rem
-            }
-
-            .timer-bar-fill {
-                height: 100%;
-                border-radius: 3px;
-                transition: width .3s linear, background .3s
-            }
-
-            .hud-row {
-                display: flex;
-                align-items: center;
-                justify-content: space-between
-            }
-
-            .time {
-                font-size: 1.4rem;
-                font-weight: 900;
-                font-variant-numeric: tabular-nums
-            }
-
-            .hud-score {
-                font-size: .6rem;
-                font-weight: 900;
-                color: #64748b;
-                text-transform: uppercase
-            }
-
-                .hud-score span {
-                    color: #fff
-                }
-
-            .hearts {
-                display: flex;
-                gap: .2rem;
-                font-size: 1.2rem
-            }
-
-            .arena-card {
-                border-radius: 1.5rem;
-                border: 2px solid rgba(51,65,85,.5);
-                padding: .35rem;
-                transition: border-color .3s
-            }
-
-                .arena-card.correct-glow {
-                    border-color: #22c55e
-                }
-
-            .arena-card-inner {
-                background: rgba(30,41,59,.4);
-                border-radius: 1.25rem;
-                overflow: hidden;
-                border: 1px solid rgba(51,65,85,.3)
-            }
-
-            .streak-bar {
-                height: 5px;
-                background: rgba(51,65,85,.5)
-            }
-
-            .streak-fill {
-                height: 100%;
-                transition: width .3s
-            }
-
-            .arena-body {
-                padding: 2rem 1rem;
-                text-align: center
-            }
-
-            .arena-display {
-                font-size: 3.5rem;
-                font-weight: 900;
-                color: #fff;
-                padding: 1.5rem 0
-            }
-
-            .combo-display {
-                font-size: .75rem;
-                font-weight: 900;
-                color: #fbbf24;
-                margin-bottom: .5rem;
-                min-height: 1.2rem;
-                animation: combo-flash .3s ease
-            }
-
-            .options-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: .75rem;
-                margin-top: 1rem
-            }
-
-            .option-btn {
-                padding: 1.25rem .75rem;
-                border-radius: .75rem;
-                border: 2px solid;
-                transition: all .2s;
-                cursor: pointer;
-                font-size: 2rem;
-                font-weight: 900;
-                font-family: inherit
-            }
-
-                .option-btn.default {
-                    background: rgba(51,65,85,.5);
-                    border-color: #475569;
-                    color: #e2e8f0
-                }
-
-                .option-btn.correct {
-                    background: linear-gradient(135deg,#059669,#047857);
-                    border-color: #10b981;
-                    color: #fff
-                }
-
-                .option-btn.wrong {
-                    background: linear-gradient(135deg,#dc2626,#b91c1c);
-                    border-color: #ef4444;
-                    color: #fff
-                }
-
-                .option-btn:hover.default {
-                    border-color: #94a3b8;
-                    transform: scale(1.03)
-                }
-
-            /* ── SKILL BANNER ── */
-            .skill-banner {
-                display: none;
-                align-items: center;
-                justify-content: center;
-                gap: .5rem;
-                padding: .5rem 1rem;
-                border-radius: .75rem;
-                margin-bottom: .5rem;
-                font-size: .75rem;
-                font-weight: 900;
-                animation: pop-in .3s ease both
-            }
-
-                .skill-banner.show {
-                    display: flex
-                }
-
-            /* ── RESULTS ── */
-            .results {
-                display: none;
-                max-width: 520px;
-                margin: 0 auto;
-                text-align: center
-            }
-
-                .results h1 {
-                    font-size: 2rem;
-                    font-weight: 900;
-                    margin-bottom: 1rem;
-                    color: #34d399
-                }
-
-            .results-grid {
-                display: grid;
-                grid-template-columns: repeat(3,1fr);
-                gap: .6rem;
-                margin-bottom: .75rem
-            }
-
-            .results-stat {
-                background: rgba(30,41,59,.6);
-                border: 1px solid rgba(51,65,85,.5);
-                border-radius: 1rem;
-                padding: 1rem;
-                text-align: center
-            }
-
-                .results-stat span {
-                    display: block;
-                    font-size: 1.4rem;
-                    font-weight: 900;
-                    color: #fff
-                }
-
-                .results-stat small {
-                    font-size: .5rem;
-                    font-weight: 900;
-                    color: #475569;
-                    text-transform: uppercase;
-                    letter-spacing: 1px
-                }
-
-            .racts {
-                display: flex;
-                gap: .5rem;
-                justify-content: center
-            }
-
-                .racts button {
-                    padding: .8rem 1.5rem;
-                    border-radius: 999px;
-                    font-weight: 900;
-                    border: none;
-                    cursor: pointer;
-                    color: #fff;
-                    font-family: inherit
-                }
-
-            .rsec {
-                background: rgba(51,65,85,.5);
-                border: 1px solid #475569
-            }
-
-            /* ── RANKS TAB ── */
-            .ranks-grid {
-                display: grid;
-                gap: .6rem
-            }
-
-            .rank-card {
-                background: rgba(15,23,42,.7);
-                border: 1px solid rgba(51,65,85,.4);
-                border-radius: 1rem;
-                padding: 1rem 1.25rem;
-                display: flex;
-                align-items: center;
-                gap: 1rem
-            }
-
-            .rank-icon {
-                font-size: 2rem;
-                flex-shrink: 0;
-                width: 48px;
-                text-align: center
-            }
-
-            .rank-info {
-                flex: 1
-            }
-
-            .rank-name {
-                font-size: .85rem;
-                font-weight: 900;
-                color: #fff;
-                margin-bottom: .15rem
-            }
-
-            .rank-desc {
-                font-size: .58rem;
-                font-weight: 700;
-                color: #64748b;
-                line-height: 1.4
-            }
-
-            .rank-elo {
-                font-size: .55rem;
-                font-weight: 900;
-                padding: .2rem .5rem;
-                border-radius: 999px;
-                border: 1px solid;
-                text-transform: uppercase;
-                letter-spacing: 1px
-            }
-
-            /* ── ABOUT TAB ── */
-            .about-section {
-                margin-bottom: 1.5rem
-            }
-
-            .about-title {
-                font-size: .65rem;
-                font-weight: 900;
-                color: #475569;
-                text-transform: uppercase;
-                letter-spacing: 2px;
-                margin-bottom: .75rem;
-                display: flex;
-                align-items: center;
-                gap: .4rem
-            }
-
-                .about-title::before {
-                    content: '';
-                    display: block;
-                    width: 3px;
-                    height: 14px;
-                    border-radius: 2px;
-                    background: #0ea5e9
-                }
-
-            .about-card {
-                background: rgba(15,23,42,.7);
-                border: 1px solid rgba(51,65,85,.4);
-                border-radius: 1rem;
-                padding: 1rem 1.25rem;
-                margin-bottom: .6rem
-            }
-
-                .about-card h4 {
-                    font-size: .75rem;
-                    font-weight: 900;
-                    color: #fff;
-                    margin-bottom: .4rem
-                }
-
-                .about-card p {
-                    font-size: .65rem;
-                    font-weight: 700;
-                    color: #64748b;
-                    line-height: 1.6
-                }
-
-            .mode-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: .6rem
-            }
-
-            .mode-card {
-                background: rgba(15,23,42,.7);
-                border: 1px solid rgba(51,65,85,.4);
-                border-radius: 1rem;
-                padding: 1rem;
-                text-align: center
-            }
-
-                .mode-card .mode-icon {
-                    font-size: 1.8rem;
-                    margin-bottom: .4rem
-                }
-
-                .mode-card h4 {
-                    font-size: .7rem;
-                    font-weight: 900;
-                    color: #fff;
-                    margin-bottom: .25rem
-                }
-
-                .mode-card p {
-                    font-size: .58rem;
-                    font-weight: 700;
-                    color: #64748b;
-                    line-height: 1.4
-                }
-
-            .skill-list {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: .4rem
-            }
-
-            .skill-item {
-                background: rgba(15,23,42,.5);
-                border: 1px solid rgba(51,65,85,.3);
-                border-radius: .6rem;
-                padding: .5rem .75rem;
-                display: flex;
-                align-items: center;
-                gap: .5rem
-            }
-
-                .skill-item .skill-icon {
-                    font-size: 1.2rem
-                }
-
-                .skill-item .skill-text {
-                    flex: 1
-                }
-
-                .skill-item .skill-name {
-                    font-size: .6rem;
-                    font-weight: 900;
-                    color: #fff
-                }
-
-                .skill-item .skill-desc {
-                    font-size: .5rem;
-                    font-weight: 700;
-                    color: #64748b
-                }
-    </style>
-</head>
-<body>
-    <a href="@Url.Action("Index", "Home")" class="nq-back-btn">← Back</a>
-    <div class="bg-layer"><div class="bg-aurora"></div><div id="particles"></div></div>
-    <div class="bg-vignette"></div>
-    <div class="screen-flash green" id="flash-green"></div>
-    <div class="screen-flash red" id="flash-red"></div>
-
-    <div class="container">
-        <!-- TOP BAR -->
-        <div class="top-bar">
-            <div style="flex:1"></div>
-            <div class="top-bar-inner">
-                <span class="top-bar-line"></span>
-                <span>KANABLITZ SOLO</span>
-                <span class="top-bar-line"></span>
+
+<style>
+    /* ── palette ── */
+    :root {
+        --bg: #0d0d1a;
+        --panel: #12122a;
+        --border: #2a2a55;
+        --accent: #7c3aed;
+        --accent2: #a855f7;
+        --gold: #f59e0b;
+        --green: #10b981;
+        --red: #ef4444;
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* ── layout shells ── */
+    .kb-wrapper {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 24px 16px;
+    }
+
+    .kb-header {
+        text-align: center;
+        margin-bottom: 28px;
+    }
+
+        .kb-header h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: .05em;
+            background: linear-gradient(135deg,#7c3aed,#a855f7,#ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .kb-header p {
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+    /* ── setup panel ── */
+    #setup-panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 28px;
+        margin-bottom: 24px;
+    }
+
+    .section-title {
+        font-size: .75rem;
+        font-weight: 700;
+        letter-spacing: .12em;
+        color: var(--accent2);
+        text-transform: uppercase;
+        margin-bottom: 14px;
+    }
+
+    .choice-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px,1fr));
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .choice-card {
+        background: #1a1a35;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 12px;
+        cursor: pointer;
+        transition: all .2s;
+        text-align: center;
+    }
+
+        .choice-card:hover {
+            border-color: var(--accent2);
+            background: #1e1e40;
+        }
+
+        .choice-card.active {
+            border-color: var(--accent);
+            background: #2d1b6e;
+            box-shadow: 0 0 16px rgba(124,58,237,.35);
+        }
+
+        .choice-card .icon {
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+        }
+
+        .choice-card .label {
+            font-weight: 700;
+            font-size: .95rem;
+        }
+
+        .choice-card .sub {
+            font-size: .72rem;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        .choice-card .tag {
+            font-size: .68rem;
+            color: var(--accent2);
+            margin-top: 2px;
+        }
+
+    /* ── start button ── */
+    #btn-start {
+        width: 100%;
+        padding: 16px;
+        border-radius: 12px;
+        border: none;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        background: linear-gradient(135deg,#7c3aed,#a855f7);
+        color: #fff;
+        letter-spacing: .05em;
+        transition: opacity .2s;
+    }
+
+        #btn-start:hover {
+            opacity: .9;
+        }
+
+    /* ── arena ── */
+    #arena {
+        display: none;
+    }
+
+    /* HUD bar */
+    .hud {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px 20px;
+        margin-bottom: 16px;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .hud-timer {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--gold);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .hud-score {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--green);
+    }
+
+    .hud-lives {
+        font-size: 1.3rem;
+        letter-spacing: 4px;
+    }
+
+    .hud-combo {
+        font-size: .85rem;
+        color: var(--accent2);
+        font-weight: 600;
+    }
+
+    .hud-diff {
+        font-size: .75rem;
+        color: var(--muted);
+    }
+
+    /* question card */
+    .q-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 32px 24px;
+        text-align: center;
+        margin-bottom: 16px;
+    }
+
+    .q-kana {
+        font-size: 4.5rem;
+        line-height: 1;
+        margin-bottom: 6px;
+    }
+
+    .q-romaji {
+        font-size: 1rem;
+        color: var(--muted);
+        min-height: 1.4em;
+    }
+
+    .q-meaning {
+        font-size: .85rem;
+        color: #64748b;
+        min-height: 1.2em;
+    }
+
+    .q-cat {
+        font-size: .7rem;
+        color: var(--accent2);
+        margin-top: 4px;
+    }
+
+    /* answer options */
+    .opt-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .opt-btn {
+        background: #1a1a35;
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        padding: 14px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        color: var(--text);
+        transition: all .15s;
+    }
+
+        .opt-btn:hover {
+            border-color: var(--accent2);
+            background: #1e1e40;
+        }
+
+        .opt-btn.correct {
+            border-color: var(--green) !important;
+            background: #052e16 !important;
+            color: var(--green) !important;
+        }
+
+        .opt-btn.wrong {
+            border-color: var(--red) !important;
+            background: #2c0000 !important;
+            color: var(--red) !important;
+        }
+
+    /* feedback flash */
+    #feedback {
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 700;
+        min-height: 1.6em;
+        transition: color .2s;
+    }
+
+    /* ── result overlay ── */
+    #result-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.75);
+        z-index: 999;
+        align-items: center;
+        justify-content: center;
+    }
+
+        #result-overlay.show {
+            display: flex;
+        }
+
+    .result-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 40px 32px;
+        text-align: center;
+        max-width: 500px;
+        width: 90%;
+    }
+
+    .result-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 6px;
+    }
+
+    .result-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 16px;
+        margin: 24px 0;
+    }
+
+    .result-stat {
+        background: #1a1a35;
+        border-radius: 10px;
+        padding: 14px;
+    }
+
+        .result-stat .val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--gold);
+        }
+
+        .result-stat .lbl {
+            font-size: .72rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+    .result-btns {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary, .btn-secondary {
+        padding: 12px 24px;
+        border-radius: 10px;
+        border: none;
+        font-size: .95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity .2s;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg,#7c3aed,#a855f7);
+        color: #fff;
+    }
+
+    .btn-secondary {
+        background: #1a1a35;
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
+        .btn-primary:hover, .btn-secondary:hover {
+            opacity: .85;
+        }
+
+    /* ── info section ── */
+    .info-section {
+        margin-top: 32px;
+    }
+
+    .info-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 22px 20px;
+        margin-bottom: 16px;
+    }
+
+        .info-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--accent2);
+        }
+
+        .info-card p, .info-card li {
+            font-size: .88rem;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        .info-card ul {
+            padding-left: 18px;
+        }
+
+    .diff-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+        gap: 12px;
+    }
+
+    .diff-item {
+        background: #1a1a35;
+        border-radius: 10px;
+        padding: 14px;
+    }
+
+        .diff-item .d-icon {
+            font-size: 1.5rem;
+            margin-bottom: 6px;
+        }
+
+        .diff-item .d-name {
+            font-weight: 700;
+            font-size: .9rem;
+        }
+
+        .diff-item .d-desc {
+            font-size: .78rem;
+            color: var(--muted);
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
+    /* ── responsive ── */
+    @@media (max-width: 500px) {
+        .opt-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .result-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+</style>
+
+<div class="kb-wrapper">
+
+    <!-- HEADER -->
+    <div class="kb-header">
+        <h1>⚡ KANABLITZ SOLO</h1>
+        <p>Race against the clock — answer kana questions, build combos, survive!</p>
+    </div>
+
+    <!-- ── SETUP PANEL ── -->
+    <div id="setup-panel">
+
+        <!-- Script selector -->
+        <div class="section-title">① Choose Your Script</div>
+        <div class="choice-grid" id="script-grid">
+            <div class="choice-card active" data-val="hiragana">
+                <div class="icon">あ</div>
+                <div class="label">Hiragana</div>
+                <div class="sub">46 characters</div>
+                <div class="tag">Core Japanese script for native words</div>
             </div>
-            <div style="flex:1;text-align:right">
-                <a href="@Url.Action("MainView", "KanaBattle")" class="mp-btn" title="Enter the multiplayer arena to battle real players or AI with ELO ranking">⚔ Multiplayer</a>
+            <div class="choice-card" data-val="katakana">
+                <div class="icon">ア</div>
+                <div class="label">Katakana</div>
+                <div class="sub">46 characters</div>
+                <div class="tag">Used for foreign &amp; technical words</div>
+            </div>
+            <div class="choice-card" data-val="dakuten">
+                <div class="icon">が</div>
+                <div class="label">Dakuten</div>
+                <div class="sub">Voiced marks</div>
+                <div class="tag">が、ざ、だ、ば、ぱ sounds</div>
+            </div>
+            <div class="choice-card" data-val="mixed">
+                <div class="icon">混</div>
+                <div class="label">Mixed</div>
+                <div class="sub">All scripts</div>
+                <div class="tag">Full kana mastery challenge</div>
             </div>
         </div>
 
-        <!-- NAV TABS -->
-        <div class="nav-tabs">
-            <button class="nav-tab active" onclick="showTab('play')" title="Practice kana with single-player training sessions">🎮 Play</button>
-            <button class="nav-tab" onclick="showTab('ranks')" title="View all league ranks and ELO thresholds">🏆 Ranks</button>
-            <button class="nav-tab" onclick="showTab('about')" title="Learn about game modes, skills, and how to play">📖 About</button>
-        </div>
-
-        <!-- ═══ PLAY TAB ═══ -->
-        <div id="tab-play" class="tab-panel active">
-            <!-- LOBBY -->
-            <div id="ui-lobby" class="anim-slide-up">
-                <div class="lobby-header">
-                    <div class="lobby-badge"><span class="dot"></span>High Intensity Training</div>
-                    <h1>Kana<span>Blitz</span></h1>
-                    <p class="sub">Lock in kana fluency through rapid pattern recognition. Earn skills by answering correctly!</p>
-                </div>
-
-                <div class="section-header"><h3>01 Choose Your Script</h3></div>
-                <div class="choice-grid">
-                    <div class="choice-card" data-alpha="hiragana" onclick="selA(this)" title="Practice the 46 basic hiragana characters — perfect for beginners">
-                        <div class="kana-display" style="color:#0ea5e9">あ</div>
-                        <div class="label">Hiragana</div>
-                        <div class="time-row">46 characters</div>
-                        <div class="desc-row">Core Japanese script for native words</div>
-                    </div>
-                    <div class="choice-card" data-alpha="katakana" onclick="selA(this)" title="Practice the 46 katakana characters — used for foreign loanwords">
-                        <div class="kana-display" style="color:#f43f5e">ア</div>
-                        <div class="label">Katakana</div>
-                        <div class="time-row">46 characters</div>
-                        <div class="desc-row">Used for foreign & technical words</div>
-                    </div>
-                    <div class="choice-card" data-alpha="dakuten" onclick="selA(this)" title="Practice voiced and semi-voiced kana with dakuten marks">
-                        <div class="kana-display" style="color:#8b5cf6">が</div>
-                        <div class="label">Dakuten</div>
-                        <div class="time-row">Voiced marks</div>
-                        <div class="desc-row">が、ざ、だ、ば、ぱ sounds</div>
-                    </div>
-                    <div class="choice-card" data-alpha="mixed" onclick="selA(this)" title="All scripts mixed together — the ultimate challenge!">
-                        <div class="kana-display" style="color:#f59e0b">混</div>
-                        <div class="label">Mixed</div>
-                        <div class="time-row">All scripts</div>
-                        <div class="desc-row">Full kana mastery challenge</div>
-                    </div>
-                </div>
-
-                <div class="section-header"><h3>02 Choose Your Intensity</h3></div>
-                <div class="choice-grid">
-                    <div class="choice-card" data-diff="easy" onclick="selD(this)" title="2 minutes, relaxed pace — great for learning the basics">
-                        <div class="kana-display" style="color:#10b981">🌿</div>
-                        <div class="label" style="color:#10b981">Easy</div>
-                        <div class="time-row">2 min · Kana only</div>
-                        <div class="desc-row">Relaxed pace, 3 lives</div>
-                    </div>
-                    <div class="choice-card" data-diff="normal" onclick="selD(this)" title="1:30 minutes — balanced challenge with basic vocabulary words">
-                        <div class="kana-display" style="color:#3b82f6">⚡</div>
-                        <div class="label" style="color:#3b82f6">Normal</div>
-                        <div class="time-row">1:30 · Basic words</div>
-                        <div class="desc-row">Balanced challenge, 3 lives</div>
-                    </div>
-                    <div class="choice-card" data-diff="hard" onclick="selD(this)" title="1 minute — faster words and harder vocabulary pulled from the database">
-                        <div class="kana-display" style="color:#8b5cf6">🔥</div>
-                        <div class="label" style="color:#8b5cf6">Hard</div>
-                        <div class="time-row">1 min · Harder words</div>
-                        <div class="desc-row">Fast pace, database words</div>
-                    </div>
-                    <div class="choice-card" data-diff="insanity" onclick="selD(this)" title="45 seconds — all scripts, kanji included, extreme speed!">
-                        <div class="kana-display" style="color:#ef4444">💀</div>
-                        <div class="label" style="color:#ef4444">Insanity</div>
-                        <div class="time-row">45 s · All + Kanji</div>
-                        <div class="desc-row">No mercy. Max speed.</div>
-                    </div>
-                </div>
-
-                <div style="max-width:420px;margin:0 auto">
-                    <button id="btn-start" class="cta-btn disabled" disabled onclick="startGame()" title="Select a script and intensity to begin your training session">
-                        ⚔ ENTER ARENA
-                    </button>
-                </div>
+        <!-- Difficulty selector -->
+        <div class="section-title">② Choose Intensity</div>
+        <div class="choice-grid" id="diff-grid">
+            <div class="choice-card" data-val="easy">
+                <div class="icon">🌿</div>
+                <div class="label">Easy</div>
+                <div class="sub">2 min · Kana only</div>
+                <div class="tag">Relaxed pace, 3 lives</div>
             </div>
-
-            <!-- ARENA -->
-            <div id="ui-arena" class="arena">
-                <div class="arena-header">
-                    <button class="exit-btn" onclick="exitArena()" title="Return to the lobby — your progress will not be saved">← Exit</button>
-                    <span id="arena-label" style="font-size:.55rem;font-weight:900;color:#475569;text-transform:uppercase;letter-spacing:1.5px"></span>
-                </div>
-                <div class="hud">
-                    <div class="timer-bar"><div class="timer-bar-fill" id="tbf" style="width:100%;background:#22c55e"></div></div>
-                    <div class="hud-row">
-                        <span class="time" id="tmr" style="color:#22c55e">01:30</span>
-                        <span class="hud-score">Score: <span id="pts">0</span></span>
-                        <div class="hearts" id="hearts">❤️❤️❤️</div>
-                    </div>
-                </div>
-                <div class="skill-banner" id="skill-banner"></div>
-                <div class="arena-card" id="ac">
-                    <div class="arena-card-inner">
-                        <div class="streak-bar"><div class="streak-fill" id="strk" style="width:0%;background:#38bdf8"></div></div>
-                        <div class="arena-body">
-                            <div id="am" style="font-weight:900;color:#94a3b8;margin-bottom:.5rem"></div>
-                            <div class="combo-display" id="combo-display"></div>
-                            <div id="ad" class="arena-display"></div>
-                            <div id="ao" class="options-grid"></div>
-                        </div>
-                    </div>
-                </div>
+            <div class="choice-card active" data-val="normal">
+                <div class="icon">⚡</div>
+                <div class="label">Normal</div>
+                <div class="sub">1:30 · Basic words</div>
+                <div class="tag">Balanced challenge, 3 lives</div>
             </div>
-
-            <!-- RESULTS -->
-            <div id="ui-results" class="results">
-                <div style="font-size:4rem;margin-bottom:1rem" id="r-icon">🎌</div>
-                <h1 id="r-title">Arena Cleared!</h1>
-                <div class="results-grid">
-                    <div class="results-stat"><small>Correct</small><span id="r-cor">0</span></div>
-                    <div class="results-stat"><small>Score</small><span id="r-pts">0</span></div>
-                    <div class="results-stat"><small>Max Combo</small><span id="r-max">0</span></div>
-                </div>
-                <div class="results-grid" style="margin-bottom:1rem">
-                    <div class="results-stat"><small>Accuracy</small><span id="r-acc">0%</span></div>
-                    <div class="results-stat"><small>Time Left</small><span id="r-time">0s</span></div>
-                    <div class="results-stat"><small>Skills Used</small><span id="r-skills">0</span></div>
-                </div>
-                <div class="racts">
-                    <button style="background:#0ea5e9" onclick="location.reload()">▶ Run Again</button>
-                    <button class="rsec" onclick="showTab('play');location.reload()">← Lobby</button>
-                </div>
+            <div class="choice-card" data-val="hard">
+                <div class="icon">🔥</div>
+                <div class="label">Hard</div>
+                <div class="sub">1 min · Harder words</div>
+                <div class="tag">Fast pace, database words</div>
+            </div>
+            <div class="choice-card" data-val="insanity">
+                <div class="icon">💀</div>
+                <div class="label">Insanity</div>
+                <div class="sub">45 s · All + Kanji</div>
+                <div class="tag">No mercy. Max speed.</div>
             </div>
         </div>
 
-        <!-- ═══ RANKS TAB ═══ -->
-        <div id="tab-ranks" class="tab-panel">
-            <div class="lobby-header" style="margin-bottom:1.5rem">
-                <h1 style="font-size:2rem">🏆 <span style="color:#fbbf24">League</span> Ranks</h1>
-                <p class="sub">Climb the ranks by winning battles in multiplayer mode. ELO is earned and lost with every match.</p>
+        <button id="btn-start">⚡ Start KanaBlitz!</button>
+    </div>
+
+    <!-- ── ARENA ── -->
+    <div id="arena">
+        <!-- HUD -->
+        <div class="hud">
+            <div>
+                <div class="hud-diff" id="hud-label">Normal · Hiragana</div>
+                <div class="hud-combo" id="hud-combo">🔥 Combo: 0x</div>
             </div>
-            <div class="ranks-grid" id="ranks-grid"></div>
-            <div class="about-card" style="margin-top:1rem;text-align:center">
-                <h4>📊 How ELO Works</h4>
-                <p>Win a match → gain ELO based on opponent difficulty. Lose → lose ELO. The harder the difficulty you choose, the more ELO at stake. Play at higher difficulties to climb faster, but risk bigger losses!</p>
+            <div class="hud-timer" id="hud-timer">01:30</div>
+            <div>
+                <div class="hud-score" id="hud-score">Score: 0</div>
+                <div class="hud-lives" id="hud-lives">❤️❤️❤️</div>
             </div>
         </div>
 
-        <!-- ═══ ABOUT TAB ═══ -->
-        <div id="tab-about" class="tab-panel">
-            <div class="lobby-header" style="margin-bottom:1.5rem">
-                <h1 style="font-size:2rem">📖 <span style="color:#0ea5e9">How</span> To Play</h1>
-                <p class="sub">Everything you need to master KanaBlitz & KanaBattle</p>
-            </div>
+        <!-- Question -->
+        <div class="q-card">
+            <div class="q-kana" id="q-kana">あ</div>
+            <div class="q-romaji" id="q-romaji"></div>
+            <div class="q-meaning" id="q-meaning"></div>
+            <div class="q-cat" id="q-cat"></div>
+        </div>
 
-            <div class="about-section">
-                <div class="about-title">Game Modes</div>
-                <div class="mode-grid">
-                    <div class="mode-card">
-                        <div class="mode-icon">🎯</div>
-                        <h4>KanaBlitz Solo</h4>
-                        <p>Practice kana recognition against the clock. Choose your script and intensity. Answer 4-option multiple choice questions. Build combos to score higher. 3 lives — lose them all and it's over!</p>
-                    </div>
-                    <div class="mode-card">
-                        <div class="mode-icon">⚔️</div>
-                        <h4>KanaBattle Multiplayer</h4>
-                        <p>Battle AI opponents (real multiplayer coming soon!). Type romaji answers to send attacks. Collect skill power-ups from falling kana. First to reduce the opponent's HP to 0 wins!</p>
-                    </div>
-                </div>
-            </div>
+        <!-- Options -->
+        <div class="opt-grid" id="opt-grid">
+            <button class="opt-btn" id="opt0"></button>
+            <button class="opt-btn" id="opt1"></button>
+            <button class="opt-btn" id="opt2"></button>
+            <button class="opt-btn" id="opt3"></button>
+        </div>
 
-            <div class="about-section">
-                <div class="about-title">Solo — Difficulty Guide</div>
-                <div class="about-card">
-                    <h4>🌿 Easy — 2 Minutes</h4>
-                    <p>Basic hiragana and katakana only. Slow question pace. Perfect for absolute beginners. Words pulled from beginner database entries.</p>
-                </div>
-                <div class="about-card">
-                    <h4>⚡ Normal — 1:30</h4>
-                    <p>Mix of kana and basic vocabulary words from the database. Moderate speed. Great for intermediate learners building fluency.</p>
-                </div>
-                <div class="about-card">
-                    <h4>🔥 Hard — 1 Minute</h4>
-                    <p>Faster pace with harder vocabulary from the database. Dakuten and mixed scripts included. Tests real retention under pressure.</p>
-                </div>
-                <div class="about-card">
-                    <h4>💀 Insanity — 45 Seconds</h4>
-                    <p>All scripts including kanji. Extreme speed. No room for hesitation. Only for advanced learners who know their kana cold.</p>
-                </div>
-            </div>
+        <div id="feedback">&nbsp;</div>
+    </div>
 
-            <div class="about-section">
-                <div class="about-title">Battle Skills & Power-Ups</div>
-                <p style="font-size:.65rem;color:#64748b;margin-bottom:.75rem;font-weight:700">In KanaBattle, some falling kana carry special skills. Answer them correctly to activate the skill!</p>
-                <div class="skill-list" id="about-skills"></div>
+    <!-- ── RESULT OVERLAY ── -->
+    <div id="result-overlay">
+        <div class="result-card">
+            <div class="result-title" id="res-title">🎌 Arena Cleared!</div>
+            <div class="result-grid">
+                <div class="result-stat"><div class="val" id="res-correct">0</div><div class="lbl">Correct</div></div>
+                <div class="result-stat"><div class="val" id="res-score">0</div><div class="lbl">Score</div></div>
+                <div class="result-stat"><div class="val" id="res-combo">0</div><div class="lbl">Max Combo</div></div>
+                <div class="result-stat"><div class="val" id="res-acc">0%</div><div class="lbl">Accuracy</div></div>
+                <div class="result-stat"><div class="val" id="res-time">0s</div><div class="lbl">Time Left</div></div>
+                <div class="result-stat"><div class="val" id="res-wrong">0</div><div class="lbl">Wrong</div></div>
             </div>
-
-            <div class="about-section">
-                <div class="about-title">Combo System</div>
-                <div class="about-card">
-                    <h4>🔥 Building Combos</h4>
-                    <p>Answer questions correctly in a row to build your combo multiplier. In Solo: combos add bonus points (100 + streak × 10 per correct answer). In Battle: higher combos deal more damage. Reset on any wrong answer. Max combo at 25x for 2.25× damage!</p>
-                </div>
-            </div>
-
-            <div class="about-section">
-                <div class="about-title">Scoring & Rewards</div>
-                <div class="about-card">
-                    <h4>💰 How Points Work</h4>
-                    <p>Solo: Base 100 pts per correct answer + combo bonus. Submit to leaderboard on completion.<br><br>Battle: Win → double XP and Gold rewards. XP determines your level. Gold can be used in the shop. ELO changes based on win/loss in ranked matches.</p>
-                </div>
+            <div class="result-btns">
+                <button class="btn-primary" onclick="replayGame()">⚡ Play Again</button>
+                <button class="btn-secondary" onclick="backToSetup()">⚙️ Change Settings</button>
+                <a href="/KanaBattle/MainView" class="btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center;">⚔️ KanaBattle</a>
             </div>
         </div>
     </div>
 
-    <script>
-            // ── PARTICLES ────────────────────────────────────────────────────────
-            const pc = document.getElementById('particles');
-            for (let i = 0; i < 20; i++) {
-                const d = document.createElement('div'); d.className = 'bg-particle';
-                d.style.cssText = `left:${Math.random()*100}%;bottom:-10px;`
-                    + `width:${2+Math.random()*4}px;height:${2+Math.random()*4}px;`
-                    + `background:rgba(56,189,248,.3);`
-                    + `animation-duration:${8+Math.random()*12}s;animation-delay:${Math.random()*10}s;`;
-                pc.appendChild(d);
+    <!-- ── INFO / HOW TO PLAY ── -->
+    <div class="info-section">
+        <div class="info-card">
+            <h3>📊 How ELO Works</h3>
+            <p>
+                Win a match → gain ELO based on opponent difficulty. Lose → lose ELO.
+                The harder the difficulty you choose, the more ELO at stake.
+                Play at higher difficulties to climb faster, but risk bigger losses!
+            </p>
+        </div>
+
+        <div class="info-card">
+            <h3>🎮 Game Modes</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
+                <div class="diff-item">
+                    <div class="d-icon">🎯</div>
+                    <div class="d-name">KanaBlitz Solo</div>
+                    <div class="d-desc">
+                        Practice kana recognition against the clock. Choose your script and intensity.
+                        Answer 4-option multiple choice. Build combos to score higher. 3 lives — lose them all and it's over!
+                    </div>
+                </div>
+                <div class="diff-item">
+                    <div class="d-icon">⚔️</div>
+                    <div class="d-name">KanaBattle Multiplayer</div>
+                    <div class="d-desc">
+                        Battle AI opponents (real multiplayer coming soon!). Type romaji answers to attack.
+                        Collect skill power-ups from falling kana. First to reduce the opponent's HP to 0 wins!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3>🗓️ Solo — Difficulty Guide</h3>
+            <div class="diff-grid" style="margin-top:8px">
+                <div class="diff-item">
+                    <div class="d-icon">🌿</div>
+                    <div class="d-name">Easy — 2 Minutes</div>
+                    <div class="d-desc">
+                        Basic hiragana &amp; katakana only. Slow question pace.
+                        Words pulled from <code>easy</code> entries in the database.
+                    </div>
+                </div>
+                <div class="diff-item">
+                    <div class="d-icon">⚡</div>
+                    <div class="d-name">Normal — 1:30</div>
+                    <div class="d-desc">
+                        Mix of kana and basic vocabulary words from <code>normal</code> DB entries.
+                        Great for intermediate learners building fluency.
+                    </div>
+                </div>
+                <div class="diff-item">
+                    <div class="d-icon">🔥</div>
+                    <div class="d-name">Hard — 1 Minute</div>
+                    <div class="d-desc">
+                        Faster pace with harder vocabulary from <code>hard</code> DB entries.
+                        Dakuten and mixed scripts included. Tests real retention under pressure.
+                    </div>
+                </div>
+                <div class="diff-item">
+                    <div class="d-icon">💀</div>
+                    <div class="d-name">Insanity — 45 Seconds</div>
+                    <div class="d-desc">
+                        All scripts including kanji from <code>insanity</code> DB entries.
+                        Extreme speed. No room for hesitation. Advanced learners only.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3>🔥 Combo System</h3>
+            <p>
+                Answer questions correctly in a row to build your combo multiplier.
+                In Solo: combos add bonus points (base 100 pts + streak × 10 per correct answer).
+                Reset on any wrong answer.
+            </p>
+        </div>
+
+        <div class="info-card">
+            <h3>💰 Scoring &amp; Rewards</h3>
+            <p>
+                Solo: Base 100 pts per correct answer + combo bonus. Submit to leaderboard on completion.<br>
+                Battle: Win → double XP and Gold rewards. XP determines your level.
+                Gold can be used in the shop. ELO changes based on win/loss in ranked matches.
+            </p>
+        </div>
+    </div>
+
+</div><!-- /kb-wrapper -->
+
+<script>
+    // ══════════════════════════════════════════════════════════════
+    //  KanaBlitz Solo — pulls words from KanaBlitzController.GetWords
+    //  Endpoint: GET /KanaBlitz/GetWords?difficulty=&alphabet=
+    // ══════════════════════════════════════════════════════════════
+
+    // ── selection state ──
+    let selectedScript = 'hiragana';
+    let selectedDiff   = 'normal';
+
+    // ── game state ──
+    let wordPool    = [];
+    let current     = null;
+    let score       = 0;
+    let lives       = 3;
+    let streak      = 0;
+    let maxStreak   = 0;
+    let correct     = 0;
+    let wrong       = 0;
+    let timerSecs   = 90;
+    let timerHandle = null;
+    let answered    = false;
+    let gameActive  = false;
+
+    // ── time map (matches DbInitializer difficulty levels) ──
+    const TIMES = { easy: 120, normal: 90, hard: 60, insanity: 45 };
+
+    // ── selector logic ──
+    document.querySelectorAll('#script-grid .choice-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('#script-grid .choice-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            selectedScript = card.dataset.val;
+        });
+    });
+    document.querySelectorAll('#diff-grid .choice-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('#diff-grid .choice-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            selectedDiff = card.dataset.val;
+        });
+    });
+
+    document.getElementById('btn-start').addEventListener('click', startGame);
+
+    // ── fetch words from KanaBlitzController ──
+    // Route: /KanaBlitz/GetWords?difficulty={diff}&alphabet={script}
+    async function fetchWords(diff, alphabet) {
+        try {
+            const url = `/KanaBlitz/GetWords?difficulty=${encodeURIComponent(diff)}&alphabet=${encodeURIComponent(alphabet)}`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            return data; // array of { wordKana, wordRomaji, meaningEnglish, alphabet, difficultyLevel, missingKana, categoryTag }
+        } catch (e) {
+            console.error('GetWords failed:', e);
+            return [];
+        }
+    }
+
+    // ── start game ──
+    async function startGame() {
+        // Show loading state
+        document.getElementById('btn-start').textContent = '⏳ Loading words…';
+        document.getElementById('btn-start').disabled = true;
+
+        // Fetch from KanaBlitzController.GetWords — passes difficulty + alphabet matching DbInitializer values
+        wordPool = await fetchWords(selectedDiff, selectedScript);
+
+        if (wordPool.length < 4) {
+            alert('Not enough words loaded for this combination. Try a different script or difficulty.');
+            document.getElementById('btn-start').textContent = '⚡ Start KanaBlitz!';
+            document.getElementById('btn-start').disabled = false;
+            return;
+        }
+
+        // Shuffle pool
+        wordPool = shuffle(wordPool);
+
+        // Reset state
+        score     = 0;
+        lives     = 3;
+        streak    = 0;
+        maxStreak = 0;
+        correct   = 0;
+        wrong     = 0;
+        timerSecs = TIMES[selectedDiff] ?? 90;
+        gameActive = true;
+
+        // UI swap
+        document.getElementById('setup-panel').style.display = 'none';
+        document.getElementById('arena').style.display = 'block';
+        document.getElementById('hud-label').textContent =
+            capitalize(selectedDiff) + ' · ' + capitalize(selectedScript);
+
+        updateHUD();
+        nextQuestion();
+        startTimer();
+
+        document.getElementById('btn-start').textContent = '⚡ Start KanaBlitz!';
+        document.getElementById('btn-start').disabled = false;
+    }
+
+    // ── timer ──
+    function startTimer() {
+        clearInterval(timerHandle);
+        timerHandle = setInterval(() => {
+            if (!gameActive) { clearInterval(timerHandle); return; }
+            timerSecs--;
+            updateTimerDisplay();
+            if (timerSecs <= 0) endGame('time');
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const m = Math.floor(timerSecs / 60);
+        const s = timerSecs % 60;
+        document.getElementById('hud-timer').textContent =
+            String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+        document.getElementById('hud-timer').style.color =
+            timerSecs <= 10 ? '#ef4444' : '#f59e0b';
+    }
+
+    // ── question logic ──
+    function nextQuestion() {
+        if (!gameActive) return;
+        answered = false;
+        clearOptClasses();
+        document.getElementById('feedback').textContent = '\u00a0';
+
+        if (wordPool.length === 0) {
+            endGame('cleared');
+            return;
+        }
+
+        current = wordPool.pop();
+
+        // Display kana word
+        document.getElementById('q-kana').textContent    = current.wordKana   ?? '?';
+        document.getElementById('q-romaji').textContent  = '';               // revealed on answer
+        document.getElementById('q-meaning').textContent = '';               // revealed on answer
+        document.getElementById('q-cat').textContent     =
+            current.categoryTag ? '📂 ' + current.categoryTag : '';
+
+        // Build 4 options: 1 correct + 3 distractors
+        // Correct answer = wordRomaji (matches DbInitializer WordRomaji field)
+        const correctRomaji = (current.wordRomaji ?? '').toUpperCase();
+        const distractors   = getDistractors(current, 3);
+        const options       = shuffle([correctRomaji, ...distractors]);
+
+        const btns = document.querySelectorAll('.opt-btn');
+        options.forEach((opt, i) => {
+            btns[i].textContent = opt;
+            btns[i].dataset.romaji = opt;
+            btns[i].onclick = () => handleAnswer(opt, correctRomaji, btns[i]);
+        });
+    }
+
+    // get 3 distractor romaji values from the pool (different word, same difficulty)
+    function getDistractors(excludeWord, count) {
+        const pool = wordPool
+            .filter(w => (w.wordRomaji ?? '').toUpperCase() !== (excludeWord.wordRomaji ?? '').toUpperCase())
+            .map(w => (w.wordRomaji ?? '').toUpperCase());
+        const unique = [...new Set(pool)];
+        shuffle(unique);
+        return unique.slice(0, count).length >= count
+            ? unique.slice(0, count)
+            : padDistractors(unique, count);
+    }
+
+    // fallback distractors from the full hiragana set in case pool is too small
+    const FALLBACK = ['KA','KI','KU','KE','KO','SA','SHI','SU','SE','SO','TA','CHI','TSU','TE','TO',
+                      'NA','NI','NU','NE','NO','HA','HI','FU','HE','HO','MA','MI','MU','ME','MO'];
+    function padDistractors(arr, count) {
+        const extra = shuffle([...FALLBACK]).filter(r => !arr.includes(r));
+        return [...arr, ...extra].slice(0, count);
+    }
+
+    // ── answer handler ──
+    function handleAnswer(chosen, correct_romaji, btn) {
+        if (answered || !gameActive) return;
+        answered = true;
+
+        const isCorrect = chosen === correct_romaji;
+
+        // Reveal romaji + meaning after answer
+        document.getElementById('q-romaji').textContent  = current.wordRomaji  ?? '';
+        document.getElementById('q-meaning').textContent = current.meaningEnglish ?? '';
+
+        if (isCorrect) {
+            streak++;
+            maxStreak = Math.max(maxStreak, streak);
+            correct++;
+            const bonus = streak * 10;
+            score += 100 + bonus;
+            btn.classList.add('correct');
+            document.getElementById('feedback').textContent = `✅ Correct! +${100+bonus} pts (${streak > 1 ? streak+'x combo' : 'no combo'})`;
+            document.getElementById('feedback').style.color = '#10b981';
+        } else {
+            streak = 0;
+            wrong++;
+            lives--;
+            // Highlight correct answer green
+            document.querySelectorAll('.opt-btn').forEach(b => {
+                if (b.dataset.romaji === correct_romaji) b.classList.add('correct');
+            });
+            btn.classList.add('wrong');
+            document.getElementById('feedback').textContent = `❌ Wrong! Answer was: ${correct_romaji}`;
+            document.getElementById('feedback').style.color = '#ef4444';
+            if (lives <= 0) {
+                updateHUD();
+                setTimeout(() => endGame('lives'), 600);
+                return;
             }
+        }
 
-            // ── KANA DATA ────────────────────────────────────────────────────────
-            const ALL_KANA = ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を','ん'];
-            const ALL_KATA = ['ア','イ','ウ','エ','オ','カ','キ','ク','ケ','コ','サ','シ','ス','セ','ソ','タ','チ','ツ','テ','ト','ナ','ニ','ヌ','ネ','ノ','ハ','ヒ','フ','ヘ','ホ','マ','ミ','ム','メ','モ','ヤ','ユ','ヨ','ラ','リ','ル','レ','ロ','ワ','ヲ','ン'];
-            const ALL_DAK = ['が','ぎ','ぐ','げ','ご','ざ','じ','ず','ぜ','ぞ','だ','ぢ','づ','で','ど','ば','び','ぶ','べ','ぼ','ぱ','ぴ','ぷ','ぺ','ぽ'];
-            const ROMAJI = {
-                'あ':'A','い':'I','う':'U','え':'E','お':'O','か':'KA','き':'KI','く':'KU','け':'KE','こ':'KO',
-                'さ':'SA','し':'SHI','す':'SU','せ':'SE','そ':'SO','た':'TA','ち':'CHI','つ':'TSU','て':'TE','と':'TO',
-                'な':'NA','に':'NI','ぬ':'NU','ね':'NE','の':'NO','は':'HA','ひ':'HI','ふ':'FU','へ':'HE','ほ':'HO',
-                'ま':'MA','み':'MI','む':'MU','め':'ME','も':'MO','や':'YA','ゆ':'YU','よ':'YO',
-                'ら':'RA','り':'RI','る':'RU','れ':'RE','ろ':'RO','わ':'WA','を':'WO','ん':'N',
-                'が':'GA','ぎ':'GI','ぐ':'GU','げ':'GE','ご':'GO','ざ':'ZA','じ':'JI','ず':'ZU','ぜ':'ZE','ぞ':'ZO',
-                'だ':'DA','ぢ':'JI','づ':'ZU','で':'DE','ど':'DO','ば':'BA','び':'BI','ぶ':'BU','べ':'BE','ぼ':'BO',
-                'ぱ':'PA','ぴ':'PI','ぷ':'PU','ぺ':'PE','ぽ':'PO',
-                'ア':'A','イ':'I','ウ':'U','エ':'E','オ':'O','カ':'KA','キ':'KI','ク':'KU','ケ':'KE','コ':'KO',
-                'サ':'SA','シ':'SHI','ス':'SU','セ':'SE','ソ':'SO','タ':'TA','チ':'CHI','ツ':'TSU','テ':'TE','ト':'TO',
-                'ナ':'NA','ニ':'NI','ヌ':'NU','ネ':'NE','ノ':'NO','ハ':'HA','ヒ':'HI','フ':'FU','ヘ':'HE','ホ':'HO',
-                'マ':'MA','ミ':'MI','ム':'MU','メ':'ME','モ':'MO','ヤ':'YA','ユ':'YU','ヨ':'YO',
-                'ラ':'RA','リ':'RI','ル':'RU','レ':'RE','ロ':'RO','ワ':'WA','ヲ':'WO','ン':'N',
-            };
+        updateHUD();
+        setTimeout(nextQuestion, 1000);
+    }
 
-            const SCRIPT_LABELS = { hiragana:'Hiragana', katakana:'Katakana', dakuten:'Dakuten', mixed:'Mixed' };
-            const DIFF_LABELS   = { easy:'Easy', normal:'Normal', hard:'Hard', insanity:'Insanity' };
-            const TIME          = { easy:120, normal:90, hard:60, insanity:45 };
+    // ── HUD update ──
+    function updateHUD() {
+        document.getElementById('hud-score').textContent = 'Score: ' + score;
+        document.getElementById('hud-lives').textContent = '❤️'.repeat(Math.max(lives,0)) + '🖤'.repeat(Math.max(3-lives,0));
+        document.getElementById('hud-combo').textContent = (streak >= 4 ? '🔥' : '⚡') + ' Combo: ' + streak + 'x';
+    }
 
-            // ── SKILLS (solo mode power-ups) ─────────────────────────────────────
-            const SOLO_SKILLS = [
-                { id:'doublePoints', icon:'✨', name:'Double Points', desc:'2× score for 10s', color:'#fbbf24', chance:.04 },
-                { id:'extraLife',    icon:'❤️', name:'Extra Life',    desc:'Gain 1 life',     color:'#ef4444', chance:.03 },
-                { id:'slowTime',     icon:'⏳', name:'Slow Time',     desc:'Timer pauses 5s', color:'#0ea5e9', chance:.025 },
-                { id:'multiCombo',   icon:'🔥', name:'Combo Boost',   desc:'Streak ×2 for next 5', color:'#f59e0b', chance:.03 },
-            ];
+    // ── end game ──
+    function endGame(reason) {
+        gameActive = false;
+        clearInterval(timerHandle);
 
-            const RANKS = [
-                { name:'Sprout',    icon:'🌱', min:0,    max:799,   color:'#4ade80', desc:'Just beginning your kana journey. Every answer counts — keep growing!' },
-                { name:'Wood',      icon:'🪵', min:800,  max:1199,  color:'#a3a3a3', desc:'Solid foundation forming. You know your basics and are building speed.' },
-                { name:'Iron',      icon:'⚔️', min:1200, max:1599,  color:'#94a3b8', desc:'Your kana is sharp. Combos are becoming natural and reflexes are improving.' },
-                { name:'Gold',      icon:'🥇', min:1600, max:1999,  color:'#fbbf24', desc:'Top-tier player. Your accuracy and speed are well above average.' },
-                { name:'Diamond',   icon:'💎', min:2000, max:2399,  color:'#38bdf8', desc:'Elite kana warrior. Few players reach this level — your dedication shows.' },
-                { name:'Master',    icon:'🧙', min:2400, max:2799,  color:'#a78bfa', desc:'Near-perfect kana mastery. You answer without thinking. Truly impressive.' },
-                { name:'Challenger',icon:'🏆', min:2800, max:3199,  color:'#f97316', desc:'Among the best in the world. Your battle skills are a force to be reckoned with.' },
-                { name:'Dragon',    icon:'🐉', min:3200, max:3699,  color:'#f43f5e', desc:'Legendary speed and accuracy. You breathe kana. Opponents tremble at your name.' },
-                { name:'Legend',    icon:'⭐', min:3700, max:Infinity, color:'#fef08a', desc:'The pinnacle. Untouchable. A living monument to kana mastery. You are the benchmark.' },
-            ];
+        const total = correct + wrong;
+        const acc   = total > 0 ? Math.round((correct/total)*100) : 0;
 
-            const ABOUT_SKILLS = [
-                { icon:'⚔️', name:'Sword',      desc:'2× damage for 15 seconds' },
-                { icon:'🛡️', name:'Shield',     desc:'Block the next 3 incoming hits' },
-                { icon:'🔥', name:'Fireball',   desc:'Instant AoE burst — 2.5× base damage' },
-                { icon:'⚡', name:'Lightning',  desc:'Instant strike — 1.8× damage' },
-                { icon:'❄️', name:'Ice',        desc:'Freeze AI — no attacks for 5 seconds' },
-                { icon:'☠️', name:'Poison',     desc:'Damage over time — 5 damage × 8 ticks' },
-                { icon:'💚', name:'Heal',       desc:'Restore 80 HP to your character' },
-                { icon:'🎯', name:'Critical',   desc:'Your next hit deals triple damage' },
-                { icon:'✨', name:'Double',     desc:'Strike twice — main + 45% followup' },
-            ];
+        document.getElementById('res-title').textContent =
+            reason === 'cleared' ? '🏆 Arena Cleared!' :
+            reason === 'time'    ? '⏰ Time\'s Up!'    : '💀 Game Over!';
+        document.getElementById('res-correct').textContent = correct;
+        document.getElementById('res-score').textContent   = score;
+        document.getElementById('res-combo').textContent   = maxStreak + 'x';
+        document.getElementById('res-acc').textContent     = acc + '%';
+        document.getElementById('res-time').textContent    = timerSecs + 's';
+        document.getElementById('res-wrong').textContent   = wrong;
 
-            // ── STATE ────────────────────────────────────────────────────────────
-            let selAlpha = null, selDiff = null;
-            let hp = 3, tLeft = 0, score = 0, pts = 0, streak = 0, maxCombo = 0;
-            let pool = [], cur = null, timerIv = null;
-            let totalCorrect = 0, totalWrong = 0, skillsUsed = 0;
-            let doublePointsActive = false, slowTimeActive = false;
-            let timerFrozen = false;
+        document.getElementById('result-overlay').classList.add('show');
+    }
 
-            // ── TAB NAVIGATION ───────────────────────────────────────────────────
-            function showTab(name) {
-                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-                document.getElementById('tab-' + name).classList.add('active');
-                const tabs = ['play','ranks','about'];
-                const idx = tabs.indexOf(name);
-                document.querySelectorAll('.nav-tab')[idx].classList.add('active');
-                if (name === 'ranks') buildRanks();
-                if (name === 'about') buildAbout();
-            }
+    // ── replay / back ──
+    function replayGame() {
+        document.getElementById('result-overlay').classList.remove('show');
+        startGame();
+    }
+    function backToSetup() {
+        document.getElementById('result-overlay').classList.remove('show');
+        document.getElementById('arena').style.display        = 'none';
+        document.getElementById('setup-panel').style.display  = 'block';
+        clearInterval(timerHandle);
+        gameActive = false;
+    }
 
-            function buildRanks() {
-                const grid = document.getElementById('ranks-grid');
-                if (grid.children.length) return;
-                grid.innerHTML = RANKS.map(r => `
-                    <div class="rank-card" style="border-left:4px solid ${r.color}22">
-                        <div class="rank-icon">${r.icon}</div>
-                        <div class="rank-info">
-                            <div class="rank-name" style="color:${r.color}">${r.name}</div>
-                            <div class="rank-desc">${r.desc}</div>
-                        </div>
-                        <div class="rank-elo" style="color:${r.color};border-color:${r.color}44;background:${r.color}11">
-                            ${r.max === Infinity ? r.min + '+' : r.min + '–' + r.max}
-                        </div>
-                    </div>`).join('');
-            }
-
-            function buildAbout() {
-                const sl = document.getElementById('about-skills');
-                if (sl && !sl.children.length) {
-                    sl.innerHTML = ABOUT_SKILLS.map(s => `
-                        <div class="skill-item">
-                            <div class="skill-icon">${s.icon}</div>
-                            <div class="skill-text">
-                                <div class="skill-name">${s.name}</div>
-                                <div class="skill-desc">${s.desc}</div>
-                            </div>
-                        </div>`).join('');
-                }
-            }
-
-            // ── LOBBY ────────────────────────────────────────────────────────────
-            function selA(el) {
-                document.querySelectorAll('[data-alpha]').forEach(c => { c.classList.remove('selected'); c.style.borderColor = ''; });
-                el.classList.add('selected'); el.style.borderColor = '#0ea5e9';
-                selAlpha = el.dataset.alpha; checkReady();
-            }
-            function selD(el) {
-                document.querySelectorAll('[data-diff]').forEach(c => { c.classList.remove('selected'); c.style.borderColor = ''; });
-                el.classList.add('selected'); el.style.borderColor = '#0ea5e9';
-                selDiff = el.dataset.diff; checkReady();
-            }
-            function checkReady() {
-                const btn = document.getElementById('btn-start');
-                if (selAlpha && selDiff) {
-                    btn.disabled = false;
-                    btn.className = 'cta-btn';
-                    btn.style.background = 'linear-gradient(135deg,#0ea5e9,#0284c7)';
-                }
-            }
-
-            // ── AUDIO ────────────────────────────────────────────────────────────
-            let _actx = null;
-            function getACtx() {
-                if (!_actx) _actx = new (window.AudioContext || window.webkitAudioContext)();
-                return _actx;
-            }
-            function playTone(type, freq, dur, vol = 0.12) {
-                try {
-                    const a = getACtx(), o = a.createOscillator(), g = a.createGain();
-                    o.type = type; o.frequency.value = freq;
-                    g.gain.setValueAtTime(0, a.currentTime);
-                    g.gain.linearRampToValueAtTime(vol, a.currentTime + .03);
-                    g.gain.exponentialRampToValueAtTime(.001, a.currentTime + dur);
-                    o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + dur + .05);
-                } catch {}
-            }
-            function playSweep(type, f1, f2, dur, vol = 0.15) {
-                try {
-                    const a = getACtx(), o = a.createOscillator(), g = a.createGain();
-                    o.type = type;
-                    o.frequency.setValueAtTime(f1, a.currentTime);
-                    o.frequency.linearRampToValueAtTime(f2, a.currentTime + dur);
-                    g.gain.setValueAtTime(vol, a.currentTime);
-                    g.gain.exponentialRampToValueAtTime(.001, a.currentTime + dur + .05);
-                    o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + dur + .1);
-                } catch {}
-            }
-            function playCorrect()   { playTone('sine', 523.25, .25, .15); }
-            function playWrong()     { playSweep('sawtooth', 150, 80, .3, .2); }
-            function playSkill()     { [400,500,700].forEach(f => playTone('sine', f, .2, .1)); }
-            function playComboMilestone() { [523, 659, 784].forEach((f,i) => setTimeout(() => playTone('sine', f, .2, .1), i * 80)); }
-            function playVictory()   { [523,659,784,1046].forEach((f,i) => setTimeout(() => playTone('sine', f, .4, .12), i * 120)); }
-            function playDefeat()    { [392,349,293,220].forEach((f,i) => setTimeout(() => playTone('triangle', f, .5, .12), i * 120)); }
-
-            // ── START GAME ───────────────────────────────────────────────────────
-            async function startGame() {
-                if (!selAlpha || !selDiff) return;
-                try { getACtx().resume(); } catch {}
-
-                document.getElementById('ui-lobby').style.display = 'none';
-                document.getElementById('ui-arena').style.display = 'block';
-                document.getElementById('arena-label').textContent = `${SCRIPT_LABELS[selAlpha]} · ${DIFF_LABELS[selDiff]}`;
-
-                pool = [];
-                try {
-                    const r = await fetch(`/KanaBlitz/GetArenaPayload?alphabet=${selAlpha}&difficulty=${selDiff}`);
-                    if (r.ok) { const res = await r.json(); pool = res.words ?? []; }
-                } catch {}
-
-                if (!pool.length) {
-                    const kanaPool = selAlpha === 'katakana' ? ALL_KATA
-                        : selAlpha === 'dakuten' ? ALL_DAK
-                        : selAlpha === 'mixed' ? [...ALL_KANA, ...ALL_KATA, ...ALL_DAK]
-                        : ALL_KANA;
-                    pool = kanaPool.map(k => ({
-                        kana: k, romaji: ROMAJI[k] ?? k,
-                        missing: ROMAJI[k] ?? k,
-                        display: `<span style="font-size:3rem">${k}</span>`,
-                        meaning: 'Select the matching romaji'
-                    }));
-                    // Assign random skills to ~15% of questions
-                    pool.forEach(q => {
-                        const r2 = Math.random();
-                        let cum = 0;
-                        for (const s of SOLO_SKILLS) {
-                            cum += s.chance;
-                            if (r2 < cum) { q.skill = s.id; break; }
-                        }
-                    });
-                }
-
-                pool = pool.sort(() => Math.random() - .5);
-                hp = 3; tLeft = TIME[selDiff]; score = 0; pts = 0; streak = 0; maxCombo = 0;
-                totalCorrect = 0; totalWrong = 0; skillsUsed = 0;
-                doublePointsActive = false; slowTimeActive = false; timerFrozen = false;
-
-                document.getElementById('hearts').innerHTML = '❤️❤️❤️';
-                document.getElementById('pts').textContent = '0';
-                document.getElementById('combo-display').textContent = '';
-
-                timerIv = setInterval(() => {
-                    if (!timerFrozen) tLeft -= 0.1;
-                    if (tLeft <= 0) { clearInterval(timerIv); endGame('time'); return; }
-                    const pct = tLeft / TIME[selDiff] * 100;
-                    const tbf = document.getElementById('tbf');
-                    const tmr = document.getElementById('tmr');
-                    const tc = tLeft <= 10 ? '#ef4444' : tLeft <= 20 ? '#f59e0b' : '#22c55e';
-                    if (tbf) { tbf.style.width = pct + '%'; tbf.style.background = tc; }
-                    if (tmr) { tmr.textContent = fmtTime(tLeft); tmr.style.color = tc; }
-                }, 100);
-
-                nextQuestion();
-            }
-
-            function fmtTime(s) {
-                const m = Math.floor(Math.max(0, s) / 60);
-                const sec = Math.ceil(Math.max(0, s)) % 60;
-                return `${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
-            }
-
-            // ── QUESTION ─────────────────────────────────────────────────────────
-            function nextQuestion() {
-                if (!pool.length) { endGame('win'); return; }
-                cur = pool.shift();
-                document.getElementById('am').textContent = cur.meaning || 'Select the matching romaji';
-                document.getElementById('ad').innerHTML = cur.display || cur.kana || cur.romaji;
-
-                // Show skill indicator if this question has a skill
-                const banner = document.getElementById('skill-banner');
-                if (cur.skill) {
-                    const si = SOLO_SKILLS.find(s => s.id === cur.skill);
-                    if (si) {
-                        banner.className = 'skill-banner show';
-                        banner.style.cssText = `display:flex;background:${si.color}22;border:1px solid ${si.color}44;color:${si.color}`;
-                        banner.innerHTML = `${si.icon} <strong>${si.name}</strong> — ${si.desc} — Answer correctly to activate!`;
-                    }
-                } else {
-                    banner.className = 'skill-banner';
-                }
-
-                const distPool = (selAlpha === 'katakana' ? ALL_KATA
-                    : selAlpha === 'dakuten' ? ALL_DAK
-                    : selAlpha === 'mixed' ? [...ALL_KANA,...ALL_KATA,...ALL_DAK]
-                    : ALL_KANA).map(k => ROMAJI[k] ?? k).filter(r => r !== cur.missing);
-                const opts = [cur.missing];
-                const shuffled = distPool.sort(() => Math.random() - .5);
-                while (opts.length < 4 && shuffled.length) opts.push(shuffled.pop());
-                opts.sort(() => Math.random() - .5);
-
-                document.getElementById('ao').innerHTML = opts.map(o =>
-                    `<button class="option-btn default" onclick="checkAnswer('${o.replace(/'/g,"\\'")}')">${o}</button>`
-                ).join('');
-            }
-
-            // ── ANSWER ───────────────────────────────────────────────────────────
-            function checkAnswer(val) {
-                const correct = val === cur.missing;
-                const btns = document.querySelectorAll('.option-btn');
-                btns.forEach(b => {
-                    if (b.textContent === val) b.className = `option-btn ${correct ? 'correct' : 'wrong'}`;
-                    b.onclick = null;
-                });
-
-                if (correct) {
-                    score++; totalCorrect++; streak++;
-                    if (streak > maxCombo) maxCombo = streak;
-                    let basePoints = 100 + streak * 10;
-                    if (doublePointsActive) basePoints *= 2;
-                    pts += basePoints;
-
-                    document.getElementById('pts').textContent = pts;
-                    document.getElementById('strk').style.width = Math.min(streak * 4, 100) + '%';
-
-                    const cd = document.getElementById('combo-display');
-                    if (streak >= 3) {
-                        cd.textContent = `🔥 ${streak}x COMBO! +${basePoints}pts`;
-                        if (streak === 3 || streak === 5 || streak === 10) playComboMilestone();
-                    } else { cd.textContent = `+${basePoints}pts`; }
-
-                    document.getElementById('ac').classList.add('correct-glow');
-                    setTimeout(() => document.getElementById('ac').classList.remove('correct-glow'), 300);
-                    flashScreen('flash-green');
-                    playCorrect();
-
-                    // Activate skill if present
-                    if (cur.skill) {
-                        activateSoloSkill(cur.skill);
-                        skillsUsed++;
-                    }
-
-                    setTimeout(() => nextQuestion(), 350);
-                } else {
-                    streak = 0; hp--; totalWrong++;
-                    document.getElementById('strk').style.width = '0%';
-                    document.getElementById('combo-display').textContent = '';
-                    document.getElementById('hearts').innerHTML = '❤️'.repeat(hp) + '🖤'.repeat(3 - hp);
-                    flashScreen('flash-red');
-                    playWrong();
-                    if (hp <= 0) {
-                        setTimeout(() => { clearInterval(timerIv); endGame('loss'); }, 400);
-                    } else {
-                        setTimeout(() => nextQuestion(), 500);
-                    }
-                }
-            }
-
-            function activateSoloSkill(skillId) {
-                playSkill();
-                const si = SOLO_SKILLS.find(s => s.id === skillId);
-                if (!si) return;
-                switch (skillId) {
-                    case 'doublePoints':
-                        doublePointsActive = true;
-                        setTimeout(() => { doublePointsActive = false; }, 10000);
-                        break;
-                    case 'extraLife':
-                        if (hp < 3) { hp++; document.getElementById('hearts').innerHTML = '❤️'.repeat(hp) + '🖤'.repeat(3 - hp); }
-                        break;
-                    case 'slowTime':
-                        timerFrozen = true;
-                        setTimeout(() => { timerFrozen = false; }, 5000);
-                        break;
-                    case 'multiCombo':
-                        streak = Math.min(streak * 2, 50);
-                        break;
-                }
-            }
-
-            function flashScreen(id) {
-                const el = document.getElementById(id);
-                if (!el) return;
-                el.classList.add('show');
-                setTimeout(() => el.classList.remove('show'), 200);
-            }
-
-            // ── END GAME ─────────────────────────────────────────────────────────
-            function endGame(reason) {
-                clearInterval(timerIv);
-                document.getElementById('ui-arena').style.display = 'none';
-                const res = document.getElementById('ui-results');
-                res.style.display = 'block';
-                const win = reason === 'win';
-                const acc = totalCorrect + totalWrong > 0 ? Math.round(totalCorrect / (totalCorrect + totalWrong) * 100) : 0;
-
-                document.getElementById('r-title').textContent = win ? 'Arena Cleared!' : reason === 'time' ? "Time's Up!" : 'Defeated!';
-                document.getElementById('r-title').style.color = win ? '#34d399' : '#ef4444';
-                document.getElementById('r-icon').textContent = win ? '🎌' : reason === 'time' ? '⏰' : '💀';
-                document.getElementById('r-cor').textContent = totalCorrect;
-                document.getElementById('r-pts').textContent = pts;
-                document.getElementById('r-max').textContent = maxCombo;
-                document.getElementById('r-acc').textContent = acc + '%';
-                document.getElementById('r-time').textContent = Math.ceil(tLeft) + 's';
-                document.getElementById('r-skills').textContent = skillsUsed;
-
-                if (win) playVictory(); else playDefeat();
-
-                fetch('/KanaBlitz/SubmitScore', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        Alphabet: selAlpha, Difficulty: selDiff,
-                        CorrectAnswers: totalCorrect, Mistakes: totalWrong,
-                        MaxCombo: maxCombo, Points: pts,
-                        DurationSeconds: TIME[selDiff] - Math.ceil(tLeft)
-                    })
-                }).catch(() => {});
-            }
-
-            function exitArena() { clearInterval(timerIv); location.reload(); }
-    </script>
-</body>
-</html>
+    // ── helpers ──
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+    function clearOptClasses() {
+        document.querySelectorAll('.opt-btn').forEach(b => {
+            b.classList.remove('correct','wrong');
+        });
+    }
+    function capitalize(str) {
+        return str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
+    }
+</script>
