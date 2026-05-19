@@ -1,742 +1,816 @@
 ﻿@*
     ╔══════════════════════════════════════════════════════════════════╗
-    ║  KanaBlitz_Index.cshtml  —  KanaBlitz Solo Game Arena           ║
-    ║  Controller : KanaBlitzController → Index()                     ║
-    ║  Route      : /KanaBlitz/Index  (or /KanaBlitz)                 ║
+    ║  KanaBattle_View.cshtml  —  KanaBattle Game Arena               ║
+    ║  Controller : KanaBattleController → Battle()                   ║
+    ║  Route      : /KanaBattle/Battle?difficulty=&script=            ║
     ║  API        : GET /KanaBlitz/GetWords?difficulty=&script=       ║
+    ║  Model      : KanaBattleModel                                   ║
     ║  Refactored : Full audit, debug, redesign & UX overhaul         ║
+    ║  Aesthetic  : White background · Black / Gold / White / Blue    ║
     ╚══════════════════════════════════════════════════════════════════╝
 *@
+@model NipponQuest.Models.KanaBattleModel
 @{
-    ViewData["Title"] = "KanaBlitz — Solo Training";
+    ViewData["Title"] = "KanaBattle — Arena";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Sanitised values from the model (already normalised in controller)
+    var difficulty = Model?.Difficulty ?? "normal";
+    var script = Model?.Script ?? "hiragana";
+    var playerName = Model?.PlayerName ?? "Player 1";
+    var isMulti = ViewBag.Multiplayer != null && (bool)ViewBag.Multiplayer;
+    var player2Name = ViewBag.Player2Name as string ?? "Player 2";
 }
 
 <style>
-    /* ═══════════════════════════════════════════════
-           NIPPONQUEST DESIGN TOKENS — KanaBlitz Solo
-           Matches site.css palette & Nunito font stack
-        ═══════════════════════════════════════════════ */
+    /* ══════════════════════════════════════════════════════════════
+           NIPPONQUEST — KanaBattle Arena
+           Palette : White bg · Black text · Gold accents · Blue action
+           Font    : Nunito (loaded via site.css)
+        ══════════════════════════════════════════════════════════════ */
     @@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
 
     :root {
-        --nq-bg: #0b0b18;
-        --nq-surface: #12122a;
-        --nq-surface2: #1a1a38;
-        --nq-border: #2a2a55;
-        --nq-border2: #3a3a6a;
-        --nq-accent: #7c3aed;
-        --nq-accent2: #a855f7;
-        --nq-pink: #ec4899;
-        --nq-gold: #f59e0b;
-        --nq-green: #10b981;
-        --nq-red: #ef4444;
-        --nq-blue: #0ea5e9;
-        --nq-text: #e2e8f0;
-        --nq-muted: #94a3b8;
-        --nq-faint: #64748b;
-        --nq-radius: 14px;
-        --nq-radius-sm: 10px;
-        --nq-transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        --ba-bg: #ffffff;
+        --ba-surface: #f8fafc;
+        --ba-surface2: #f1f5f9;
+        --ba-border: #e2e8f0;
+        --ba-border2: #cbd5e1;
+        --ba-black: #0f172a;
+        --ba-charcoal: #1e293b;
+        --ba-dark: #334155;
+        --ba-muted: #64748b;
+        --ba-faint: #94a3b8;
+        --ba-gold: #d97706;
+        --ba-gold-lt: #f59e0b;
+        --ba-gold-bg: #fef3c7;
+        --ba-gold-bd: #fcd34d;
+        --ba-blue: #1e40af;
+        --ba-blue-lt: #3b82f6;
+        --ba-blue-bg: #eff6ff;
+        --ba-blue-bd: #93c5fd;
+        --ba-green: #065f46;
+        --ba-green-lt: #10b981;
+        --ba-green-bg: #ecfdf5;
+        --ba-green-bd: #6ee7b7;
+        --ba-red: #991b1b;
+        --ba-red-lt: #ef4444;
+        --ba-red-bg: #fff1f2;
+        --ba-red-bd: #fca5a5;
+        --ba-p1: #1e40af;
+        --ba-p2: #991b1b;
+        --ba-radius: 14px;
+        --ba-radius-sm: 10px;
+        --ba-radius-lg: 20px;
+        --ba-shadow: 0 4px 16px rgba(15,23,42,0.08);
+        --ba-shadow-lg: 0 8px 32px rgba(15,23,42,0.12);
+        --ba-trans: all 0.22s cubic-bezier(0.4,0,0.2,1);
     }
 
     *, *::before, *::after {
         box-sizing: border-box;
-        margin: 0;
-        padding: 0;
     }
 
-    .kb-page {
-        background: var(--nq-bg);
+    .ba-page {
+        background: var(--ba-bg);
         min-height: 100vh;
-        color: var(--nq-text);
+        color: var(--ba-black);
         font-family: 'Nunito', 'Segoe UI', sans-serif;
-        padding-bottom: 60px;
+        padding-bottom: 80px;
     }
 
-        /* ── Ambient particles background ── */
-        .kb-page::before {
+        /* Accent bar: gold for solo, red+gold for multi */
+        .ba-page::before {
             content: '';
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(ellipse 80% 50% at 20% 20%, rgba(124,58,237,0.07) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(168,85,247,0.05) 0%, transparent 60%);
-            pointer-events: none;
-            z-index: 0;
+            display: block;
+            height: 4px;
+            background: @(isMulti
+                        ? "linear-gradient(90deg,#0f172a 0%,#991b1b 40%,#d97706 70%,#1e40af 100%)"
+                        : "linear-gradient(90deg,#0f172a 0%,#d97706 50%,#1e40af 100%)");
         }
 
-    .kb-wrapper {
-        max-width: 1080px;
+    .ba-wrapper {
+        max-width: 1100px;
         margin: 0 auto;
         padding: 28px 16px;
-        position: relative;
-        z-index: 1;
     }
 
-    /* ── Page Header ── */
-    .kb-hero {
-        text-align: center;
-        padding: 16px 0 32px;
-    }
-
-    .kb-hero-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(124,58,237,0.15);
-        border: 1px solid rgba(124,58,237,0.35);
-        border-radius: 100px;
-        padding: 6px 18px;
-        font-size: 0.72rem;
-        font-weight: 800;
-        letter-spacing: 0.14em;
-        color: var(--nq-accent2);
-        text-transform: uppercase;
-        margin-bottom: 16px;
-    }
-
-    .kb-hero h1 {
-        font-size: clamp(1.9rem, 5vw, 3rem);
-        font-weight: 900;
-        letter-spacing: 0.04em;
-        background: linear-gradient(135deg, #7c3aed 0%, #a855f7 45%, #ec4899 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        line-height: 1.15;
-        margin-bottom: 10px;
-    }
-
-    .kb-hero p {
-        color: var(--nq-muted);
-        font-size: 0.95rem;
-        max-width: 520px;
-        margin-inline: auto;
-        line-height: 1.65;
-    }
-
-    /* ── Setup Panel ── */
-    #setup-panel {
-        background: var(--nq-surface);
-        border: 1px solid var(--nq-border);
-        border-radius: 20px;
-        padding: 32px 28px;
-        margin-bottom: 24px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.35);
-    }
-
-    .section-label {
-        font-size: 0.7rem;
-        font-weight: 900;
-        letter-spacing: 0.18em;
-        color: var(--nq-accent2);
-        text-transform: uppercase;
-        margin-bottom: 14px;
+    /* ── Arena Header ── */
+    .arena-header {
         display: flex;
         align-items: center;
-        gap: 8px;
-    }
-
-        .section-label::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--nq-border);
-        }
-
-    /* ── Choice Grids ── */
-    .choice-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 12px;
-        margin-bottom: 28px;
-    }
-
-    .choice-card {
-        background: var(--nq-surface2);
-        border: 2px solid var(--nq-border);
-        border-radius: var(--nq-radius);
-        padding: 18px 12px;
-        cursor: pointer;
-        transition: var(--nq-transition);
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-        user-select: none;
-    }
-
-        .choice-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(124,58,237,0.0), rgba(168,85,247,0.0));
-            transition: var(--nq-transition);
-            border-radius: inherit;
-        }
-
-        .choice-card:hover {
-            border-color: var(--nq-accent2);
-            background: #1e1e42;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(124,58,237,0.2);
-        }
-
-            .choice-card:hover::before {
-                background: linear-gradient(135deg, rgba(124,58,237,0.06), rgba(168,85,247,0.06));
-            }
-
-        .choice-card.active {
-            border-color: var(--nq-accent);
-            background: rgba(45, 27, 110, 0.7);
-            box-shadow: 0 0 20px rgba(124,58,237,0.4), inset 0 0 0 1px rgba(168,85,247,0.3);
-            transform: translateY(-2px);
-        }
-
-            .choice-card.active::before {
-                background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(168,85,247,0.1));
-            }
-
-        .choice-card .c-icon {
-            font-size: 2rem;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .choice-card .c-label {
-            font-weight: 800;
-            font-size: 0.95rem;
-            display: block;
-        }
-
-        .choice-card .c-sub {
-            font-size: 0.72rem;
-            color: var(--nq-muted);
-            margin-top: 4px;
-            display: block;
-        }
-
-        .choice-card .c-tag {
-            font-size: 0.68rem;
-            color: var(--nq-accent2);
-            margin-top: 3px;
-            display: block;
-        }
-
-        .choice-card .c-count {
-            font-size: 0.65rem;
-            color: var(--nq-faint);
-            margin-top: 2px;
-            display: block;
-        }
-
-        /* ── Difficulty Colors ── */
-        .choice-card[data-diff="easy"].active {
-            border-color: var(--nq-green);
-            box-shadow: 0 0 20px rgba(16,185,129,0.35);
-        }
-
-        .choice-card[data-diff="normal"].active {
-            border-color: var(--nq-blue);
-            box-shadow: 0 0 20px rgba(14,165,233,0.35);
-        }
-
-        .choice-card[data-diff="hard"].active {
-            border-color: var(--nq-gold);
-            box-shadow: 0 0 20px rgba(245,158,11,0.35);
-        }
-
-        .choice-card[data-diff="insanity"].active {
-            border-color: var(--nq-red);
-            box-shadow: 0 0 20px rgba(239,68,68,0.35);
-        }
-
-    .diff-pip {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        margin-bottom: 6px;
-    }
-
-    .pip-easy {
-        background: var(--nq-green);
-    }
-
-    .pip-normal {
-        background: var(--nq-blue);
-    }
-
-    .pip-hard {
-        background: var(--nq-gold);
-    }
-
-    .pip-insanity {
-        background: var(--nq-red);
-    }
-
-    /* ── Start Button ── */
-    #btn-start {
-        width: 100%;
-        padding: 18px;
-        border-radius: var(--nq-radius);
-        border: none;
-        font-size: 1.05rem;
-        font-weight: 900;
-        cursor: pointer;
-        background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
-        color: #fff;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        transition: var(--nq-transition);
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 6px 24px rgba(124,58,237,0.4);
-    }
-
-        #btn-start::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -60%;
-            width: 30%;
-            height: 200%;
-            background: rgba(255,255,255,0.2);
-            transform: rotate(30deg);
-        }
-
-        #btn-start:hover {
-            opacity: 0.92;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 32px rgba(124,58,237,0.55);
-        }
-
-            #btn-start:hover::after {
-                animation: btnSheen 0.7s ease;
-            }
-
-        #btn-start:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-    @@keyframes btnSheen {
-        from {
-            left: -60%;
-        }
-
-        to {
-            left: 140%;
-        }
-    }
-
-    /* ── Word Count Warning ── */
-    #word-warning {
-        display: none;
-        background: rgba(239,68,68,0.1);
-        border: 1px solid rgba(239,68,68,0.4);
-        border-radius: var(--nq-radius-sm);
-        padding: 12px 16px;
-        font-size: 0.82rem;
-        color: #fca5a5;
-        margin-bottom: 16px;
-        align-items: center;
-        gap: 10px;
-    }
-
-        #word-warning.visible {
-            display: flex;
-        }
-
-    /* ══════════════════════════════════════════════════
-           ARENA
-        ══════════════════════════════════════════════════ */
-    #arena {
-        display: none;
-    }
-
-    /* ── HUD ── */
-    .hud {
-        display: grid;
-        grid-template-columns: auto 1fr auto auto auto;
-        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
         gap: 14px;
-        background: var(--nq-surface);
-        border: 1px solid var(--nq-border);
-        border-radius: var(--nq-radius);
-        padding: 14px 20px;
-        margin-bottom: 16px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        margin-bottom: 24px;
+        padding-bottom: 18px;
+        border-bottom: 1.5px solid var(--ba-border);
     }
 
-    @@media (max-width: 640px) {
-        .hud {
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-    }
-
-    .hud-stat {
-        text-align: center;
-    }
-
-        .hud-stat .hs-val {
-            font-size: 1.4rem;
-            font-weight: 900;
-            line-height: 1;
-        }
-
-        .hud-stat .hs-lbl {
-            font-size: 0.62rem;
-            color: var(--nq-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-top: 2px;
-        }
-
-    #hud-timer .hs-val {
-        color: var(--nq-gold);
-        font-variant-numeric: tabular-nums;
-    }
-
-    #hud-score .hs-val {
-        color: var(--nq-green);
-    }
-
-    #hud-combo .hs-val {
-        color: var(--nq-accent2);
-    }
-
-    .hud-progress {
-        height: 6px;
-        background: var(--nq-surface2);
-        border-radius: 3px;
-        overflow: hidden;
-    }
-
-    .hud-progress-bar {
-        height: 100%;
-        border-radius: 3px;
-        background: linear-gradient(90deg, var(--nq-accent), var(--nq-accent2));
-        transition: width 0.4s ease;
-    }
-
-    .hud-lives {
-        font-size: 1.25rem;
-        letter-spacing: 3px;
-    }
-
-    /* ── Question Card ── */
-    .q-card {
-        background: var(--nq-surface);
-        border: 1px solid var(--nq-border);
-        border-radius: 20px;
-        padding: 36px 24px;
-        text-align: center;
-        margin-bottom: 16px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        position: relative;
-        overflow: hidden;
-        transition: var(--nq-transition);
-    }
-
-        .q-card::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            background: linear-gradient(135deg, rgba(124,58,237,0) 0%, rgba(168,85,247,0) 100%);
-            transition: var(--nq-transition);
-            pointer-events: none;
-        }
-
-        .q-card.flash-correct::after {
-            background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.04));
-        }
-
-        .q-card.flash-wrong::after {
-            background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(239,68,68,0.04));
-        }
-
-    .q-kana {
-        font-size: clamp(3.5rem, 10vw, 5.5rem);
-        line-height: 1;
-        margin-bottom: 10px;
-        display: block;
-        animation: kanaReveal 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    @@keyframes kanaReveal {
-        from {
-            opacity: 0;
-            transform: scale(0.75) translateY(10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-
-    .q-meaning {
-        font-size: 0.85rem;
-        color: var(--nq-faint);
-        min-height: 1.3em;
+    .arena-title-wrap h2 {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--ba-black);
         margin-bottom: 4px;
     }
 
-    .q-cat {
-        font-size: 0.7rem;
-        color: var(--nq-accent2);
-        font-weight: 700;
-        letter-spacing: 0.08em;
+    .arena-title-wrap .arena-meta {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 4px;
+    }
+
+    .arena-tag {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 0.67rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
         text-transform: uppercase;
     }
 
-    /* progress dots */
-    .q-progress {
-        display: flex;
-        justify-content: center;
-        gap: 5px;
-        margin-top: 18px;
-        flex-wrap: wrap;
-    }
-
-    .q-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--nq-surface2);
-        border: 1px solid var(--nq-border);
-        transition: var(--nq-transition);
-    }
-
-        .q-dot.done-correct {
-            background: var(--nq-green);
-            border-color: var(--nq-green);
+        .arena-tag.black {
+            background: var(--ba-black);
+            color: #ffffff;
         }
 
-        .q-dot.done-wrong {
-            background: var(--nq-red);
-            border-color: var(--nq-red);
+        .arena-tag.gold {
+            background: var(--ba-gold-bg);
+            color: var(--ba-gold);
+            border: 1px solid var(--ba-gold-bd);
         }
 
-        .q-dot.current {
-            background: var(--nq-accent2);
-            border-color: var(--nq-accent2);
-            transform: scale(1.3);
+        .arena-tag.blue {
+            background: var(--ba-blue-bg);
+            color: var(--ba-blue);
+            border: 1px solid var(--ba-blue-bd);
         }
 
-    /* ── Options Grid ── */
-    .opt-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-bottom: 16px;
-    }
-
-    @@media (max-width: 480px) {
-        .opt-grid {
-            grid-template-columns: 1fr;
+        .arena-tag.red {
+            background: var(--ba-red-bg);
+            color: var(--ba-red);
+            border: 1px solid var(--ba-red-bd);
         }
+
+    .arena-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 18px;
+        border-radius: var(--ba-radius);
+        border: 2px solid var(--ba-border);
+        background: var(--ba-bg);
+        color: var(--ba-charcoal);
+        font-size: 0.82rem;
+        font-weight: 800;
+        text-decoration: none;
+        transition: var(--ba-trans);
     }
 
-    .opt-btn {
-        background: var(--nq-surface2);
-        border: 2px solid var(--nq-border);
-        border-radius: var(--nq-radius-sm);
-        padding: 16px 12px;
-        font-size: 1rem;
-        font-weight: 700;
-        cursor: pointer;
-        color: var(--nq-text);
-        font-family: 'Nunito', sans-serif;
-        transition: var(--nq-transition);
-        position: relative;
-        overflow: hidden;
-    }
-
-        .opt-btn:hover:not(:disabled) {
-            border-color: var(--nq-accent2);
-            background: #1e1e42;
+        .arena-back:hover {
+            border-color: var(--ba-blue-lt);
+            background: var(--ba-blue-bg);
+            color: var(--ba-blue);
+            text-decoration: none;
             transform: translateY(-1px);
         }
 
-        .opt-btn:disabled {
-            cursor: default;
-        }
-
-        .opt-btn.correct {
-            border-color: var(--nq-green) !important;
-            background: rgba(16,185,129,0.12) !important;
-            color: #6ee7b7 !important;
-            box-shadow: 0 0 16px rgba(16,185,129,0.25);
-        }
-
-        .opt-btn.wrong {
-            border-color: var(--nq-red) !important;
-            background: rgba(239,68,68,0.1) !important;
-            color: #fca5a5 !important;
-            box-shadow: 0 0 16px rgba(239,68,68,0.2);
-        }
-
-    /* ── Feedback Bar ── */
-    #feedback-bar {
-        text-align: center;
-        font-size: 0.95rem;
-        font-weight: 800;
-        min-height: 26px;
-        letter-spacing: 0.04em;
-        transition: color 0.2s;
+    /* ── Multiplayer Split Layout ── */
+    .battle-layout {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 0;
+        margin-bottom: 24px;
     }
 
-    /* ── Combo Burst ── */
-    .combo-burst {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 3.5rem;
+    .player-panel {
+        background: var(--ba-surface);
+        border: 1.5px solid var(--ba-border);
+        border-radius: var(--ba-radius-lg);
+        padding: 24px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: var(--ba-trans);
+    }
+
+        .player-panel.p1-panel {
+            border-color: rgba(30,64,175,0.3);
+        }
+
+        .player-panel.p2-panel {
+            border-color: rgba(153,27,27,0.3);
+        }
+
+        .player-panel.active-panel {
+            box-shadow: 0 0 0 3px rgba(217,119,6,0.3);
+        }
+
+    .player-badge {
+        font-size: 0.68rem;
         font-weight: 900;
-        pointer-events: none;
-        z-index: 9999;
-        animation: comboBurst 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        text-shadow: 0 0 40px currentColor;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        padding: 4px 14px;
+        border-radius: 100px;
+        margin-bottom: 10px;
     }
 
-    @@keyframes comboBurst {
-        0% {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(0.5);
+        .player-badge.p1 {
+            background: var(--ba-blue-bg);
+            color: var(--ba-blue);
+            border: 1px solid var(--ba-blue-bd);
         }
 
-        60% {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1.1);
+        .player-badge.p2 {
+            background: var(--ba-red-bg);
+            color: var(--ba-red);
+            border: 1px solid var(--ba-red-bd);
         }
 
-        100% {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.9) translateY(-40px);
-        }
+    .player-name-display {
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: var(--ba-black);
+        margin-bottom: 8px;
     }
 
-    /* ══════════════════════════════════════════════════
-           RESULT OVERLAY
-        ══════════════════════════════════════════════════ */
-    #result-overlay {
+    .player-score-display {
+        font-size: 2.8rem;
+        font-weight: 900;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .p1-panel .player-score-display {
+        color: var(--ba-blue);
+    }
+
+    .p2-panel .player-score-display {
+        color: var(--ba-red-lt);
+    }
+
+    .player-sub {
+        font-size: 0.72rem;
+        color: var(--ba-muted);
+        font-weight: 600;
+    }
+
+    .player-input-area {
+        width: 100%;
+        margin-top: 14px;
+    }
+
+        .player-input-area input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: var(--ba-radius-sm);
+            border: 2px solid var(--ba-border);
+            font-size: 0.95rem;
+            font-weight: 700;
+            font-family: inherit;
+            color: var(--ba-black);
+            background: var(--ba-bg);
+            outline: none;
+            transition: var(--ba-trans);
+            text-align: center;
+        }
+
+    .p1-panel .player-input-area input:focus {
+        border-color: var(--ba-blue-lt);
+        box-shadow: 0 0 0 2px rgba(59,130,246,0.12);
+    }
+
+    .p2-panel .player-input-area input:focus {
+        border-color: var(--ba-red-lt);
+        box-shadow: 0 0 0 2px rgba(239,68,68,0.12);
+    }
+
+    .player-input-area input.correct {
+        border-color: var(--ba-green-lt);
+        background: var(--ba-green-bg);
+        color: var(--ba-green);
+    }
+
+    .player-input-area input.incorrect {
+        border-color: var(--ba-red-lt);
+        background: var(--ba-red-bg);
+        color: var(--ba-red);
+    }
+
+    .player-submit-btn {
+        width: 100%;
+        margin-top: 8px;
+        padding: 11px;
+        border-radius: var(--ba-radius-sm);
+        border: none;
+        font-size: 0.85rem;
+        font-weight: 900;
+        cursor: pointer;
+        font-family: inherit;
+        letter-spacing: 0.06em;
+        transition: var(--ba-trans);
+    }
+
+    .p1-panel .player-submit-btn {
+        background: linear-gradient(135deg, #0f172a, var(--ba-blue));
+        color: #ffffff;
+    }
+
+    .p2-panel .player-submit-btn {
+        background: linear-gradient(135deg, #0f172a, var(--ba-red-lt));
+        color: #ffffff;
+    }
+
+    .player-submit-btn:hover {
+        filter: brightness(1.1);
+        transform: translateY(-1px);
+    }
+
+    .player-submit-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .player-shortcut {
+        font-size: 0.65rem;
+        color: var(--ba-faint);
+        margin-top: 6px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+    }
+
+    .player-feedback {
+        min-height: 22px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        margin-top: 8px;
+        text-align: center;
+        transition: var(--ba-trans);
+    }
+
+        .player-feedback.correct {
+            color: var(--ba-green-lt);
+        }
+
+        .player-feedback.incorrect {
+            color: var(--ba-red-lt);
+        }
+
+    /* VS divider */
+    .vs-divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 16px;
+    }
+
+    .vs-text {
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--ba-gold);
+        background: var(--ba-gold-bg);
+        border: 2px solid var(--ba-gold-bd);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* ── Solo Layout ── */
+    .solo-layout {
+        max-width: 680px;
+        margin: 0 auto;
+    }
+
+    /* ── Central Kana Display ── */
+    .kana-stage {
+        background: var(--ba-bg);
+        border: 2px solid var(--ba-border);
+        border-radius: var(--ba-radius-lg);
+        padding: 44px 24px 36px;
+        text-align: center;
+        margin-bottom: 20px;
+        box-shadow: var(--ba-shadow-lg);
+        position: relative;
+        overflow: hidden;
+        animation: baSlideIn 0.38s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+        .kana-stage::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ba-gold), var(--ba-blue-lt), var(--ba-gold));
+        }
+
+    .kana-stage-char {
+        font-size: clamp(4rem,12vw,7rem);
+        font-weight: 900;
+        color: var(--ba-black);
+        line-height: 1;
+        display: block;
+        margin-bottom: 12px;
+        letter-spacing: -0.02em;
+    }
+
+    .kana-stage-meaning {
+        font-size: 0.84rem;
+        color: var(--ba-muted);
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .kana-stage-fill {
+        font-size: clamp(1.6rem,5vw,2.6rem);
+        font-weight: 900;
+        color: var(--ba-charcoal);
+        margin: 10px 0 6px;
+        letter-spacing: 0.05em;
+    }
+
+    .fill-blank {
+        display: inline-block;
+        min-width: 48px;
+        border-bottom: 3px solid var(--ba-gold);
+        color: var(--ba-gold);
+        padding: 0 4px;
+    }
+
+    .kana-tags {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+    }
+
+    .kana-tag {
+        background: var(--ba-surface2);
+        border: 1px solid var(--ba-border);
+        border-radius: 100px;
+        padding: 3px 12px;
+        font-size: 0.66rem;
+        font-weight: 700;
+        color: var(--ba-dark);
+        letter-spacing: 0.07em;
+    }
+
+        .kana-tag.gold {
+            background: var(--ba-gold-bg);
+            border-color: var(--ba-gold-bd);
+            color: var(--ba-gold);
+        }
+
+        .kana-tag.blue {
+            background: var(--ba-blue-bg);
+            border-color: var(--ba-blue-bd);
+            color: var(--ba-blue);
+        }
+
+    /* ── Global HUD ── */
+    .global-hud {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--ba-black);
+        color: #ffffff;
+        border-radius: var(--ba-radius);
+        padding: 12px 20px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .ghud-tile {
+        text-align: center;
+    }
+
+        .ghud-tile .gv {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: var(--ba-gold-lt);
+            display: block;
+        }
+
+        .ghud-tile .gl {
+            font-size: 0.58rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            color: rgba(255,255,255,0.45);
+            text-transform: uppercase;
+        }
+
+    /* Timer ring */
+    .ghud-timer {
+        position: relative;
+        width: 58px;
+        height: 58px;
+    }
+
+        .ghud-timer svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+    .timer-track {
+        fill: none;
+        stroke: rgba(255,255,255,0.1);
+        stroke-width: 5;
+    }
+
+    .timer-arc {
+        fill: none;
+        stroke: var(--ba-gold-lt);
+        stroke-width: 5;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 1s linear, stroke 0.3s;
+    }
+
+    .timer-num {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        font-weight: 900;
+        color: #ffffff;
+    }
+
+    /* ── Progress bar ── */
+    .progress-wrap {
+        background: var(--ba-surface2);
+        border-radius: 100px;
+        height: 7px;
+        overflow: hidden;
+        margin-bottom: 18px;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--ba-gold), var(--ba-blue-lt));
+        border-radius: 100px;
+        transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ── MC buttons ── */
+    .mc-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .mc-btn {
+        padding: 15px 12px;
+        border-radius: var(--ba-radius);
+        border: 2px solid var(--ba-border);
+        background: var(--ba-bg);
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: var(--ba-charcoal);
+        cursor: pointer;
+        transition: var(--ba-trans);
+        font-family: inherit;
+        text-align: center;
+    }
+
+        .mc-btn:hover {
+            border-color: var(--ba-blue-lt);
+            background: var(--ba-blue-bg);
+            transform: translateY(-1px);
+        }
+
+        .mc-btn.correct {
+            border-color: var(--ba-green-lt);
+            background: var(--ba-green-bg);
+            color: var(--ba-green);
+        }
+
+        .mc-btn.incorrect {
+            border-color: var(--ba-red-lt);
+            background: var(--ba-red-bg);
+            color: var(--ba-red);
+        }
+
+        .mc-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+            transform: none;
+        }
+
+    /* ── Round Scoreboard (multi) ── */
+    .round-board {
+        background: var(--ba-surface);
+        border: 1.5px solid var(--ba-border);
+        border-radius: var(--ba-radius);
+        padding: 14px 18px;
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .rb-item {
+        text-align: center;
+    }
+
+        .rb-item .rb-val {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--ba-black);
+        }
+
+        .rb-item .rb-lbl {
+            font-size: 0.62rem;
+            color: var(--ba-faint);
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .rb-item.p1-rb .rb-val {
+            color: var(--ba-blue);
+        }
+
+        .rb-item.p2-rb .rb-val {
+            color: var(--ba-red-lt);
+        }
+
+    /* ── Results ── */
+    #results-overlay {
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(0,0,0,0.78);
-        backdrop-filter: blur(6px);
-        z-index: 9000;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(8px);
+        z-index: 200;
         align-items: center;
         justify-content: center;
         padding: 20px;
     }
 
-        #result-overlay.show {
+        #results-overlay.visible {
             display: flex;
         }
 
-    .result-card {
-        background: var(--nq-surface);
-        border: 1px solid var(--nq-border2);
+    .results-card {
+        background: var(--ba-bg);
+        border: 2px solid var(--ba-border);
         border-radius: 24px;
-        padding: 44px 36px;
+        padding: 40px 32px;
         text-align: center;
-        max-width: 500px;
+        max-width: 700px;
         width: 100%;
-        box-shadow: 0 24px 64px rgba(0,0,0,0.6);
-        animation: resultSlideUp 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 20px 60px rgba(15,23,42,0.16);
+        animation: baScaleIn 0.45s cubic-bezier(0.34,1.56,0.64,1);
         position: relative;
         overflow: hidden;
     }
 
-    @@keyframes resultSlideUp {
-        from {
-            opacity: 0;
-            transform: scale(0.85) translateY(30px);
+        .results-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--ba-gold), var(--ba-blue-lt));
         }
 
-        to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-
-    .result-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, var(--nq-accent), var(--nq-accent2), var(--nq-pink));
-    }
-
-    .result-emoji {
-        font-size: 3.5rem;
-        display: block;
+    .results-trophy {
+        font-size: 4rem;
         margin-bottom: 10px;
     }
 
-    .result-title {
-        font-size: 2rem;
+    .results-winner {
+        font-size: 1.8rem;
         font-weight: 900;
+        color: var(--ba-black);
         margin-bottom: 6px;
-        background: linear-gradient(135deg, #7c3aed, #a855f7, #ec4899);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
     }
 
-    .result-subtitle {
-        color: var(--nq-muted);
-        font-size: 0.85rem;
-        margin-bottom: 24px;
+    .results-sub {
+        font-size: 0.9rem;
+        color: var(--ba-muted);
+        margin-bottom: 28px;
     }
 
-    .result-stats {
+    .results-stats {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(auto-fit,minmax(110px,1fr));
         gap: 12px;
         margin-bottom: 24px;
     }
 
-    .rs-cell {
-        background: var(--nq-surface2);
-        border: 1px solid var(--nq-border);
-        border-radius: var(--nq-radius-sm);
+    .results-stat {
+        background: var(--ba-surface);
+        border: 1.5px solid var(--ba-border);
+        border-radius: var(--ba-radius);
         padding: 16px 10px;
     }
 
-        .rs-cell .rs-val {
-            font-size: 1.8rem;
+        .results-stat .rs-val {
+            font-size: 1.9rem;
             font-weight: 900;
-            color: var(--nq-gold);
+            color: var(--ba-black);
+            display: block;
         }
 
-        .rs-cell .rs-lbl {
-            font-size: 0.65rem;
-            color: var(--nq-muted);
+        .results-stat .rs-lbl {
+            font-size: 0.63rem;
+            font-weight: 700;
+            color: var(--ba-faint);
             text-transform: uppercase;
             letter-spacing: 0.1em;
+            display: block;
             margin-top: 3px;
         }
 
-    .result-xp {
-        background: rgba(124,58,237,0.12);
-        border: 1px solid rgba(124,58,237,0.3);
-        border-radius: var(--nq-radius-sm);
-        padding: 14px;
+        .results-stat.gold-s .rs-val {
+            color: var(--ba-gold);
+        }
+
+        .results-stat.blue-s .rs-val {
+            color: var(--ba-blue-lt);
+        }
+
+        .results-stat.green-s .rs-val {
+            color: var(--ba-green-lt);
+        }
+
+        .results-stat.red-s .rs-val {
+            color: var(--ba-red-lt);
+        }
+
+    /* Multi player comparison */
+    .multi-result-row {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 16px;
+        align-items: center;
         margin-bottom: 24px;
-        font-size: 0.9rem;
-        color: var(--nq-accent2);
-        font-weight: 700;
     }
 
-    .result-actions {
+    .player-result-col {
+        background: var(--ba-surface);
+        border: 1.5px solid var(--ba-border);
+        border-radius: var(--ba-radius);
+        padding: 18px 14px;
+        text-align: center;
+    }
+
+        .player-result-col.winner {
+            border-color: var(--ba-gold);
+            background: var(--ba-gold-bg);
+            box-shadow: 0 0 0 3px rgba(217,119,6,0.12);
+        }
+
+        .player-result-col .pr-name {
+            font-size: 0.9rem;
+            font-weight: 900;
+            color: var(--ba-dark);
+            margin-bottom: 8px;
+        }
+
+        .player-result-col .pr-score {
+            font-size: 2.2rem;
+            font-weight: 900;
+        }
+
+    .p1-col .pr-score {
+        color: var(--ba-blue);
+    }
+
+    .p2-col .pr-score {
+        color: var(--ba-red-lt);
+    }
+
+    .player-result-col .pr-sub {
+        font-size: 0.72rem;
+        color: var(--ba-muted);
+        font-weight: 600;
+        margin-top: 4px;
+    }
+
+    .vs-col {
+        font-size: 1.4rem;
+        font-weight: 900;
+        color: var(--ba-gold);
+    }
+
+    .results-actions {
         display: flex;
         gap: 12px;
         justify-content: center;
@@ -744,944 +818,1210 @@
     }
 
     .btn-primary {
-        padding: 12px 28px;
-        border-radius: var(--nq-radius-sm);
+        padding: 14px 28px;
+        border-radius: var(--ba-radius);
         border: none;
-        font-size: 0.92rem;
-        font-weight: 800;
+        background: linear-gradient(135deg, #0f172a, #1e40af);
+        color: #ffffff;
+        font-size: 0.9rem;
+        font-weight: 900;
         cursor: pointer;
-        background: linear-gradient(135deg, #7c3aed, #a855f7);
-        color: #fff;
-        font-family: 'Nunito', sans-serif;
-        letter-spacing: 0.04em;
-        transition: var(--nq-transition);
+        transition: var(--ba-trans);
+        font-family: inherit;
+        letter-spacing: 0.06em;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
 
         .btn-primary:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(30,64,175,0.3);
+            color: #ffffff;
+            text-decoration: none;
         }
 
     .btn-secondary {
-        padding: 12px 28px;
-        border-radius: var(--nq-radius-sm);
-        border: 1px solid var(--nq-border2);
-        font-size: 0.92rem;
+        padding: 14px 28px;
+        border-radius: var(--ba-radius);
+        border: 2px solid var(--ba-border);
+        background: var(--ba-bg);
+        color: var(--ba-charcoal);
+        font-size: 0.9rem;
         font-weight: 800;
         cursor: pointer;
-        background: var(--nq-surface2);
-        color: var(--nq-text);
-        font-family: 'Nunito', sans-serif;
-        letter-spacing: 0.04em;
-        transition: var(--nq-transition);
+        transition: var(--ba-trans);
+        font-family: inherit;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
 
         .btn-secondary:hover {
-            border-color: var(--nq-accent2);
+            border-color: var(--ba-blue-lt);
+            background: var(--ba-blue-bg);
             transform: translateY(-1px);
+            color: var(--ba-blue);
+            text-decoration: none;
         }
 
-    /* ── Loading overlay ── */
-    #loading-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(11,11,24,0.88);
-        backdrop-filter: blur(4px);
-        z-index: 8000;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        gap: 20px;
-    }
-
-        #loading-overlay.show {
-            display: flex;
-        }
-
-    .spinner {
-        width: 48px;
-        height: 48px;
-        border: 3px solid var(--nq-border);
-        border-top-color: var(--nq-accent2);
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-    }
-
-    @@keyframes spin {
-        to {
-            transform: rotate(360deg);
-        }
-    }
-
-    .loading-text {
-        color: var(--nq-muted);
-        font-size: 0.88rem;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-    }
-
-    /* ── Countdown Overlay ── */
+    /* ── Countdown overlay ── */
     #countdown-overlay {
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(11,11,24,0.88);
-        backdrop-filter: blur(4px);
-        z-index: 8500;
+        background: rgba(255,255,255,0.93);
+        backdrop-filter: blur(6px);
+        z-index: 300;
         align-items: center;
         justify-content: center;
+        flex-direction: column;
     }
 
-        #countdown-overlay.show {
+        #countdown-overlay.visible {
             display: flex;
         }
 
     .countdown-num {
-        font-size: 8rem;
+        font-size: clamp(6rem,20vw,12rem);
         font-weight: 900;
-        color: var(--nq-accent2);
-        text-shadow: 0 0 60px rgba(168,85,247,0.7);
-        animation: countdownPulse 1s ease-out;
+        color: var(--ba-black);
         line-height: 1;
+        animation: baCountPop 0.85s cubic-bezier(0.34,1.56,0.64,1);
     }
 
-    @@keyframes countdownPulse {
+    .countdown-label {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--ba-muted);
+        margin-top: 16px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    /* ── Toast ── */
+    #toast-container {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 500;
+        pointer-events: none;
+    }
+
+    .toast {
+        background: var(--ba-black);
+        color: #ffffff;
+        padding: 12px 20px;
+        border-radius: var(--ba-radius-sm);
+        font-size: 0.82rem;
+        font-weight: 700;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        animation: baSlideInRight 0.3s cubic-bezier(0.34,1.56,0.64,1), baFadeOut 0.4s ease 2.5s forwards;
+        border-left: 4px solid var(--ba-gold);
+    }
+
+        .toast.success {
+            border-left-color: var(--ba-green-lt);
+        }
+
+        .toast.error {
+            border-left-color: var(--ba-red-lt);
+        }
+
+        .toast.info {
+            border-left-color: var(--ba-blue-lt);
+        }
+
+    /* ── @@keyframes ── */
+    @@keyframes baSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.97);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @@keyframes baFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes baPop {
         0% {
-            transform: scale(1.4);
-            opacity: 0.6;
+            transform: scale(0.8);
+            opacity: 0;
         }
 
         60% {
-            transform: scale(1.0);
+            transform: scale(1.08);
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes baCountPop {
+        0% {
+            transform: scale(0.4);
+            opacity: 0;
+        }
+
+        60% {
+            transform: scale(1.08);
             opacity: 1;
         }
 
         100% {
-            transform: scale(0.85);
-            opacity: 0;
+            transform: scale(1);
         }
     }
 
-    /* ── Timer low warning ── */
-    #hud-timer.warning .hs-val {
-        color: var(--nq-red);
-        animation: timerPulse 0.5s ease infinite alternate;
+    @@keyframes baShake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        20% {
+            transform: translateX(-6px);
+        }
+
+        40% {
+            transform: translateX(6px);
+        }
+
+        60% {
+            transform: translateX(-4px);
+        }
+
+        80% {
+            transform: translateX(4px);
+        }
     }
 
-    @@keyframes timerPulse {
+    @@keyframes baCorrectPop {
+        0% {
+            transform: scale(1);
+        }
+
+        40% {
+            transform: scale(1.04);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    @@keyframes baScaleIn {
         from {
-            opacity: 1;
+            transform: scale(0.88);
+            opacity: 0;
         }
 
         to {
-            opacity: 0.5;
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes baSlideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @@keyframes baFadeOut {
+        to {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+    }
+
+    @@keyframes baWinner {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(217,119,6,0.4);
+        }
+
+        50% {
+            box-shadow: 0 0 0 12px rgba(217,119,6,0);
         }
     }
 
     /* ── Responsive ── */
     @@media (max-width: 768px) {
-        #setup-panel {
-            padding: 20px 16px;
+        .battle-layout {
+            grid-template-columns: 1fr;
+            gap: 14px;
         }
 
-        .choice-grid {
-            grid-template-columns: repeat(2, 1fr);
+        .vs-divider {
+            padding: 8px 0;
         }
 
-        .result-card {
-            padding: 28px 20px;
+        .vs-text {
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
         }
 
-        .result-stats {
-            grid-template-columns: repeat(3, 1fr);
+        .mc-grid {
+            grid-template-columns: 1fr;
         }
-    }
 
-    @@media (max-width: 420px) {
-        .result-stats {
-            grid-template-columns: 1fr 1fr;
+        .multi-result-row {
+            grid-template-columns: 1fr;
+        }
+
+        .vs-col {
+            display: none;
+        }
+
+        .results-actions {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .results-card {
+            padding: 28px 18px;
+        }
+
+        .global-hud {
+            justify-content: center;
         }
     }
 </style>
 
-<div class="kb-page">
-    <div class="kb-wrapper">
-
-        <!-- ── Hero Header ── -->
-        <div class="kb-hero">
-            <div class="kb-hero-badge">⚡ Solo Training Mode</div>
-            <h1>KanaBlitz</h1>
-            <p>Sharpen your kana recognition. Choose your script and difficulty, then race the clock.</p>
-        </div>
-
-        <!-- ══════════════════════════════════
-             SETUP PANEL
-        ══════════════════════════════════ -->
-        <div id="setup-panel">
-
-            <!-- Script Selection -->
-            <div class="section-label">① Choose Script</div>
-            <div class="choice-grid" id="grid-script">
-                <div class="choice-card active" data-val="hiragana" onclick="selectScript('hiragana',this)">
-                    <span class="c-icon">あ</span>
-                    <span class="c-label">Hiragana</span>
-                    <span class="c-sub">Core syllabary</span>
-                    <span class="c-tag">46+ characters</span>
-                </div>
-                <div class="choice-card" data-val="katakana" onclick="selectScript('katakana',this)">
-                    <span class="c-icon">ア</span>
-                    <span class="c-label">Katakana</span>
-                    <span class="c-sub">Foreign words</span>
-                    <span class="c-tag">46+ characters</span>
-                </div>
-                <div class="choice-card" data-val="dakuten" onclick="selectScript('dakuten',this)">
-                    <span class="c-icon">が</span>
-                    <span class="c-label">Dakuten</span>
-                    <span class="c-sub">Voiced + specials</span>
-                    <span class="c-tag">50+ characters</span>
-                </div>
-                <div class="choice-card" data-val="mixed" onclick="selectScript('mixed',this)">
-                    <span class="c-icon">混</span>
-                    <span class="c-label">Mixed</span>
-                    <span class="c-sub">All scripts</span>
-                    <span class="c-tag">Full challenge</span>
-                </div>
-            </div>
-
-            <!-- Difficulty Selection -->
-            <div class="section-label">② Choose Difficulty</div>
-            <div class="choice-grid" id="grid-diff">
-                <div class="choice-card active" data-diff="easy" data-val="easy" onclick="selectDiff('easy',this)">
-                    <span class="diff-pip pip-easy"></span>
-                    <span class="c-icon">🌸</span>
-                    <span class="c-label">Easy</span>
-                    <span class="c-sub">Single kana characters</span>
-                    <span class="c-tag">Beginner friendly</span>
-                    <span class="c-count" id="cnt-easy">Loading...</span>
-                </div>
-                <div class="choice-card" data-diff="normal" data-val="normal" onclick="selectDiff('normal',this)">
-                    <span class="diff-pip pip-normal"></span>
-                    <span class="c-icon">⚔️</span>
-                    <span class="c-label">Normal</span>
-                    <span class="c-sub">Common vocab words</span>
-                    <span class="c-tag">Intermediate</span>
-                    <span class="c-count" id="cnt-normal">Loading...</span>
-                </div>
-                <div class="choice-card" data-diff="hard" data-val="hard" onclick="selectDiff('hard',this)">
-                    <span class="diff-pip pip-hard"></span>
-                    <span class="c-icon">🔥</span>
-                    <span class="c-label">Hard</span>
-                    <span class="c-sub">Yōon & compounds</span>
-                    <span class="c-tag">Advanced</span>
-                    <span class="c-count" id="cnt-hard">Loading...</span>
-                </div>
-                <div class="choice-card" data-diff="insanity" data-val="insanity" onclick="selectDiff('insanity',this)">
-                    <span class="diff-pip pip-insanity"></span>
-                    <span class="c-icon">💀</span>
-                    <span class="c-label">Insanity</span>
-                    <span class="c-sub">Kanji + furigana</span>
-                    <span class="c-tag">Expert only</span>
-                    <span class="c-count" id="cnt-insanity">Loading...</span>
-                </div>
-            </div>
-
-            <!-- Warning -->
-            <div id="word-warning" role="alert">
-                <span>⚠️</span>
-                <span id="warning-text">Not enough words available for this combination. Please choose a different script or difficulty.</span>
-            </div>
-
-            <!-- Start Button -->
-            <button id="btn-start" onclick="startGame()">
-                ⚡ Begin Training
-            </button>
-        </div>
-
-        <!-- ══════════════════════════════════
-             ARENA
-        ══════════════════════════════════ -->
-        <div id="arena">
-
-            <!-- HUD -->
-            <div class="hud">
-                <div class="hud-stat" id="hud-timer">
-                    <div class="hs-val" id="timer-display">60</div>
-                    <div class="hs-lbl">Time</div>
-                </div>
-                <div class="hud-progress" style="flex:1">
-                    <div class="hud-progress-bar" id="progress-bar" style="width:100%"></div>
-                </div>
-                <div class="hud-stat" id="hud-score">
-                    <div class="hs-val" id="score-display">0</div>
-                    <div class="hs-lbl">Score</div>
-                </div>
-                <div class="hud-stat" id="hud-combo">
-                    <div class="hs-val" id="combo-display">×1</div>
-                    <div class="hs-lbl">Combo</div>
-                </div>
-                <div class="hud-stat">
-                    <div class="hud-lives" id="lives-display">❤️❤️❤️</div>
-                    <div class="hs-lbl">Lives</div>
-                </div>
-            </div>
-
-            <!-- Question Card -->
-            <div class="q-card" id="q-card">
-                <span class="q-kana" id="q-kana">あ</span>
-                <div class="q-meaning" id="q-meaning"></div>
-                <div class="q-cat" id="q-cat"></div>
-                <div class="q-progress" id="q-progress"></div>
-            </div>
-
-            <!-- Answer Options -->
-            <div class="opt-grid" id="opt-grid"></div>
-
-            <!-- Feedback -->
-            <div id="feedback-bar"></div>
-
-        </div>
-    </div>
-</div>
-
-<!-- ── Countdown Overlay ── -->
-<div id="countdown-overlay">
+<!-- Countdown overlay -->
+<div id="countdown-overlay" role="dialog" aria-live="assertive">
     <div class="countdown-num" id="countdown-num">3</div>
+    <div class="countdown-label" id="countdown-label">Battle Begins…</div>
 </div>
 
-<!-- ── Loading Overlay ── -->
-<div id="loading-overlay">
-    <div class="spinner"></div>
-    <div class="loading-text">Loading words...</div>
-</div>
+<!-- Results overlay -->
+<div id="results-overlay" role="dialog" aria-label="Battle results" aria-modal="true">
+    <div class="results-card">
+        <div class="results-trophy" id="results-trophy">🏆</div>
+        <div class="results-winner" id="results-winner">Battle Complete!</div>
+        <div class="results-sub" id="results-sub">Here are your results</div>
 
-<!-- ── Result Overlay ── -->
-<div id="result-overlay" role="dialog" aria-modal="true" aria-label="Game Results">
-    <div class="result-card">
-        <span class="result-emoji" id="result-emoji">🎉</span>
-        <div class="result-title" id="result-title">Training Complete!</div>
-        <div class="result-subtitle" id="result-subtitle">Here's how you did</div>
-        <div class="result-stats">
-            <div class="rs-cell">
-                <div class="rs-val" id="res-score">0</div>
-                <div class="rs-lbl">Score</div>
+        <!-- Solo stats -->
+        <div class="results-stats" id="solo-stats">
+            <div class="results-stat gold-s">
+                <span class="rs-val" id="res-score">0</span>
+                <span class="rs-lbl">Score</span>
             </div>
-            <div class="rs-cell">
-                <div class="rs-val" id="res-correct">0</div>
-                <div class="rs-lbl">Correct</div>
+            <div class="results-stat">
+                <span class="rs-val" id="res-correct">0</span>
+                <span class="rs-lbl">Correct</span>
             </div>
-            <div class="rs-cell">
-                <div class="rs-val" id="res-accuracy">0%</div>
-                <div class="rs-lbl">Accuracy</div>
+            <div class="results-stat">
+                <span class="rs-val" id="res-total">0</span>
+                <span class="rs-lbl">Total</span>
+            </div>
+            <div class="results-stat blue-s">
+                <span class="rs-val" id="res-accuracy">0%</span>
+                <span class="rs-lbl">Accuracy</span>
+            </div>
+            <div class="results-stat">
+                <span class="rs-val" id="res-combo">0</span>
+                <span class="rs-lbl">Best Combo</span>
+            </div>
+            <div class="results-stat green-s">
+                <span class="rs-val" id="res-rank">—</span>
+                <span class="rs-lbl">Rank</span>
             </div>
         </div>
-        <div class="result-xp" id="result-xp">+0 XP Earned</div>
-        <div class="result-actions">
-            <button class="btn-primary" onclick="restartGame()">⚡ Play Again</button>
-            <button class="btn-secondary" onclick="backToSetup()">⚙️ Change Settings</button>
-            <button class="btn-secondary" onclick="window.location.href='/KanaBattle/MainView'">⚔️ Battle Mode</button>
+
+        <!-- Multiplayer comparison (hidden for solo) -->
+        <div class="multi-result-row" id="multi-stats" style="display:none">
+            <div class="player-result-col p1-col" id="p1-result">
+                <div class="pr-name" id="p1-result-name">Player 1</div>
+                <div class="pr-score" id="p1-result-score">0</div>
+                <div class="pr-sub" id="p1-result-sub">—</div>
+            </div>
+            <div class="vs-col">VS</div>
+            <div class="player-result-col p2-col" id="p2-result">
+                <div class="pr-name" id="p2-result-name">Player 2</div>
+                <div class="pr-score" id="p2-result-score">0</div>
+                <div class="pr-sub" id="p2-result-sub">—</div>
+            </div>
+        </div>
+
+        <div class="results-actions">
+            <button class="btn-primary" id="btn-rematch">⚔️ Rematch</button>
+            <a href="/KanaBattle/MainView" class="btn-secondary">🔙 Change Settings</a>
+            <a href="/KanaBattle/Index" class="btn-secondary">🏠 Hub</a>
         </div>
     </div>
 </div>
 
+<!-- Toast container -->
+<div id="toast-container" aria-live="polite"></div>
+
+<div class="ba-page">
+    <div class="ba-wrapper">
+
+        <!-- Arena Header -->
+        <div class="arena-header">
+            <div class="arena-title-wrap">
+                <h2>⚔️ Battle Arena</h2>
+                <div class="arena-meta">
+                    <span class="arena-tag black">@difficulty.ToUpper()</span>
+                    <span class="arena-tag gold">@script.ToUpper()</span>
+                    @if (isMulti)
+                    {
+                        <span class="arena-tag red">MULTIPLAYER</span>
+                    }
+                    else
+                    {
+                        <span class="arena-tag blue">SOLO</span>
+                    }
+                </div>
+            </div>
+            <a href="/KanaBattle/MainView" class="arena-back">← Back to Hub</a>
+        </div>
+
+        <!-- Global HUD -->
+        <div class="global-hud" role="status">
+            <div class="ghud-tile">
+                <span class="gv" id="ghud-q">0/20</span>
+                <span class="gl">Round</span>
+            </div>
+            <div class="ghud-tile">
+                <span class="gv" id="ghud-score">0</span>
+                <span class="gl">@Html.Raw(isMulti ? playerName : "Score")</span>
+            </div>
+            @if (isMulti)
+            {
+                <div class="ghud-tile">
+                    <span class="gv" id="ghud-score2">0</span>
+                    <span class="gl">@player2Name</span>
+                </div>
+            }
+            <div class="ghud-tile">
+                <span class="gv" id="ghud-combo">0</span>
+                <span class="gl">Combo</span>
+            </div>
+            <div class="ghud-timer">
+                <svg viewBox="0 0 58 58">
+                    <circle class="timer-track" cx="29" cy="29" r="24" />
+                    <circle class="timer-arc" id="timer-arc" cx="29" cy="29" r="24"
+                            stroke-dasharray="150.8" stroke-dashoffset="0" />
+                </svg>
+                <div class="timer-num" id="ghud-time">30</div>
+            </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="progress-wrap">
+            <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+        </div>
+
+        <!-- Loading state -->
+        <div id="loading-state" style="text-align:center;padding:48px 0;">
+            <div style="font-size:0.9rem;color:var(--ba-muted);font-weight:700;margin-bottom:12px;">Loading word pool…</div>
+            <div style="display:inline-flex;gap:8px;">
+                <span style="width:10px;height:10px;border-radius:50%;background:var(--ba-gold);animation:baSlideIn 0.9s ease infinite;"></span>
+                <span style="width:10px;height:10px;border-radius:50%;background:var(--ba-gold);animation:baSlideIn 0.9s ease 0.15s infinite;"></span>
+                <span style="width:10px;height:10px;border-radius:50%;background:var(--ba-gold);animation:baSlideIn 0.9s ease 0.3s infinite;"></span>
+            </div>
+        </div>
+
+        <!-- Error state -->
+        <div id="error-state" style="display:none;background:var(--ba-red-bg);border:1.5px solid var(--ba-red-bd);border-radius:var(--ba-radius);padding:24px;text-align:center;">
+            <div style="font-size:1.1rem;font-weight:900;color:var(--ba-red);margin-bottom:8px;">⚠ Failed to Load Words</div>
+            <div style="font-size:0.85rem;color:var(--ba-red);margin-bottom:16px;" id="error-msg">Unable to connect to the word database.</div>
+            <a href="/KanaBattle/MainView" class="btn-secondary">← Back to Setup</a>
+        </div>
+
+        <!-- Arena: Solo Mode -->
+        <div id="arena-solo" style="display:none" class="solo-layout">
+            <div class="kana-stage" id="kana-stage">
+                <span class="kana-stage-char" id="kana-char">—</span>
+                <div class="kana-stage-meaning" id="kana-meaning"></div>
+                <div class="kana-stage-fill" id="kana-fill"></div>
+                <div class="kana-tags" id="kana-tags"></div>
+            </div>
+
+            <div style="text-align:center;min-height:24px;font-size:0.88rem;font-weight:800;margin-bottom:12px;" class="feedback-solo" id="solo-feedback"></div>
+
+            <!-- MC buttons (easy) -->
+            <div id="mc-area" style="display:none">
+                <div class="mc-grid" id="mc-grid"></div>
+            </div>
+
+            <!-- Type input (normal+) -->
+            <div id="type-area" style="display:none">
+                <div style="display:flex;gap:10px;margin-bottom:6px;">
+                    <input type="text" id="solo-input" placeholder="Type romaji…"
+                           autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                           style="flex:1;padding:13px 16px;border-radius:var(--ba-radius);border:2px solid var(--ba-border);font-size:1rem;font-weight:700;font-family:inherit;outline:none;transition:var(--ba-trans);"
+                           aria-label="Romaji input" />
+                    <button id="solo-submit"
+                            style="padding:13px 22px;border-radius:var(--ba-radius);border:none;background:linear-gradient(135deg,#0f172a,#1e40af);color:#fff;font-size:0.88rem;font-weight:900;cursor:pointer;font-family:inherit;transition:var(--ba-trans);"
+                            aria-label="Submit answer">
+                        Submit
+                    </button>
+                </div>
+                <div style="font-size:0.7rem;color:var(--ba-faint);text-align:center;font-weight:600;">Press Enter to submit</div>
+            </div>
+        </div>
+
+        <!-- Arena: Multiplayer Mode -->
+        <div id="arena-multi" style="display:none">
+            <!-- Kana Stage (shared, centered) -->
+            <div class="kana-stage" id="m-kana-stage" style="max-width:560px;margin:0 auto 20px;">
+                <span class="kana-stage-char" id="m-kana-char">—</span>
+                <div class="kana-stage-meaning" id="m-kana-meaning"></div>
+                <div class="kana-stage-fill" id="m-kana-fill"></div>
+                <div class="kana-tags" id="m-kana-tags"></div>
+            </div>
+
+            <!-- Round board -->
+            <div class="round-board">
+                <div class="rb-item p1-rb">
+                    <div class="rb-val" id="rb-p1-score">0</div>
+                    <div class="rb-lbl" id="rb-p1-name">@playerName</div>
+                </div>
+                <div class="rb-item" style="font-size:1.5rem;font-weight:900;color:var(--ba-gold);">VS</div>
+                <div class="rb-item p2-rb">
+                    <div class="rb-val" id="rb-p2-score">0</div>
+                    <div class="rb-lbl" id="rb-p2-name">@player2Name</div>
+                </div>
+            </div>
+
+            <!-- Player panels -->
+            <div class="battle-layout">
+                <!-- P1 -->
+                <div class="player-panel p1-panel" id="p1-panel">
+                    <span class="player-badge p1">Player 1</span>
+                    <div class="player-name-display" id="p1-display-name">@playerName</div>
+                    <div class="player-score-display" id="p1-score">0</div>
+                    <div class="player-sub" id="p1-correct-sub">0 correct</div>
+                    <div class="player-input-area">
+                        <input type="text" id="p1-input" placeholder="Answer (P1)…"
+                               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                               aria-label="Player 1 answer input" />
+                        <button class="player-submit-btn" id="p1-submit">Submit (Tab)</button>
+                        <div class="player-shortcut">Press Tab to submit</div>
+                    </div>
+                    <div class="player-feedback" id="p1-feedback"></div>
+                </div>
+
+                <!-- VS -->
+                <div class="vs-divider">
+                    <div class="vs-text">VS</div>
+                </div>
+
+                <!-- P2 -->
+                <div class="player-panel p2-panel" id="p2-panel">
+                    <span class="player-badge p2">Player 2</span>
+                    <div class="player-name-display" id="p2-display-name">@player2Name</div>
+                    <div class="player-score-display" id="p2-score">0</div>
+                    <div class="player-sub" id="p2-correct-sub">0 correct</div>
+                    <div class="player-input-area">
+                        <input type="text" id="p2-input" placeholder="Answer (P2)…"
+                               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                               aria-label="Player 2 answer input" />
+                        <button class="player-submit-btn" id="p2-submit">Submit (Enter)</button>
+                        <div class="player-shortcut">Press Enter to submit</div>
+                    </div>
+                    <div class="player-feedback" id="p2-feedback"></div>
+                </div>
+            </div><!-- /battle-layout -->
+        </div><!-- /arena-multi -->
+
+    </div><!-- /ba-wrapper -->
+</div><!-- /ba-page -->
 @section Scripts {
     <script>
-        /*
-         * ═══════════════════════════════════════════════════════════════
-         *  KanaBlitz Solo — Full Game Engine
-         *  Fixed: word loading, difficulty validation, state management,
-         *         race conditions, combo system, feedback, animations.
-         * ═══════════════════════════════════════════════════════════════
-         */
+        /* ══════════════════════════════════════════════════════════════
+           KanaBattle Arena Script
+           Handles solo and multiplayer game flow
+           API : GET /KanaBlitz/GetWords?difficulty=&script=
+           Data: JSON { wordKana, wordRomaji, meaningEnglish, missingKana,
+                        categoryTag, displayHtml, alphabet, difficultyLevel }
+        ══════════════════════════════════════════════════════════════ */
+        (function () {
+            'use strict';
 
-        'use strict';
+            /* ── Injected from Razor model ── */
+            const DIFFICULTY    = @Html.Raw($"\"{difficulty}\"");
+            const SCRIPT        = @Html.Raw($"\"{script}\"");
+            const PLAYER_NAME   = @Html.Raw($"\"{System.Text.Json.JsonSerializer.Serialize(playerName).Trim('"')}\"");
+            const PLAYER2_NAME  = @Html.Raw($"\"{System.Text.Json.JsonSerializer.Serialize(player2Name).Trim('"')}\"");
+            const IS_MULTI      = @Html.Raw(isMulti ? "true" : "false");
 
-        // ── Config ──────────────────────────────────────────────────────
-        const CFG = {
-            MIN_WORDS:        5,
-            QUESTIONS_PER_GAME: 20,
-            TIME_LIMITS:      { easy: 60, normal: 75, hard: 90, insanity: 120 },
-            BASE_SCORES:      { easy: 10, normal: 15, hard: 25, insanity: 40 },
-            COMBO_THRESHOLDS: [3, 5, 8, 12],
-            COMBO_LABELS:     ['🔥 Combo!', '⚡ Hot Streak!', '💥 On Fire!', '🌟 LEGENDARY!'],
-            XP_MULTIPLIERS:   { easy: 1, normal: 1.5, hard: 2.5, insanity: 4 },
-            OPTIONS_COUNT:    4,
-            ANSWER_LOCK_MS:   900,   // ms to show correct/wrong before next question
-            WARN_THRESHOLD:   10,    // seconds left before timer warning
-        };
+            /* ── Config ── */
+            const CFG = {
+                totalRounds     : 20,
+                basePoints      : 100,
+                comboThreshold  : 3,
+                comboMultiplier : 15,
+                diffTimers      : { easy: 30, normal: 25, hard: 20, insanity: 15 },
+                minWords        : { easy: 4, normal: 5, hard: 4, insanity: 4 },
+                apiEndpoint     : '/KanaBlitz/GetWords'
+            };
 
-        // ── State ────────────────────────────────────────────────────────
-        let state = {
-            words:        [],
-            wordPool:     [],
-            questions:    [],
-            currentIdx:   0,
-            score:        0,
-            correct:      0,
-            wrong:        0,
-            lives:        3,
-            combo:        0,
-            maxCombo:     0,
-            timeLeft:     60,
-            totalTime:    60,
-            timer:        null,
-            locked:       false,
-            running:      false,
-            dotHistory:   [],
-            script:       'hiragana',
-            difficulty:   'easy',
-        };
-
-        // Selection state
-        let sel = { script: 'hiragana', diff: 'easy' };
-
-        // Word counts cache (keyed by "diff|script")
-        let wordCountCache = {};
-
-        // ── Audio hooks (expandable) ─────────────────────────────────────
-        const Audio = {
-            play(name) {
-                // Placeholder — wire up AudioContext or HTMLAudioElement here
-                // e.g.: new window.AudioContext(); play pre-loaded buffer
-                // Sounds: 'correct', 'wrong', 'combo', 'countdown', 'victory', 'defeat'
-            }
-        };
-
-        // ── DOM refs ─────────────────────────────────────────────────────
-        const $ = id => document.getElementById(id);
-        const DOM = {
-            setupPanel:     $('setup-panel'),
-            arena:          $('arena'),
-            btnStart:       $('btn-start'),
-            wordWarning:    $('word-warning'),
-            warningText:    $('warning-text'),
-            timerDisplay:   $('timer-display'),
-            hudTimer:       $('hud-timer'),
-            scoreDisplay:   $('score-display'),
-            comboDisplay:   $('combo-display'),
-            livesDisplay:   $('lives-display'),
-            progressBar:    $('progress-bar'),
-            qCard:          $('q-card'),
-            qKana:          $('q-kana'),
-            qMeaning:       $('q-meaning'),
-            qCat:           $('q-cat'),
-            qProgress:      $('q-progress'),
-            optGrid:        $('opt-grid'),
-            feedbackBar:    $('feedback-bar'),
-            countdownOverlay: $('countdown-overlay'),
-            countdownNum:   $('countdown-num'),
-            loadingOverlay: $('loading-overlay'),
-            resultOverlay:  $('result-overlay'),
-            resultEmoji:    $('result-emoji'),
-            resultTitle:    $('result-title'),
-            resultSubtitle: $('result-subtitle'),
-            resScore:       $('res-score'),
-            resCorrect:     $('res-correct'),
-            resAccuracy:    $('res-accuracy'),
-            resultXp:       $('result-xp'),
-        };
-
-        // ── Selection handlers ───────────────────────────────────────────
-        function selectScript(val, el) {
-            sel.script = val;
-            document.querySelectorAll('#grid-script .choice-card').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-            validateSelection();
-            updateWordCounts();
-            Audio.play('click');
-        }
-
-        function selectDiff(val, el) {
-            sel.diff = val;
-            document.querySelectorAll('#grid-diff .choice-card').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-            validateSelection();
-            Audio.play('click');
-        }
-
-        // ── Word count fetching ──────────────────────────────────────────
-        async function fetchWordCount(diff, script) {
-            const cacheKey = `${diff}|${script}`;
-            if (wordCountCache[cacheKey] !== undefined) return wordCountCache[cacheKey];
-            try {
-                const resp = await fetch(`/KanaBlitz/GetWords?difficulty=${diff}&script=${script}`);
-                if (!resp.ok) return 0;
-                const data = await resp.json();
-                const count = Array.isArray(data) ? data.length : 0;
-                wordCountCache[cacheKey] = count;
-                return count;
-            } catch { return 0; }
-        }
-
-        async function updateWordCounts() {
-            const diffs = ['easy', 'normal', 'hard', 'insanity'];
-            for (const d of diffs) {
-                const cnt = await fetchWordCount(d, sel.script);
-                const el = $(`cnt-${d}`);
-                if (el) {
-                    el.textContent = cnt > 0 ? `${cnt} words available` : 'No words available';
-                    // Disable card visually if no words
-                    const card = el.closest('.choice-card');
-                    if (card) {
-                        if (cnt < CFG.MIN_WORDS) {
-                            card.style.opacity = '0.45';
-                            card.style.cursor = 'not-allowed';
-                        } else {
-                            card.style.opacity = '';
-                            card.style.cursor = '';
-                        }
-                    }
+            /* ── State ── */
+            const S = {
+                words        : [],
+                queue        : [],
+                current      : null,
+                qIndex       : 0,
+                timerSecs    : 25,
+                timerInterval: null,
+                answered     : false,
+                // Solo state
+                solo: { score: 0, correct: 0, incorrect: 0, combo: 0, bestCombo: 0 },
+                // Multiplayer state
+                multi: {
+                    p1: { score: 0, correct: 0, combo: 0, bestCombo: 0 },
+                    p2: { score: 0, correct: 0, combo: 0, bestCombo: 0 }
                 }
+            };
+
+            /* ── DOM ── */
+            const $ = id => document.getElementById(id);
+
+            /* ── Audio hooks ── */
+            const Audio = { play(type) { /* expandable: correct|incorrect|victory|countdown|click */ } };
+
+            /* ── Utilities ── */
+            function shuffle(arr) {
+                const a = [...arr];
+                for (let i = a.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a;
             }
-        }
 
-        async function validateSelection() {
-            const count = await fetchWordCount(sel.diff, sel.script);
-            const ok = count >= CFG.MIN_WORDS;
-            DOM.wordWarning.classList.toggle('visible', !ok);
-            if (!ok) {
-                DOM.warningText.textContent = `Only ${count} word(s) found for "${sel.diff}" + "${sel.script}". Minimum ${CFG.MIN_WORDS} needed. Please choose another combination.`;
+            function normalise(str) {
+                return (str || '').trim().toLowerCase()
+                    .replace(/[āáàä]/g,'a').replace(/[ūúùü]/g,'u')
+                    .replace(/[ōóòö]/g,'o').replace(/[ēéèë]/g,'e')
+                    .replace(/[īíìï]/g,'i').replace(/\s+/g,' ');
             }
-            DOM.btnStart.disabled = !ok;
-            return ok;
-        }
 
-        // ── Word fetch for game ──────────────────────────────────────────
-        async function loadWords(diff, script) {
-            // For "mixed" or broad fetches, merge all scripts
-            const scripts = script === 'mixed'
-                ? ['hiragana', 'katakana', 'dakuten', 'mixed']
-                : [script];
+            function escHtml(s) {
+                return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            }
 
-            let allWords = [];
-            for (const s of scripts) {
+            function toast(msg, type = 'default') {
+                const el = document.createElement('div');
+                el.className = `toast ${type}`;
+                el.textContent = msg;
+                $('toast-container').appendChild(el);
+                setTimeout(() => el.remove(), 3200);
+            }
+
+            function calcRank(accuracy, score) {
+                if (accuracy >= 0.95 && score >= 1800) return 'S+';
+                if (accuracy >= 0.90) return 'S';
+                if (accuracy >= 0.80) return 'A';
+                if (accuracy >= 0.65) return 'B';
+                if (accuracy >= 0.50) return 'C';
+                return 'D';
+            }
+
+            /* ── Bootstrap ── */
+            async function boot() {
+                showLoading(true);
                 try {
-                    const resp = await fetch(`/KanaBlitz/GetWords?difficulty=${diff}&script=${s}`);
-                    if (resp.ok) {
-                        const data = await resp.json();
-                        if (Array.isArray(data)) allWords = allWords.concat(data);
+                    const url  = `${CFG.apiEndpoint}?difficulty=${encodeURIComponent(DIFFICULTY)}&script=${encodeURIComponent(SCRIPT)}`;
+                    const resp = await fetch(url);
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+                    const data = await resp.json();
+                    if (!Array.isArray(data) || data.length === 0) throw new Error('No words returned from database.');
+                    if (data.length < CFG.minWords[DIFFICULTY]) {
+                        throw new Error(`Only ${data.length} words found for ${DIFFICULTY}/${SCRIPT}. Database may need reseeding.`);
                     }
-                } catch (e) {
-                    console.warn(`Failed to load words for ${diff}/${s}:`, e);
+                    S.words = data;
+                    S.queue = shuffle(data).slice(0, CFG.totalRounds);
+                    showLoading(false);
+                    await runCountdown();
+                    startGame();
+                } catch (err) {
+                    console.error('[KanaBattle] boot error:', err);
+                    showError(err.message);
                 }
             }
 
-            // Deduplicate by WordKana
-            const seen = new Set();
-            return allWords.filter(w => {
-                const key = (w.wordKana || w.WordKana || '');
-                if (seen.has(key)) return false;
-                seen.add(key);
-                return true;
-            });
-        }
+            function showLoading(visible) {
+                const ls = $('loading-state');
+                if (ls) ls.style.display = visible ? 'block' : 'none';
+            }
 
-        // ── Game start ───────────────────────────────────────────────────
-        async function startGame() {
-            const ok = await validateSelection();
-            if (!ok) return;
+            function showError(msg) {
+                showLoading(false);
+                const es = $('error-state');
+                const em = $('error-msg');
+                if (es) es.style.display = 'block';
+                if (em) em.textContent = msg || 'Unknown error.';
+            }
 
-            DOM.loadingOverlay.classList.add('show');
-            DOM.btnStart.disabled = true;
+            /* ── Countdown ── */
+            async function runCountdown() {
+                return new Promise(resolve => {
+                    const overlay = $('countdown-overlay');
+                    const numEl   = $('countdown-num');
+                    overlay.classList.add('visible');
+                    let n = 3;
+                    numEl.textContent = n;
+                    Audio.play('countdown');
+                    const iv = setInterval(() => {
+                        n--;
+                        if (n <= 0) {
+                            clearInterval(iv);
+                            overlay.classList.remove('visible');
+                            resolve();
+                        } else {
+                            numEl.textContent = n;
+                            numEl.style.animation = 'none';
+                            requestAnimationFrame(() => requestAnimationFrame(() => {
+                                numEl.style.animation = 'baCountPop 0.85s cubic-bezier(0.34,1.56,0.64,1)';
+                            }));
+                            Audio.play('countdown');
+                        }
+                    }, 900);
+                });
+            }
 
-            try {
-                const words = await loadWords(sel.diff, sel.script);
+            /* ── Game Start ── */
+            function startGame() {
+                S.qIndex   = 0;
+                S.answered = false;
 
-                if (!words || words.length < CFG.MIN_WORDS) {
-                    showWarning(`Not enough words loaded (got ${words ? words.length : 0}). Please try again.`);
-                    DOM.loadingOverlay.classList.remove('show');
-                    DOM.btnStart.disabled = false;
-                    return;
+                if (IS_MULTI) {
+                    $('arena-multi').style.display = 'block';
+                    $('arena-solo').style.display  = 'none';
+                    setupMultiInputs();
+                } else {
+                    $('arena-solo').style.display  = 'block';
+                    $('arena-multi').style.display = 'none';
+                    setupSoloInputs();
                 }
 
-                // Shuffle words and pick question set
-                const shuffled = shuffle([...words]);
-                const pool = shuffled.slice(0, Math.max(shuffled.length, CFG.QUESTIONS_PER_GAME + 4));
+                nextRound();
+            }
 
-                // Build questions list
-                const qs = buildQuestions(pool, words, CFG.QUESTIONS_PER_GAME);
+            /* ── Round Flow ── */
+            function nextRound() {
+                if (S.qIndex >= S.queue.length) { endGame(); return; }
 
-                // Init state
-                state = {
-                    words,
-                    wordPool:   pool,
-                    questions:  qs,
-                    currentIdx: 0,
-                    score:      0,
-                    correct:    0,
-                    wrong:      0,
-                    lives:      3,
-                    combo:      0,
-                    maxCombo:   0,
-                    timeLeft:   CFG.TIME_LIMITS[sel.diff] || 60,
-                    totalTime:  CFG.TIME_LIMITS[sel.diff] || 60,
-                    timer:      null,
-                    locked:     false,
-                    running:    false,
-                    dotHistory: [],
-                    script:     sel.script,
-                    difficulty: sel.diff,
-                };
+                S.current   = S.queue[S.qIndex];
+                S.answered  = false;
+                S.timerSecs = CFG.diffTimers[DIFFICULTY] ?? 25;
+                clearInterval(S.timerInterval);
 
-                DOM.loadingOverlay.classList.remove('show');
-                DOM.setupPanel.style.display = 'none';
-                DOM.arena.style.display = 'block';
+                const w = S.current;
 
-                // Render progress dots
-                renderProgressDots();
-                updateHUD();
+                if (IS_MULTI) renderMultiKana(w);
+                else          renderSoloKana(w);
 
-                // Countdown
-                await doCountdown();
-
-                // Begin
-                state.running = true;
-                loadQuestion();
+                updateGlobalHUD();
                 startTimer();
 
-            } catch (err) {
-                console.error('startGame error:', err);
-                DOM.loadingOverlay.classList.remove('show');
-                DOM.btnStart.disabled = false;
-                showWarning('An error occurred loading the game. Please try again.');
-            }
-        }
-
-        // ── Build questions (each Q has word + wrong options) ────────────
-        function buildQuestions(pool, allWords, count) {
-            const selected = [];
-            const used = new Set();
-
-            for (const w of pool) {
-                if (selected.length >= count) break;
-                const key = getWordKana(w);
-                if (used.has(key)) continue;
-                used.add(key);
-
-                // Build distractors from allWords (exclude current)
-                const distractors = allWords
-                    .filter(x => getWordRomaji(x) !== getWordRomaji(w))
-                    .sort(() => Math.random() - 0.5)
-                    .slice(0, CFG.OPTIONS_COUNT - 1)
-                    .map(x => getWordRomaji(x));
-
-                // Insert correct at random index
-                const options = [...distractors];
-                const insertAt = Math.floor(Math.random() * CFG.OPTIONS_COUNT);
-                options.splice(insertAt, 0, getWordRomaji(w));
-
-                selected.push({ word: w, options, correct: getWordRomaji(w) });
-            }
-            return selected;
-        }
-
-        // ── Safe property accessors (handles PascalCase & camelCase) ─────
-        function getWordKana(w)    { return w.wordKana    || w.WordKana    || '?'; }
-        function getWordRomaji(w)  { return w.wordRomaji  || w.WordRomaji  || '?'; }
-        function getWordMeaning(w) { return w.meaningEnglish || w.MeaningEnglish || ''; }
-        function getWordCat(w)     { return w.categoryTag || w.CategoryTag  || ''; }
-
-        // ── Countdown ────────────────────────────────────────────────────
-        function doCountdown() {
-            return new Promise(resolve => {
-                DOM.countdownOverlay.classList.add('show');
-                let n = 3;
-                DOM.countdownNum.textContent = n;
-
-                const tick = setInterval(() => {
-                    n--;
-                    if (n <= 0) {
-                        clearInterval(tick);
-                        DOM.countdownOverlay.classList.remove('show');
-                        resolve();
-                    } else {
-                        // Re-trigger animation
-                        DOM.countdownNum.textContent = n;
-                        DOM.countdownNum.style.animation = 'none';
-                        requestAnimationFrame(() => {
-                            DOM.countdownNum.style.animation = '';
-                        });
+                if (!IS_MULTI) {
+                    const useMC = DIFFICULTY === 'easy';
+                    $('mc-area').style.display  = useMC ? 'block' : 'none';
+                    $('type-area').style.display= useMC ? 'none'  : 'block';
+                    if (useMC) buildMC(w);
+                    else {
+                        const inp = $('solo-input');
+                        if (inp) { inp.value = ''; inp.className = ''; inp.disabled = false; setTimeout(() => inp.focus(), 60); }
+                        const sub = $('solo-submit');
+                        if (sub) sub.disabled = false;
                     }
-                    Audio.play('countdown');
-                }, 1000);
-            });
-        }
-
-        // ── Timer ─────────────────────────────────────────────────────────
-        function startTimer() {
-            clearInterval(state.timer);
-            state.timer = setInterval(() => {
-                if (!state.running) return;
-                state.timeLeft--;
-
-                // Warning mode
-                DOM.hudTimer.classList.toggle('warning', state.timeLeft <= CFG.WARN_THRESHOLD);
-
-                updateHUD();
-                if (state.timeLeft <= 0) endGame('timeout');
-            }, 1000);
-        }
-
-        // ── Load Question ────────────────────────────────────────────────
-        function loadQuestion() {
-            if (!state.running) return;
-
-            const q = state.questions[state.currentIdx];
-            if (!q || state.currentIdx >= state.questions.length) {
-                endGame('complete');
-                return;
-            }
-
-            state.locked = false;
-
-            // Update dot
-            if (state.dotHistory[state.currentIdx] !== undefined) {
-                // already answered — skip to next
-            }
-
-            // Render kana — re-trigger animation
-            DOM.qKana.style.animation = 'none';
-            requestAnimationFrame(() => { DOM.qKana.style.animation = ''; });
-            DOM.qKana.textContent        = getWordKana(q.word);
-            DOM.qMeaning.textContent     = getWordMeaning(q.word) ? `(${getWordMeaning(q.word)})` : '';
-            DOM.qCat.textContent         = getWordCat(q.word);
-            DOM.feedbackBar.textContent  = '';
-            DOM.feedbackBar.style.color  = '';
-
-            // Render options
-            DOM.optGrid.innerHTML = '';
-            q.options.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = 'opt-btn';
-                btn.textContent = opt;
-                btn.addEventListener('click', () => handleAnswer(opt, q.correct, btn));
-                DOM.optGrid.appendChild(btn);
-            });
-
-            updateProgressDots();
-            updateHUD();
-        }
-
-        // ── Handle Answer ─────────────────────────────────────────────────
-        function handleAnswer(chosen, correct, btn) {
-            if (state.locked || !state.running) return;
-            state.locked = true;
-
-            const isCorrect = chosen.toLowerCase().trim() === correct.toLowerCase().trim();
-
-            // Disable all options
-            DOM.optGrid.querySelectorAll('.opt-btn').forEach(b => { b.disabled = true; });
-
-            if (isCorrect) {
-                btn.classList.add('correct');
-                state.combo++;
-                state.maxCombo = Math.max(state.maxCombo, state.combo);
-                const baseScore = CFG.BASE_SCORES[state.difficulty] || 15;
-                const comboMult = 1 + (state.combo - 1) * 0.25;
-                const points    = Math.round(baseScore * comboMult);
-                state.score  += points;
-                state.correct++;
-
-                DOM.feedbackBar.textContent = `✓ Correct! +${points}`;
-                DOM.feedbackBar.style.color = 'var(--nq-green)';
-                DOM.qCard.classList.add('flash-correct');
-
-                Audio.play('correct');
-
-                // Combo feedback
-                const comboIdx = CFG.COMBO_THRESHOLDS.findLastIndex(t => state.combo >= t);
-                if (comboIdx >= 0 && state.combo === CFG.COMBO_THRESHOLDS[comboIdx]) {
-                    showComboBurst(CFG.COMBO_LABELS[comboIdx]);
-                    Audio.play('combo');
-                }
-
-                state.dotHistory[state.currentIdx] = 'correct';
-            } else {
-                btn.classList.add('wrong');
-                // Highlight correct
-                DOM.optGrid.querySelectorAll('.opt-btn').forEach(b => {
-                    if (b.textContent.toLowerCase().trim() === correct.toLowerCase().trim()) {
-                        b.classList.add('correct');
-                    }
-                });
-                state.combo = 0;
-                state.wrong++;
-                state.lives = Math.max(0, state.lives - 1);
-
-                DOM.feedbackBar.textContent = `✗ Correct: ${correct}`;
-                DOM.feedbackBar.style.color = 'var(--nq-red)';
-                DOM.qCard.classList.add('flash-wrong');
-
-                Audio.play('wrong');
-                state.dotHistory[state.currentIdx] = 'wrong';
-
-                if (state.lives <= 0) {
-                    updateHUD();
-                    setTimeout(() => endGame('lives'), CFG.ANSWER_LOCK_MS);
-                    return;
-                }
-            }
-
-            updateProgressDots();
-            updateHUD();
-
-            setTimeout(() => {
-                DOM.qCard.classList.remove('flash-correct', 'flash-wrong');
-                state.currentIdx++;
-                if (state.currentIdx >= state.questions.length) {
-                    endGame('complete');
+                    const fb = $('solo-feedback');
+                    if (fb) { fb.textContent = ''; fb.className = 'feedback-solo'; }
                 } else {
-                    loadQuestion();
+                    resetMultiInputs();
                 }
-            }, CFG.ANSWER_LOCK_MS);
-        }
 
-        // ── HUD update ───────────────────────────────────────────────────
-        function updateHUD() {
-            DOM.timerDisplay.textContent = state.timeLeft;
-            DOM.scoreDisplay.textContent = state.score;
-            DOM.comboDisplay.textContent = `×${state.combo + 1}`;
-
-            // Lives as hearts
-            const hearts = '❤️'.repeat(state.lives) + '🖤'.repeat(Math.max(0, 3 - state.lives));
-            DOM.livesDisplay.textContent = hearts;
-
-            // Progress bar
-            const pct = (state.timeLeft / state.totalTime) * 100;
-            DOM.progressBar.style.width = `${Math.max(0, pct)}%`;
-            DOM.progressBar.style.background = pct > 40
-                ? 'linear-gradient(90deg, var(--nq-accent), var(--nq-accent2))'
-                : pct > 20
-                    ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
-                    : 'linear-gradient(90deg, #ef4444, #f87171)';
-        }
-
-        // ── Progress dots ─────────────────────────────────────────────────
-        function renderProgressDots() {
-            DOM.qProgress.innerHTML = '';
-            for (let i = 0; i < state.questions.length; i++) {
-                const dot = document.createElement('div');
-                dot.className = 'q-dot';
-                dot.id = `dot-${i}`;
-                DOM.qProgress.appendChild(dot);
-            }
-        }
-
-        function updateProgressDots() {
-            for (let i = 0; i < state.questions.length; i++) {
-                const dot = $(`dot-${i}`);
-                if (!dot) continue;
-                dot.className = 'q-dot';
-                if (i === state.currentIdx) dot.classList.add('current');
-                else if (state.dotHistory[i] === 'correct') dot.classList.add('done-correct');
-                else if (state.dotHistory[i] === 'wrong')   dot.classList.add('done-wrong');
-            }
-        }
-
-        // ── Combo burst ───────────────────────────────────────────────────
-        function showComboBurst(label) {
-            const el = document.createElement('div');
-            el.className = 'combo-burst';
-            el.textContent = label;
-            el.style.color = 'var(--nq-gold)';
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 800);
-        }
-
-        // ── End game ──────────────────────────────────────────────────────
-        function endGame(reason) {
-            if (!state.running) return;
-            state.running = false;
-            clearInterval(state.timer);
-            Audio.play(state.correct > state.wrong ? 'victory' : 'defeat');
-
-            const total    = state.correct + state.wrong;
-            const accuracy = total > 0 ? Math.round((state.correct / total) * 100) : 0;
-            const xpBase   = CFG.BASE_SCORES[state.difficulty] || 15;
-            const xp       = Math.round(state.score * (CFG.XP_MULTIPLIERS[state.difficulty] || 1) * 0.3);
-
-            // Choose emoji & title
-            let emoji, title, subtitle;
-            if (reason === 'lives') {
-                emoji = '💔'; title = 'Out of Lives!';
-                subtitle = `You answered ${state.correct} correctly before falling.`;
-            } else if (accuracy >= 90) {
-                emoji = '🏆'; title = 'Outstanding!';
-                subtitle = `${accuracy}% accuracy — you're a kana master!`;
-            } else if (accuracy >= 70) {
-                emoji = '⚡'; title = 'Great Work!';
-                subtitle = `${accuracy}% accuracy — keep it up!`;
-            } else if (accuracy >= 50) {
-                emoji = '💪'; title = 'Good Effort!';
-                subtitle = `${accuracy}% accuracy — practice makes perfect.`;
-            } else {
-                emoji = '🌱'; title = 'Keep Training!';
-                subtitle = `${accuracy}% accuracy — every mistake is progress.`;
+                animateKanaCard();
             }
 
-            DOM.resultEmoji.textContent    = emoji;
-            DOM.resultTitle.textContent    = title;
-            DOM.resultSubtitle.textContent = subtitle;
-            DOM.resScore.textContent       = state.score;
-            DOM.resCorrect.textContent     = `${state.correct}/${total}`;
-            DOM.resAccuracy.textContent    = `${accuracy}%`;
-            DOM.resultXp.textContent       = `+${xp} XP Earned`;
+            /* ── Kana Rendering ── */
+            function renderSoloKana(w) {
+                const el = $('kana-char');
+                if (el) el.textContent = w.wordKana || '—';
 
-            setTimeout(() => DOM.resultOverlay.classList.add('show'), 400);
-        }
+                const mn = $('kana-meaning');
+                if (mn) mn.textContent = (DIFFICULTY === 'hard' || DIFFICULTY === 'insanity') ? (w.meaningEnglish || '') : '';
 
-        // ── Restart / back ────────────────────────────────────────────────
-        function restartGame() {
-            DOM.resultOverlay.classList.remove('show');
-            // Re-use same settings
-            startGame();
-        }
-
-        function backToSetup() {
-            DOM.resultOverlay.classList.remove('show');
-            DOM.arena.style.display = 'none';
-            DOM.setupPanel.style.display = '';
-            DOM.btnStart.disabled = false;
-            clearInterval(state.timer);
-            state.running = false;
-        }
-
-        // ── Utility ───────────────────────────────────────────────────────
-        function shuffle(arr) {
-            for (let i = arr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [arr[i], arr[j]] = [arr[j], arr[i]];
-            }
-            return arr;
-        }
-
-        function showWarning(msg) {
-            DOM.wordWarning.classList.add('visible');
-            DOM.warningText.textContent = msg;
-        }
-
-        // Array.findLastIndex polyfill for older browsers
-        if (!Array.prototype.findLastIndex) {
-            Array.prototype.findLastIndex = function(fn) {
-                for (let i = this.length - 1; i >= 0; i--) {
-                    if (fn(this[i], i, this)) return i;
+                const fl = $('kana-fill');
+                if (fl) {
+                    if ((DIFFICULTY === 'normal' || DIFFICULTY === 'hard' || DIFFICULTY === 'insanity') && w.missingKana) {
+                        fl.innerHTML = buildFillHtml(w.wordKana, w.missingKana);
+                    } else {
+                        fl.textContent = '';
+                    }
                 }
-                return -1;
-            };
-        }
 
-        // ── Init ──────────────────────────────────────────────────────────
-        document.addEventListener('DOMContentLoaded', () => {
-            updateWordCounts();
-            validateSelection();
+                const tg = $('kana-tags');
+                if (tg) tg.innerHTML = buildTagsHtml(w);
+            }
 
-            // Keyboard: Enter to start
-            document.addEventListener('keydown', e => {
-                if (e.key === 'Enter' && !DOM.arena.style.display.includes('block') && !DOM.btnStart.disabled) {
-                    startGame();
+            function renderMultiKana(w) {
+                const el = $('m-kana-char');
+                if (el) el.textContent = w.wordKana || '—';
+
+                const mn = $('m-kana-meaning');
+                if (mn) mn.textContent = (DIFFICULTY === 'hard' || DIFFICULTY === 'insanity') ? (w.meaningEnglish || '') : '';
+
+                const fl = $('m-kana-fill');
+                if (fl) {
+                    if ((DIFFICULTY === 'normal' || DIFFICULTY === 'hard' || DIFFICULTY === 'insanity') && w.missingKana) {
+                        fl.innerHTML = buildFillHtml(w.wordKana, w.missingKana);
+                    } else {
+                        fl.textContent = '';
+                    }
                 }
-            });
-        });
+
+                const tg = $('m-kana-tags');
+                if (tg) tg.innerHTML = buildTagsHtml(w);
+            }
+
+            function buildFillHtml(word, missing) {
+                if (!missing || !word.includes(missing)) return escHtml(word);
+                const idx  = word.indexOf(missing);
+                const pre  = escHtml(word.slice(0, idx));
+                const post = escHtml(word.slice(idx + missing.length));
+                return `${pre}<span class="fill-blank">${escHtml(missing)}</span>${post}`;
+            }
+
+            function buildTagsHtml(w) {
+                let h = '';
+                if (w.categoryTag)    h += `<span class="kana-tag">${escHtml(w.categoryTag)}</span>`;
+                const diffColour = { easy:'', normal:'blue', hard:'gold', insanity:'gold' };
+                h += `<span class="kana-tag ${diffColour[DIFFICULTY] || ''}">${DIFFICULTY.charAt(0).toUpperCase()+DIFFICULTY.slice(1)}</span>`;
+                return h;
+            }
+
+            function animateKanaCard() {
+                const card = $('kana-stage') || $('m-kana-stage');
+                if (!card) return;
+                card.style.animation = 'none';
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    card.style.animation = 'baSlideIn 0.38s cubic-bezier(0.34,1.56,0.64,1)';
+                }));
+            }
+
+            /* ── Multiple Choice ── */
+            function buildMC(current) {
+                const grid = $('mc-grid');
+                if (!grid) return;
+                const distractors = shuffle(S.words.filter(w => w.wordRomaji !== current.wordRomaji)).slice(0, 3);
+                const options = shuffle([current, ...distractors]);
+                grid.innerHTML = '';
+                options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'mc-btn';
+                    btn.textContent = opt.wordRomaji.toUpperCase();
+                    btn.addEventListener('click', () => handleSoloMC(btn, opt, current));
+                    grid.appendChild(btn);
+                });
+            }
+
+            function handleSoloMC(btn, chosen, correct) {
+                if (S.answered) return;
+                S.answered = true;
+                clearInterval(S.timerInterval);
+                const ok = normalise(chosen.wordRomaji) === normalise(correct.wordRomaji);
+                processSoloAnswer(ok, correct.wordRomaji);
+                document.querySelectorAll('.mc-btn').forEach(b => {
+                    b.disabled = true;
+                    if (normalise(b.textContent) === normalise(correct.wordRomaji).toUpperCase()) b.classList.add('correct');
+                    else if (b === btn && !ok) b.classList.add('incorrect');
+                });
+                setTimeout(() => { S.qIndex++; nextRound(); }, 1100);
+            }
+
+            /* ── Solo Input ── */
+            function setupSoloInputs() {
+                const inp = $('solo-input');
+                const sub = $('solo-submit');
+                if (inp) {
+                    inp.addEventListener('keydown', e => {
+                        if (e.key === 'Enter') { e.preventDefault(); submitSolo(); }
+                    });
+                }
+                if (sub) sub.addEventListener('click', submitSolo);
+            }
+
+            function submitSolo() {
+                if (S.answered) return;
+                const inp = $('solo-input');
+                if (!inp || !inp.value.trim()) return;
+                S.answered = true;
+                clearInterval(S.timerInterval);
+                const ok = normalise(inp.value) === normalise(S.current.wordRomaji);
+                processSoloAnswer(ok, S.current.wordRomaji);
+                inp.className = ok ? 'correct' : 'incorrect';
+                inp.disabled  = true;
+                const sub = $('solo-submit');
+                if (sub) sub.disabled = true;
+                setTimeout(() => { S.qIndex++; nextRound(); }, 1000);
+            }
+
+            function processSoloAnswer(ok, correctAnswer) {
+                const st = S.solo;
+                const fb = $('solo-feedback');
+                if (ok) {
+                    st.correct++;
+                    st.combo++;
+                    if (st.combo > st.bestCombo) st.bestCombo = st.combo;
+                    const timeBonus  = Math.floor(S.timerSecs * 2);
+                    const comboBonus = st.combo >= CFG.comboThreshold ? st.combo * CFG.comboMultiplier : 0;
+                    st.score += CFG.basePoints + timeBonus + comboBonus;
+                    if (fb) {
+                        fb.textContent = comboBonus > 0
+                            ? `✓ Correct! +${CFG.basePoints + timeBonus} (+${comboBonus} combo!)`
+                            : `✓ Correct! +${CFG.basePoints + timeBonus}`;
+                        fb.className = 'feedback-solo correct';
+                    }
+                    const stage = $('kana-stage');
+                    if (stage) { stage.style.animation = 'none'; requestAnimationFrame(() => requestAnimationFrame(() => { stage.style.animation = 'baCorrectPop 0.3s ease'; })); }
+                    Audio.play('correct');
+                } else {
+                    st.incorrect++;
+                    st.combo = 0;
+                    if (fb) {
+                        fb.textContent = `✗ Wrong — ${correctAnswer.toUpperCase()}`;
+                        fb.className = 'feedback-solo incorrect';
+                    }
+                    const stage = $('kana-stage');
+                    if (stage) { stage.style.animation = 'none'; requestAnimationFrame(() => requestAnimationFrame(() => { stage.style.animation = 'baShake 0.4s ease'; })); }
+                    Audio.play('incorrect');
+                }
+                updateGlobalHUD();
+            }
+
+            /* ── Multiplayer Input ── */
+            function setupMultiInputs() {
+                const p1inp = $('p1-input'), p1sub = $('p1-submit');
+                const p2inp = $('p2-input'), p2sub = $('p2-submit');
+
+                if (p1inp) {
+                    p1inp.addEventListener('keydown', e => {
+                        if (e.key === 'Tab') { e.preventDefault(); submitMulti(1); }
+                    });
+                }
+                if (p1sub) p1sub.addEventListener('click', () => submitMulti(1));
+
+                if (p2inp) {
+                    p2inp.addEventListener('keydown', e => {
+                        if (e.key === 'Enter') { e.preventDefault(); submitMulti(2); }
+                    });
+                }
+                if (p2sub) p2sub.addEventListener('click', () => submitMulti(2));
+            }
+
+            function resetMultiInputs() {
+                [1,2].forEach(p => {
+                    const inp = $(`p${p}-input`);
+                    const sub = $(`p${p}-submit`);
+                    const fb  = $(`p${p}-feedback`);
+                    if (inp) { inp.value = ''; inp.className = ''; inp.disabled = false; }
+                    if (sub) sub.disabled = false;
+                    if (fb)  { fb.textContent = ''; fb.className = 'player-feedback'; }
+                    const panel = $(`p${p}-panel`);
+                    if (panel) panel.classList.remove('active-panel');
+                });
+            }
+
+            function submitMulti(playerNum) {
+                const inp = $(`p${playerNum}-input`);
+                if (!inp || !inp.value.trim() || inp.disabled) return;
+
+                const answer = inp.value.trim();
+                const ok = normalise(answer) === normalise(S.current.wordRomaji);
+
+                // Lock this player's input
+                inp.disabled = true;
+                inp.className = ok ? 'correct' : 'incorrect';
+                const sub = $(`p${playerNum}-submit`);
+                if (sub) sub.disabled = true;
+
+                const fb  = $(`p${playerNum}-feedback`);
+                const st  = S.multi[`p${playerNum}`];
+
+                if (ok) {
+                    st.correct++;
+                    st.combo++;
+                    if (st.combo > st.bestCombo) st.bestCombo = st.combo;
+                    const timeBonus  = Math.floor(S.timerSecs * 2);
+                    const comboBonus = st.combo >= CFG.comboThreshold ? st.combo * CFG.comboMultiplier : 0;
+                    st.score += CFG.basePoints + timeBonus + comboBonus;
+                    if (fb) { fb.textContent = `✓ Correct! +${CFG.basePoints + timeBonus}`; fb.className = 'player-feedback correct'; }
+                    Audio.play('correct');
+                } else {
+                    st.combo = 0;
+                    if (fb) { fb.textContent = `✗ Wrong — ${S.current.wordRomaji.toUpperCase()}`; fb.className = 'player-feedback incorrect'; }
+                    Audio.play('incorrect');
+                }
+
+                updateMultiScoreboards();
+
+                // If both answered, advance; else check if first-correct wins round
+                const bothDone = $('p1-input').disabled && $('p2-input').disabled;
+                if (ok || bothDone) {
+                    if (!S.answered) {
+                        S.answered = true;
+                        clearInterval(S.timerInterval);
+                        // Lock remaining player
+                        ['p1-input','p2-input','p1-submit','p2-submit'].forEach(id => {
+                            const el = $(id);
+                            if (el) el.disabled = true;
+                        });
+                        // Reveal correct answer to all
+                        if (!ok) {
+                            // Show correct answer hint
+                            ['p1-feedback','p2-feedback'].forEach(id => {
+                                const el = $(id);
+                                if (el && !el.textContent) el.textContent = `Answer: ${S.current.wordRomaji.toUpperCase()}`;
+                            });
+                        }
+                        setTimeout(() => { S.qIndex++; nextRound(); }, 1200);
+                    }
+                }
+            }
+
+            function updateMultiScoreboards() {
+                const p1 = S.multi.p1, p2 = S.multi.p2;
+                const setT = (id, val) => { const el = $(id); if (el) el.textContent = val; };
+                setT('p1-score', p1.score.toLocaleString());
+                setT('p2-score', p2.score.toLocaleString());
+                setT('p1-correct-sub', `${p1.correct} correct`);
+                setT('p2-correct-sub', `${p2.correct} correct`);
+                setT('rb-p1-score', p1.score.toLocaleString());
+                setT('rb-p2-score', p2.score.toLocaleString());
+                setT('ghud-score',  p1.score.toLocaleString());
+                setT('ghud-score2', p2.score.toLocaleString());
+            }
+
+            /* ── Timer ── */
+            function startTimer() {
+                const totalSecs = S.timerSecs;
+                const circ      = 150.8;
+                updateArc(1, circ);
+
+                S.timerInterval = setInterval(() => {
+                    S.timerSecs--;
+                    const timeEl = $('ghud-time');
+                    if (timeEl) timeEl.textContent = Math.max(0, S.timerSecs);
+                    updateArc(S.timerSecs / totalSecs, circ);
+
+                    const arc = $('timer-arc');
+                    if (arc) {
+                        if (S.timerSecs <= 5)       arc.style.stroke = '#ef4444';
+                        else if (S.timerSecs <= 10) arc.style.stroke = '#f59e0b';
+                        else                         arc.style.stroke = '#f59e0b';
+                    }
+
+                    if (S.timerSecs <= 0) {
+                        clearInterval(S.timerInterval);
+                        handleTimeout();
+                    }
+                }, 1000);
+            }
+
+            function updateArc(fraction, circ) {
+                const arc = $('timer-arc');
+                if (!arc) return;
+                arc.style.strokeDashoffset = circ * (1 - Math.max(0, fraction));
+            }
+
+            function handleTimeout() {
+                S.answered = true;
+                const correctRomaji = S.current?.wordRomaji || '—';
+                if (!IS_MULTI) {
+                    S.solo.combo    = 0;
+                    S.solo.incorrect++;
+                    const fb = $('solo-feedback');
+                    if (fb) { fb.textContent = `⏱ Time's up! Answer: ${correctRomaji.toUpperCase()}`; fb.className = 'feedback-solo incorrect'; }
+                    ['solo-input','solo-submit'].forEach(id => { const el = $(id); if (el) el.disabled = true; });
+                    document.querySelectorAll('.mc-btn').forEach(b => {
+                        b.disabled = true;
+                        if (normalise(b.textContent) === normalise(correctRomaji).toUpperCase()) b.classList.add('correct');
+                    });
+                } else {
+                    // Both players timed out
+                    ['p1-input','p2-input','p1-submit','p2-submit'].forEach(id => { const el = $(id); if (el) el.disabled = true; });
+                    ['p1-feedback','p2-feedback'].forEach(id => {
+                        const el = $(id);
+                        if (el && !el.textContent) { el.textContent = `⏱ Time's up! Answer: ${correctRomaji.toUpperCase()}`; el.className = 'player-feedback incorrect'; }
+                    });
+                }
+                Audio.play('incorrect');
+                updateGlobalHUD();
+                setTimeout(() => { S.qIndex++; nextRound(); }, 1400);
+            }
+
+            /* ── Global HUD ── */
+            function updateGlobalHUD() {
+                const setT = (id, val) => { const el = $(id); if (el) el.textContent = val; };
+                const round = Math.min(S.qIndex + 1, S.queue.length);
+                setT('ghud-q', `${round}/${S.queue.length}`);
+
+                const pct = (S.qIndex / S.queue.length) * 100;
+                const pf  = $('progress-fill');
+                if (pf) pf.style.width = `${Math.min(100, pct)}%`;
+
+                if (!IS_MULTI) {
+                    setT('ghud-score', S.solo.score.toLocaleString());
+                    setT('ghud-combo', S.solo.combo);
+                    setT('ghud-time',  Math.max(0, S.timerSecs));
+                } else {
+                    updateMultiScoreboards();
+                    setT('ghud-combo', Math.max(S.multi.p1.combo, S.multi.p2.combo));
+                }
+            }
+
+            /* ── End Game ── */
+            function endGame() {
+                clearInterval(S.timerInterval);
+                const pf = $('progress-fill');
+                if (pf) pf.style.width = '100%';
+
+                const overlay = $('results-overlay');
+                if (!overlay) return;
+
+                if (!IS_MULTI) {
+                    // Solo results
+                    const total    = S.solo.correct + S.solo.incorrect;
+                    const accuracy = total > 0 ? S.solo.correct / total : 0;
+                    const rank     = calcRank(accuracy, S.solo.score);
+                    const perfect  = accuracy >= 1.0;
+
+                    const setT = (id, val) => { const el = $(id); if (el) el.textContent = val; };
+                    setT('results-trophy',  perfect ? '🏆' : (accuracy >= 0.7 ? '⚔️' : '📖'));
+                    setT('results-winner',  perfect ? 'Perfect Run!' : (accuracy >= 0.7 ? 'Well Done!' : 'Keep Practising!'));
+                    setT('results-sub',     `${DIFFICULTY} · ${SCRIPT} · ${PLAYER_NAME}`);
+                    setT('res-score',       S.solo.score.toLocaleString());
+                    setT('res-correct',     S.solo.correct);
+                    setT('res-total',       total);
+                    setT('res-accuracy',    `${Math.round(accuracy * 100)}%`);
+                    setT('res-combo',       S.solo.bestCombo);
+                    const rankEl = $('res-rank');
+                    if (rankEl) { rankEl.textContent = rank; rankEl.style.color = (rank==='S+'||rank==='S') ? '#d97706' : ''; }
+
+                    const ss = $('solo-stats');
+                    const ms = $('multi-stats');
+                    if (ss) ss.style.display = 'grid';
+                    if (ms) ms.style.display = 'none';
+
+                    Audio.play('victory');
+                    savePersonalBest(accuracy);
+
+                } else {
+                    // Multiplayer results
+                    const p1 = S.multi.p1, p2 = S.multi.p2;
+                    const winner = p1.score > p2.score ? PLAYER_NAME : (p2.score > p1.score ? PLAYER2_NAME : 'Draw');
+                    const setT   = (id, val) => { const el = $(id); if (el) el.textContent = val; };
+                    setT('results-trophy',  p1.score === p2.score ? '🤝' : '🏆');
+                    setT('results-winner',  p1.score === p2.score ? 'It\'s a Draw!' : `${winner} Wins!`);
+                    setT('results-sub',     `${DIFFICULTY} · ${SCRIPT} · ${S.queue.length} rounds`);
+                    setT('p1-result-name',  PLAYER_NAME);
+                    setT('p1-result-score', p1.score.toLocaleString());
+                    setT('p1-result-sub',   `${p1.correct} correct · Combo ×${p1.bestCombo}`);
+                    setT('p2-result-name',  PLAYER2_NAME);
+                    setT('p2-result-score', p2.score.toLocaleString());
+                    setT('p2-result-sub',   `${p2.correct} correct · Combo ×${p2.bestCombo}`);
+
+                    const p1r = $('p1-result'), p2r = $('p2-result');
+                    if (p1r) p1r.classList.toggle('winner', p1.score > p2.score);
+                    if (p2r) p2r.classList.toggle('winner', p2.score > p1.score);
+                    if (p1.score > p2.score && p1r) p1r.style.animation = 'baWinner 1.5s ease infinite';
+                    if (p2.score > p1.score && p2r) p2r.style.animation = 'baWinner 1.5s ease infinite';
+
+                    const ss = $('solo-stats');
+                    const ms = $('multi-stats');
+                    if (ss) ss.style.display = 'none';
+                    if (ms) ms.style.display = 'grid';
+
+                    Audio.play('victory');
+                }
+
+                overlay.classList.add('visible');
+            }
+
+            async function savePersonalBest(accuracy) {
+                try {
+                    const payload = {
+                        difficulty  : DIFFICULTY,
+                        alphabet    : SCRIPT,
+                        bestCorrect : S.solo.correct,
+                        bestPoints  : S.solo.score,
+                        bestCombo   : S.solo.bestCombo,
+                        bestAccuracy: accuracy
+                    };
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]');
+                    const resp  = await fetch('/KanaBlitz/SavePersonalBest', {
+                        method : 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token ? { 'RequestVerificationToken': token.value } : {})
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        if (data?.isNewBest) toast('🏅 New Personal Best!', 'success');
+                    }
+                } catch (e) {
+                    console.warn('[KanaBattle] savePersonalBest failed:', e);
+                }
+            }
+
+            /* ── Rematch ── */
+            const rematchBtn = $('btn-rematch');
+            if (rematchBtn) {
+                rematchBtn.addEventListener('click', () => {
+                    const overlay = $('results-overlay');
+                    if (overlay) overlay.classList.remove('visible');
+                    // Reset state
+                    S.qIndex   = 0;
+                    S.answered = false;
+                    S.solo     = { score:0, correct:0, incorrect:0, combo:0, bestCombo:0 };
+                    S.multi.p1 = { score:0, correct:0, combo:0, bestCombo:0 };
+                    S.multi.p2 = { score:0, correct:0, combo:0, bestCombo:0 };
+                    S.queue    = shuffle(S.words).slice(0, CFG.totalRounds);
+                    updateGlobalHUD();
+                    runCountdown().then(startGame);
+                    Audio.play('click');
+                });
+            }
+
+            /* ── Init ── */
+            boot();
+
+        })();
     </script>
 }
