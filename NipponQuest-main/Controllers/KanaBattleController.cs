@@ -7,7 +7,7 @@ namespace NipponQuest.Controllers
     [Route("[controller]/[action]")]
     public class KanaBattleController : Controller
     {
-        // ── 1. Hub / Mode-Select ───────────────────────────────────────
+        // ── 1. Hub / Mode-Select ──
         // GET /KanaBattle/Index
         // Renders the shared KanaBlitz_Index hub (solo + multiplayer mode picker).
         public IActionResult Index()
@@ -15,29 +15,38 @@ namespace NipponQuest.Controllers
             return View("~/Views/KanaBattle/KanaBlitz_Index.cshtml");
         }
 
-        // ── 2. Multiplayer Lobby / Setup ───────────────────────────────
+        // ── 2. Multiplayer Lobby / Setup ──
         // GET /KanaBattle/MainView
-        // Renders the KanaBlitz_View (multiplayer setup / lobby page).
+        // Renders the KanaBattle_View.cshtml with lobby setup for multiplayer.
+        // Players can choose difficulty, alphabet, and enter names before battle.
         public IActionResult MainView()
         {
-            return View("~/Views/KanaBattle/KanaBlitz_View.cshtml");
+            // Default model for the lobby
+            var model = new KanaBattleModel
+            {
+                Difficulty = "normal",
+                Script = "hiragana",
+                PlayerName = "Player 1"
+            };
+
+            ViewBag.Multiplayer = true;
+            ViewBag.Player2Name = "Player 2";
+
+            return View("~/Views/KanaBattle/KanaBattle_View.cshtml", model);
         }
 
-        // ── 3. Battle Arena ────────────────────────────────────────────
+        // ── 3. Battle Arena ──
         // GET /KanaBattle/Battle?difficulty=normal&script=hiragana
         //
         // Builds a KanaBattleModel and renders KanaBattle_View.cshtml.
         // The view fetches words client-side via:
-        //   GET /KanaBlitz/GetWords?difficulty={difficulty}&script={script}
-        // (KanaBlitzController.GetWords shares this endpoint.)
-        //
-        // FIX: normalise & validate inputs before building the model so that
-        // the shared GetWords endpoint is never called with invalid params.
+        //   GET /KanaBlitz/GetWords?difficulty={difficulty}&alphabet={script}
         [HttpGet]
         public IActionResult Battle(
             string difficulty = "normal",
             string script = "hiragana",
-            string playerName = "Player 1")
+            string playerName = "Player 1",
+            string player2Name = "Player 2")
         {
             // Normalise to lower-case — DbInitializer seeds with lower-case values
             difficulty = difficulty?.ToLowerInvariant() ?? "normal";
@@ -56,6 +65,9 @@ namespace NipponQuest.Controllers
                 Script = script,
                 PlayerName = playerName ?? "Player 1"
             };
+
+            ViewBag.Multiplayer = true;
+            ViewBag.Player2Name = player2Name ?? "Player 2";
 
             return View("~/Views/KanaBattle/KanaBattle_View.cshtml", model);
         }
