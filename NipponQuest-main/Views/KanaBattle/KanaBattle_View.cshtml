@@ -1,11 +1,12 @@
 ﻿@*
     ╔══════════════════════════════════════════════════════════════════╗
-    ║  KanaBattle_View.cshtml  —  Multiplayer Battle Arena           ║
-    ║  Controller : KanaBattleController → Battle()                   ║
-    ║  Route      : /KanaBattle/Battle?difficulty=&script=            ║
+    ║  KanaBattle_View.cshtml  —  AI Battle Arena                    ║
+    ║  Controller : KanaBattleController → Battle() / MainView()     ║
+    ║  Route      : /KanaBattle/Battle?difficulty=&script=           ║
     ║  API        : GET /KanaBlitz/GetWords?difficulty=&alphabet=     ║
+    ║  API        : POST /KanaBlitz/SubmitScore                      ║
     ║  Model      : KanaBattleModel                                   ║
-    ║  Purpose    : Head-to-head multiplayer kana battle arena        ║
+    ║  Purpose    : Head-to-head AI battle kana arena                 ║
     ║  Aesthetic  : White background · Black / Gold / White / Blue    ║
     ╚══════════════════════════════════════════════════════════════════╝
 *@
@@ -18,14 +19,14 @@
     var script = Model?.Script ?? "hiragana";
     var playerName = Model?.PlayerName ?? "Player 1";
     var isMulti = ViewBag.Multiplayer != null && (bool)ViewBag.Multiplayer;
-    var player2Name = ViewBag.Player2Name as string ?? "Player 2";
+    var player2Name = ViewBag.Player2Name as string ?? "AI Opponent";
 }
 
 <style>
     /* ══════════════════════════════════════════════════════════════
-               NIPPONQUEST — KanaBattle Arena
-               Palette : White bg · Black text · Gold accents · Blue action
-            ══════════════════════════════════════════════════════════════ */
+           NIPPONQUEST — KanaBattle AI Arena
+           Palette : White bg · Black text · Gold accents · Blue action
+        ══════════════════════════════════════════════════════════════ */
     @@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
 
     :root {
@@ -90,7 +91,201 @@
         padding: 28px 16px;
     }
 
-    /* ── Arena Header ── */
+    /* ── Keyframes ── */
+    @@keyframes baFadeUp {
+        0% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes baScaleIn {
+        0% {
+            transform: scale(0.9);
+            opacity: 0;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes baShake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        10%, 50%, 90% {
+            transform: translateX(-5px);
+        }
+
+        30%, 70% {
+            transform: translateX(5px);
+        }
+    }
+
+    @@keyframes baPopCorrect {
+        0% {
+            transform: scale(1);
+        }
+
+        40% {
+            transform: scale(1.06);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    @@keyframes baComboFlash {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.25);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    @@keyframes baCountdownPop {
+        0% {
+            transform: scale(0.3);
+            opacity: 0;
+        }
+
+        50% {
+            transform: scale(1.2);
+            opacity: 1;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes baSlideUp {
+        0% {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes baVictoryBounce {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        50% {
+            transform: scale(1.15);
+        }
+
+        70% {
+            transform: scale(0.95);
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes baHPDamage {
+        0% {
+            transform: scale(1);
+        }
+
+        30% {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+
+        100% {
+            transform: scale(1);
+            filter: brightness(1);
+        }
+    }
+
+    @@keyframes baPulseRed {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(239,68,68,0);
+        }
+
+        50% {
+            box-shadow: 0 0 15px 5px rgba(239,68,68,0.3);
+        }
+    }
+
+    @@keyframes baXPFloat {
+        0% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        100% {
+            opacity: 0;
+            transform: translateY(-40px);
+        }
+    }
+
+    @@keyframes baAIThink {
+        0%, 100% {
+            opacity: 0.3;
+        }
+
+        50% {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes baSpin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes baTimerPulse {
+        0%, 100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    @@keyframes baDamageFlash {
+        0% {
+            background: rgba(239,68,68,0.1);
+        }
+
+        100% {
+            background: transparent;
+        }
+    }
+
+    /* ── Header ── */
     .arena-header {
         display: flex;
         align-items: center;
@@ -190,6 +385,7 @@
         padding: 16px;
         border-radius: var(--ba-radius);
         transition: var(--ba-trans);
+        position: relative;
     }
 
         .player-panel.p1 {
@@ -218,44 +414,72 @@
             color: var(--ba-red);
         }
 
-        .player-panel .p-score {
-            font-size: 2.8rem;
+        .player-panel .p-hp-text {
+            font-size: 2.2rem;
             font-weight: 900;
             line-height: 1;
         }
 
-        .player-panel.p1 .p-score {
+        .player-panel.p1 .p-hp-text {
             color: var(--ba-p1);
         }
 
-        .player-panel.p2 .p-score {
+        .player-panel.p2 .p-hp-text {
             color: var(--ba-p2);
         }
 
-        .player-panel .p-stats {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            margin-top: 10px;
+    /* Health Bar */
+    .hp-bar-track {
+        width: 100%;
+        height: 10px;
+        background: var(--ba-surface2);
+        border-radius: 5px;
+        margin-top: 10px;
+        overflow: hidden;
+    }
+
+    .hp-bar-fill {
+        height: 100%;
+        border-radius: 5px;
+        transition: width 0.5s ease;
+    }
+
+    .p1 .hp-bar-fill {
+        background: linear-gradient(90deg, var(--ba-blue-lt), var(--ba-blue));
+    }
+
+    .p2 .hp-bar-fill {
+        background: linear-gradient(90deg, var(--ba-red-lt), var(--ba-red));
+    }
+
+    .hp-bar-fill.low {
+        animation: baPulseRed 1s infinite;
+    }
+
+    .player-panel .p-stats {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 10px;
+    }
+
+    .player-panel .p-stat {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: var(--ba-muted);
+    }
+
+        .player-panel .p-stat span {
+            font-weight: 900;
         }
 
-        .player-panel .p-stat {
-            font-size: 0.68rem;
-            font-weight: 700;
-            color: var(--ba-muted);
-        }
+    .player-panel.p1 .p-stat span {
+        color: var(--ba-blue);
+    }
 
-            .player-panel .p-stat span {
-                font-weight: 900;
-            }
-
-        .player-panel.p1 .p-stat span {
-            color: var(--ba-blue);
-        }
-
-        .player-panel.p2 .p-stat span {
-            color: var(--ba-red);
-        }
+    .player-panel.p2 .p-stat span {
+        color: var(--ba-red);
+    }
 
     .vs-divider {
         text-align: center;
@@ -287,39 +511,46 @@
 
     .timer-bar-fill {
         height: 100%;
-        background: linear-gradient(90deg, var(--ba-gold-lt), var(--ba-gold));
         border-radius: 3px;
-        transition: width 0.3s ease;
-        width: 100%;
+        transition: width 0.3s linear, background 0.3s ease;
+        background: linear-gradient(90deg, var(--ba-gold-lt), var(--ba-gold));
     }
 
-        .timer-bar-fill.low {
+        .timer-bar-fill.danger {
             background: linear-gradient(90deg, var(--ba-red-lt), var(--ba-red));
+            animation: baTimerPulse 0.5s ease infinite;
         }
 
-    .round-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
+    /* ── AI Thinking Indicator ── */
+    .ai-thinking {
+        display: none;
+        text-align: center;
+        margin-bottom: 16px;
+        padding: 10px;
+        background: var(--ba-red-bg);
+        border: 1px solid var(--ba-red-bd);
+        border-radius: var(--ba-radius-sm);
     }
 
-        .round-info .ri-label {
-            font-size: 0.68rem;
-            font-weight: 900;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--ba-faint);
+        .ai-thinking .ai-dots {
+            display: inline-flex;
+            gap: 6px;
         }
 
-        .round-info .ri-val {
-            font-size: 0.92rem;
-            font-weight: 900;
-            color: var(--ba-charcoal);
+        .ai-thinking .ai-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--ba-red);
+            animation: baAIThink 1s ease infinite;
         }
 
-            .round-info .ri-val.timer-val {
-                color: var(--ba-gold);
+            .ai-thinking .ai-dot:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+
+            .ai-thinking .ai-dot:nth-child(3) {
+                animation-delay: 0.4s;
             }
 
     /* ── Question Card ── */
@@ -327,293 +558,115 @@
         background: var(--ba-surface);
         border: 1.5px solid var(--ba-border);
         border-radius: var(--ba-radius-lg);
-        padding: 32px 24px;
+        padding: 36px 28px;
         text-align: center;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
         box-shadow: var(--ba-shadow);
     }
 
-        .question-card .q-category {
-            font-size: 0.65rem;
-            font-weight: 900;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--ba-blue);
-            margin-bottom: 10px;
+        .question-card.animate-in {
+            animation: baScaleIn 0.3s ease both;
         }
 
-        .question-card .q-kana {
-            font-size: clamp(1.8rem, 5vw, 3rem);
-            font-weight: 900;
-            color: var(--ba-black);
-            margin-bottom: 6px;
-            line-height: 1.2;
-        }
-
-        .question-card .q-missing-highlight {
-            display: inline-block;
-            background: var(--ba-gold-bg);
-            border: 1.5px dashed var(--ba-gold-bd);
-            border-radius: 8px;
-            padding: 4px 16px;
-            font-size: 1.4rem;
-            font-weight: 900;
-            color: var(--ba-gold);
-            margin: 6px 0;
-            min-width: 60px;
-        }
-
-        .question-card .q-romaji {
-            font-size: 0.95rem;
-            color: var(--ba-muted);
-            margin-bottom: 4px;
-        }
-
-        .question-card .q-meaning {
-            font-size: 0.82rem;
-            color: var(--ba-faint);
-            margin-bottom: 14px;
-        }
-
-        .question-card .q-prompt {
-            font-size: 0.7rem;
-            font-weight: 800;
-            color: var(--ba-gold);
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-    /* ── Answer Options ── */
-    .answers-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-        margin-bottom: 16px;
+    .question-label {
+        font-size: 0.65rem;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--ba-faint);
+        margin-bottom: 10px;
     }
 
-    .answer-btn {
+    .question-kana {
+        font-size: clamp(2.8rem, 7vw, 4.5rem);
+        font-weight: 900;
+        color: var(--ba-black);
+        line-height: 1.1;
+        margin-bottom: 8px;
+        word-break: break-all;
+    }
+
+    .question-meaning {
+        font-size: 0.85rem;
+        color: var(--ba-muted);
+    }
+
+    .question-category {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ba-faint);
+        background: var(--ba-surface2);
+        margin-top: 10px;
+    }
+
+    /* ── Options ── */
+    .options-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .option-btn {
         background: var(--ba-bg);
         border: 2px solid var(--ba-border);
         border-radius: var(--ba-radius);
-        padding: 18px 14px;
-        font-family: 'Nunito', sans-serif;
-        font-size: 1.3rem;
-        font-weight: 900;
+        padding: 18px 16px;
+        font-size: 1.1rem;
+        font-weight: 800;
         color: var(--ba-charcoal);
         cursor: pointer;
         transition: var(--ba-trans);
         text-align: center;
-        position: relative;
+        font-family: 'Nunito', sans-serif;
     }
 
-        .answer-btn:hover {
+        .option-btn:hover:not(:disabled) {
             border-color: var(--ba-blue-lt);
             background: var(--ba-blue-bg);
             transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(30,64,175,0.12);
         }
 
-        .answer-btn.correct {
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .option-btn.correct {
+            border-color: var(--ba-green-lt);
+            background: var(--ba-green-bg);
+            color: var(--ba-green);
+            animation: baPopCorrect 0.4s ease;
+        }
+
+        .option-btn.incorrect {
+            border-color: var(--ba-red-lt);
+            background: var(--ba-red-bg);
+            color: var(--ba-red);
+            animation: baShake 0.4s ease;
+        }
+
+        .option-btn.reveal-correct {
             border-color: var(--ba-green-lt);
             background: var(--ba-green-bg);
             color: var(--ba-green);
         }
 
-        .answer-btn.incorrect {
-            border-color: var(--ba-red-lt);
-            background: var(--ba-red-bg);
-            color: var(--ba-red);
-        }
-
-        .answer-btn:disabled {
-            cursor: default;
-            pointer-events: none;
-        }
-
-        .answer-btn .ans-label {
-            position: absolute;
-            top: 5px;
-            left: 9px;
-            font-size: 0.56rem;
-            font-weight: 900;
-            color: var(--ba-faint);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
-
-    /* ── Player Turn Indicator ── */
-    .turn-indicator {
-        text-align: center;
-        margin-bottom: 16px;
-        font-size: 0.82rem;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        padding: 10px 16px;
-        border-radius: var(--ba-radius-sm);
-        background: var(--ba-blue-bg);
-        color: var(--ba-blue);
-        border: 1.5px solid var(--ba-blue-bd);
-        transition: var(--ba-trans);
-    }
-
-        .turn-indicator.p2-turn {
-            background: var(--ba-red-bg);
-            color: var(--ba-red);
-            border-color: var(--ba-red-bd);
-        }
-
-    /* ── Countdown Overlay ── */
-    #countdown-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(15,23,42,0.88);
-        z-index: 9999;
-        justify-content: center;
-        align-items: center;
-    }
-
-        #countdown-overlay .cd-number {
-            font-size: 8rem;
-            font-weight: 900;
-            color: var(--ba-gold-lt);
-            text-shadow: 0 0 40px rgba(245,158,11,0.4);
-        }
-
-    /* ── Results Screen ── */
-    #results-screen {
-        display: none;
-        background: var(--ba-surface);
-        border: 1.5px solid var(--ba-border);
-        border-radius: var(--ba-radius-lg);
-        padding: 40px 32px;
-        text-align: center;
-        box-shadow: var(--ba-shadow-lg);
-    }
-
-        #results-screen .result-icon {
-            font-size: 4rem;
-            margin-bottom: 16px;
-            display: block;
-        }
-
-        #results-screen h2 {
-            font-size: 2rem;
-            font-weight: 900;
-            color: var(--ba-black);
-            margin-bottom: 8px;
-        }
-
-        #results-screen .result-sub {
-            font-size: 0.9rem;
-            color: var(--ba-muted);
-            margin-bottom: 28px;
-        }
-
-    .results-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-bottom: 32px;
-    }
-
-    .result-stat {
-        background: var(--ba-bg);
-        border: 1.5px solid var(--ba-border);
-        border-radius: var(--ba-radius-sm);
-        padding: 18px 12px;
-    }
-
-        .result-stat .rs-label {
-            font-size: 0.62rem;
-            font-weight: 900;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--ba-faint);
-            margin-bottom: 6px;
-        }
-
-        .result-stat .rs-val {
-            font-size: 1.8rem;
-            font-weight: 900;
-            color: var(--ba-black);
-        }
-
-            .result-stat .rs-val.gold {
-                color: var(--ba-gold);
-            }
-
-            .result-stat .rs-val.green {
-                color: var(--ba-green-lt);
-            }
-
-            .result-stat .rs-val.blue {
-                color: var(--ba-blue-lt);
-            }
-
-            .result-stat .rs-val.red {
-                color: var(--ba-red);
-            }
-
-    .results-actions {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-        .results-actions button, .results-actions a {
-            padding: 12px 28px;
-            border-radius: var(--ba-radius-sm);
-            font-family: 'Nunito', sans-serif;
-            font-weight: 900;
-            font-size: 0.85rem;
-            letter-spacing: 0.06em;
-            cursor: pointer;
-            transition: var(--ba-trans);
-            text-decoration: none;
-            border: none;
-        }
-
-    .btn-rematch {
-        background: linear-gradient(135deg, var(--ba-red-lt), var(--ba-gold));
-        color: #fff;
-    }
-
-        .btn-rematch:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(239,68,68,0.3);
-            color: #fff;
-        }
-
-    .btn-new-setup {
-        background: var(--ba-surface2);
-        color: var(--ba-dark);
-        border: 1.5px solid var(--ba-border) !important;
-    }
-
-        .btn-new-setup:hover {
-            transform: translateY(-2px);
-        }
-
-    .btn-back-hub {
-        background: var(--ba-gold-bg);
-        color: var(--ba-gold);
-        border: 1.5px solid var(--ba-gold-bd) !important;
-    }
-
-        .btn-back-hub:hover {
-            transform: translateY(-2px);
-            color: var(--ba-gold);
-        }
-
-    /* ── Lobby/Setup (for pre-game config) ── */
-    #lobby-panel {
+    /* ── Setup Panel (pre-battle) ── */
+    #setup-panel {
         background: var(--ba-surface);
         border: 1.5px solid var(--ba-border);
         border-radius: var(--ba-radius-lg);
         padding: 32px 28px;
+        margin-bottom: 24px;
         box-shadow: var(--ba-shadow);
+        animation: baFadeUp 0.4s ease both;
     }
 
     .section-label {
@@ -663,6 +716,31 @@
             border-color: var(--ba-blue);
             background: var(--ba-blue-bg);
             box-shadow: 0 0 0 3px rgba(30,64,175,0.15);
+            transform: translateY(-2px);
+        }
+
+        .choice-card[data-diff="easy"].active {
+            border-color: var(--ba-green-lt);
+            background: var(--ba-green-bg);
+            box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+        }
+
+        .choice-card[data-diff="normal"].active {
+            border-color: var(--ba-blue-lt);
+            background: var(--ba-blue-bg);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        }
+
+        .choice-card[data-diff="hard"].active {
+            border-color: var(--ba-gold);
+            background: var(--ba-gold-bg);
+            box-shadow: 0 0 0 3px rgba(217,119,6,0.18);
+        }
+
+        .choice-card[data-diff="insanity"].active {
+            border-color: var(--ba-red-lt);
+            background: var(--ba-red-bg);
+            box-shadow: 0 0 0 3px rgba(239,68,68,0.15);
         }
 
         .choice-card .c-icon {
@@ -685,315 +763,397 @@
             display: block;
         }
 
-    .name-inputs {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-
-    .name-input-group label {
-        display: block;
-        font-size: 0.72rem;
-        font-weight: 900;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        margin-bottom: 6px;
-    }
-
-    .name-input-group.p1 label {
-        color: var(--ba-blue);
-    }
-
-    .name-input-group.p2 label {
-        color: var(--ba-red);
-    }
-
-    .name-input-group input {
-        width: 100%;
-        padding: 12px 14px;
-        border: 2px solid var(--ba-border);
-        border-radius: var(--ba-radius-sm);
-        font-family: 'Nunito', sans-serif;
-        font-size: 0.92rem;
-        font-weight: 700;
-        color: var(--ba-black);
-        background: var(--ba-bg);
-        transition: var(--ba-trans);
-    }
-
-        .name-input-group input:focus {
-            outline: none;
-            border-color: var(--ba-blue-lt);
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        .choice-card .c-hp {
+            font-size: 0.65rem;
+            color: var(--ba-faint);
+            margin-top: 4px;
+            display: block;
         }
 
     .start-btn {
-        display: block;
-        width: 100%;
-        padding: 16px;
-        border: none;
-        border-radius: var(--ba-radius);
-        background: linear-gradient(135deg, var(--ba-red-lt), var(--ba-gold));
-        color: #fff;
-        font-family: 'Nunito', sans-serif;
-        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 16px 36px;
+        border-radius: 14px;
         font-weight: 900;
-        letter-spacing: 0.08em;
+        font-size: 1rem;
+        letter-spacing: 0.06em;
+        border: none;
         cursor: pointer;
         transition: var(--ba-trans);
-        text-transform: uppercase;
+        background: linear-gradient(135deg, #991b1b, var(--ba-gold));
+        color: #fff;
+        box-shadow: 0 6px 20px rgba(153,27,27,0.25);
+        position: relative;
+        overflow: hidden;
+        font-family: 'Nunito', sans-serif;
     }
 
         .start-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(239,68,68,0.3);
+            box-shadow: 0 10px 30px rgba(153,27,27,0.35);
+            filter: brightness(1.05);
         }
 
-    #word-warning {
-        display: none;
-        background: var(--ba-red-bg);
-        border: 1.5px solid var(--ba-red-bd);
-        border-radius: var(--ba-radius-sm);
-        padding: 14px 18px;
-        margin-bottom: 20px;
-        font-size: 0.85rem;
-        color: var(--ba-red);
-        font-weight: 700;
-    }
+        .start-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
     /* ── Feedback Toast ── */
     .feedback-toast {
         position: fixed;
-        top: 20%;
+        top: 50%;
         left: 50%;
-        transform: translateX(-50%) scale(0);
-        font-size: 1.2rem;
+        transform: translate(-50%, -50%) scale(0);
+        font-size: 2rem;
         font-weight: 900;
-        padding: 12px 28px;
-        border-radius: var(--ba-radius);
-        z-index: 10000;
+        padding: 20px 40px;
+        border-radius: var(--ba-radius-lg);
+        z-index: 9999;
         pointer-events: none;
-        transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        font-family: 'Nunito', sans-serif;
     }
 
         .feedback-toast.show {
-            transform: translateX(-50%) scale(1);
+            transform: translate(-50%, -50%) scale(1);
         }
 
-        .feedback-toast.toast-correct {
+        .feedback-toast.correct-toast {
             background: var(--ba-green-bg);
             color: var(--ba-green);
-            border: 1.5px solid var(--ba-green-bd);
+            border: 2px solid var(--ba-green-bd);
         }
 
-        .feedback-toast.toast-incorrect {
+        .feedback-toast.incorrect-toast {
             background: var(--ba-red-bg);
             color: var(--ba-red);
-            border: 1.5px solid var(--ba-red-bd);
+            border: 2px solid var(--ba-red-bd);
         }
 
-        .feedback-toast.toast-combo {
+        .feedback-toast.combo-toast {
             background: var(--ba-gold-bg);
             color: var(--ba-gold);
-            border: 1.5px solid var(--ba-gold-bd);
+            border: 2px solid var(--ba-gold-bd);
         }
 
-    /* ── Animations ── */
-    @@keyframes countdownPop {
-        0% {
-            transform: scale(0.3);
-            opacity: 0;
+        .feedback-toast.damage-toast {
+            background: var(--ba-red-bg);
+            color: var(--ba-red);
+            border: 2px solid var(--ba-red-bd);
         }
 
-        50% {
-            transform: scale(1.2);
-            opacity: 1;
-        }
-
-        100% {
-            transform: scale(1);
-            opacity: 1;
-        }
+    .xp-float {
+        position: fixed;
+        font-weight: 900;
+        font-size: 1.1rem;
+        pointer-events: none;
+        z-index: 9998;
+        animation: baXPFloat 1s ease forwards;
     }
 
-    @@keyframes popIn {
-        0% {
-            transform: scale(0.9);
+        .xp-float.damage {
+            color: var(--ba-red-lt);
         }
 
-        50% {
-            transform: scale(1.05);
+        .xp-float.heal {
+            color: var(--ba-green-lt);
         }
 
-        100% {
-            transform: scale(1);
-        }
+    /* ── Countdown ── */
+    #countdown-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.95);
+        z-index: 10000;
+        justify-content: center;
+        align-items: center;
     }
 
-    @@keyframes shakeX {
-        0%, 100% {
-            transform: translateX(0);
-        }
-
-        10% {
-            transform: translateX(-6px);
-        }
-
-        30% {
-            transform: translateX(6px);
-        }
-
-        50% {
-            transform: translateX(-3px);
-        }
-
-        70% {
-            transform: translateX(3px);
-        }
+    .countdown-number {
+        font-size: 8rem;
+        font-weight: 900;
+        color: var(--ba-black);
+        animation: baCountdownPop 0.8s ease;
     }
 
-    @@keyframes fadeInUp {
-        0% {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        100% {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .countdown-go {
+        font-size: 5rem;
+        font-weight: 900;
+        color: var(--ba-gold);
+        animation: baCountdownPop 0.8s ease;
     }
 
-    @@keyframes slideInRight {
-        0% {
-            opacity: 0;
-            transform: translateX(30px);
-        }
-
-        100% {
-            opacity: 1;
-            transform: translateX(0);
-        }
+    /* ── Results ── */
+    #results-screen {
+        display: none;
+        animation: baSlideUp 0.5s ease both;
     }
 
-    @@keyframes spin {
-        0% {
-            transform: rotate(0deg);
+    .results-card {
+        background: var(--ba-surface);
+        border: 1.5px solid var(--ba-border);
+        border-radius: var(--ba-radius-lg);
+        padding: 40px 32px;
+        text-align: center;
+        box-shadow: var(--ba-shadow-lg);
+    }
+
+    .results-icon {
+        font-size: 4rem;
+        margin-bottom: 16px;
+        animation: baVictoryBounce 0.6s ease both;
+    }
+
+    .results-title {
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--ba-black);
+        margin-bottom: 8px;
+    }
+
+    .results-subtitle {
+        font-size: 1rem;
+        color: var(--ba-muted);
+        margin-bottom: 28px;
+    }
+
+    .results-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 14px;
+        margin-bottom: 32px;
+    }
+
+    .result-stat {
+        background: var(--ba-bg);
+        border: 1.5px solid var(--ba-border);
+        border-radius: var(--ba-radius-sm);
+        padding: 14px 10px;
+    }
+
+        .result-stat .rs-label {
+            font-size: 0.6rem;
+            font-weight: 900;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--ba-faint);
+            margin-bottom: 6px;
         }
 
-        100% {
-            transform: rotate(360deg);
+        .result-stat .rs-value {
+            font-size: 1.6rem;
+            font-weight: 900;
+            line-height: 1;
         }
+
+            .result-stat .rs-value.gold {
+                color: var(--ba-gold);
+            }
+
+            .result-stat .rs-value.blue {
+                color: var(--ba-blue);
+            }
+
+            .result-stat .rs-value.green {
+                color: var(--ba-green-lt);
+            }
+
+            .result-stat .rs-value.red {
+                color: var(--ba-red-lt);
+            }
+
+    .results-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
     }
 
-    .anim-fade-up {
-        animation: fadeInUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    .result-btn {
+        padding: 14px 28px;
+        border-radius: 12px;
+        font-weight: 900;
+        font-size: 0.88rem;
+        letter-spacing: 0.04em;
+        border: none;
+        cursor: pointer;
+        transition: var(--ba-trans);
+        text-decoration: none;
+        font-family: 'Nunito', sans-serif;
     }
 
-    .anim-slide-right {
-        animation: slideInRight 0.4s ease both;
+        .result-btn.primary {
+            background: linear-gradient(135deg, #991b1b, var(--ba-gold));
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(153,27,27,0.25);
+        }
+
+            .result-btn.primary:hover {
+                transform: translateY(-2px);
+            }
+
+        .result-btn.secondary {
+            background: var(--ba-surface2);
+            color: var(--ba-dark);
+            border: 1.5px solid var(--ba-border);
+        }
+
+            .result-btn.secondary:hover {
+                transform: translateY(-2px);
+                background: var(--ba-border);
+            }
+
+    /* ── Error ── */
+    .error-banner {
+        background: var(--ba-red-bg);
+        border: 1.5px solid var(--ba-red-bd);
+        border-radius: var(--ba-radius-sm);
+        padding: 16px 20px;
+        color: var(--ba-red);
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+        display: none;
     }
 
-    /* ── Loading Spinner ── */
     .loading-spinner {
         display: inline-block;
         width: 24px;
         height: 24px;
         border: 3px solid var(--ba-border);
-        border-top-color: var(--ba-blue);
+        border-top-color: var(--ba-blue-lt);
         border-radius: 50%;
-        animation: spin 0.8s linear infinite;
+        animation: baSpin 0.7s linear infinite;
+    }
+
+    /* ── Damage Flash Overlay ── */
+    .damage-flash {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 9990;
+        animation: baDamageFlash 0.4s ease forwards;
     }
 
     /* ── Responsive ── */
     @@media (max-width: 768px) {
+        .ba-wrapper {
+            padding: 20px 12px;
+        }
+
         .vs-scoreboard {
             grid-template-columns: 1fr;
-            text-align: center;
+            gap: 12px;
+            padding: 18px;
         }
 
         .vs-divider {
             order: -1;
         }
 
-        .answers-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .results-grid {
+        .options-grid {
             grid-template-columns: 1fr;
         }
 
-        .name-inputs {
-            grid-template-columns: 1fr;
+        .question-kana {
+            font-size: 2.8rem;
         }
 
-        .arena-header {
-            flex-direction: column;
-            align-items: flex-start;
+        #setup-panel {
+            padding: 24px 18px;
         }
-    }
 
-    @@media (max-width: 480px) {
         .choice-grid {
             grid-template-columns: repeat(2, 1fr);
         }
 
-        #lobby-panel {
-            padding: 20px 14px;
+        .results-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .arena-header {
+            flex-direction: column;
+            align-items: flex-start;
         }
 
-        .player-panel .p-score {
-            font-size: 2rem;
+        .question-card {
+            padding: 24px 16px;
+        }
+
+        .question-kana {
+            font-size: 2.2rem;
+        }
+
+        .results-card {
+            padding: 24px 16px;
         }
     }
 </style>
 
 <div class="ba-page">
     <div class="ba-wrapper">
-        <!-- Header -->
-        <div class="arena-header anim-fade-up">
+
+        <!-- ═══ Header ═══ -->
+        <div class="arena-header">
             <div class="arena-title-wrap">
-                <h2>⚔️ Kana<span style="color:var(--ba-red)">Battle</span> Arena</h2>
+                <h2>🗡️ AI Battle Arena</h2>
                 <div class="arena-meta">
-                    <span class="arena-tag red">Multiplayer</span>
-                    <span class="arena-tag blue" id="header-diff-tag">@(difficulty.Substring(0, 1).ToUpper() + difficulty.Substring(1))</span>
-                    <span class="arena-tag black" id="header-alpha-tag">@(script.Substring(0, 1).ToUpper() + script.Substring(1))</span>
+                    <span class="arena-tag black">KanaBattle</span>
+                    <span class="arena-tag red">vs AI</span>
                 </div>
             </div>
-            <a href="/KanaBattle/Index" class="back-link">← Back to Modes</a>
+            <a href="/KanaBlitz" class="back-link" onclick="SoundFX.play('click')">← Back to Hub</a>
         </div>
 
-        <!-- Lobby Setup (shown first) -->
-        <div id="lobby-panel" class="anim-fade-up" style="animation-delay:0.1s">
-            <div class="section-label">Difficulty</div>
+        <!-- ═══ Error ═══ -->
+        <div id="error-banner" class="error-banner"></div>
+
+        <!-- ═══ Setup Panel ═══ -->
+        <div id="setup-panel">
+            <div class="section-label">Choose Battle Difficulty</div>
             <div class="choice-grid" id="diff-grid">
                 <div class="choice-card" data-diff="easy" onclick="selectDifficulty('easy')">
                     <span class="c-icon">🌱</span>
                     <span class="c-label">Easy</span>
-                    <span class="c-sub">Single Characters</span>
+                    <span class="c-sub">Relaxed Pace</span>
+                    <span class="c-hp">AI: 80 HP · Slow · 50% Acc</span>
                 </div>
-                <div class="choice-card @(difficulty == "normal" ? "active" : "")" data-diff="normal" onclick="selectDifficulty('normal')">
-                    <span class="c-icon">⚔️</span>
+                <div class="choice-card active" data-diff="normal" onclick="selectDifficulty('normal')">
+                    <span class="c-icon">⚡</span>
                     <span class="c-label">Normal</span>
-                    <span class="c-sub">Common Words</span>
+                    <span class="c-sub">Balanced Fight</span>
+                    <span class="c-hp">AI: 100 HP · Medium · 70% Acc</span>
                 </div>
                 <div class="choice-card" data-diff="hard" onclick="selectDifficulty('hard')">
                     <span class="c-icon">🔥</span>
                     <span class="c-label">Hard</span>
-                    <span class="c-sub">Yōon & Compounds</span>
+                    <span class="c-sub">Intense Battle</span>
+                    <span class="c-hp">AI: 150 HP · Fast · 85% Acc</span>
                 </div>
                 <div class="choice-card" data-diff="insanity" onclick="selectDifficulty('insanity')">
                     <span class="c-icon">💀</span>
                     <span class="c-label">Insanity</span>
-                    <span class="c-sub">Kanji Mastery</span>
+                    <span class="c-sub">No Mercy</span>
+                    <span class="c-hp">AI: 200 HP · Blazing · 95% Acc</span>
                 </div>
             </div>
 
             <div class="section-label">Alphabet</div>
             <div class="choice-grid" id="alpha-grid">
-                <div class="choice-card @(script == "hiragana" ? "active" : "")" data-alpha="hiragana" onclick="selectAlphabet('hiragana')">
+                <div class="choice-card" data-alpha="hiragana" onclick="selectAlphabet('hiragana')">
                     <span class="c-icon">あ</span>
                     <span class="c-label">Hiragana</span>
                 </div>
@@ -1006,521 +1166,806 @@
                     <span class="c-label">Dakuten</span>
                 </div>
                 <div class="choice-card" data-alpha="mixed" onclick="selectAlphabet('mixed')">
-                    <span class="c-icon">混</span>
+                    <span class="c-icon">🀄</span>
                     <span class="c-label">Mixed</span>
                 </div>
             </div>
 
-            <div class="section-label">Warriors</div>
-            <div class="name-inputs">
-                <div class="name-input-group p1">
-                    <label>Player 1</label>
-                    <input type="text" id="p1-name" value="@playerName" placeholder="Enter name..." maxlength="20" />
-                </div>
-                <div class="name-input-group p2">
-                    <label>Player 2</label>
-                    <input type="text" id="p2-name" value="@player2Name" placeholder="Enter name..." maxlength="20" />
-                </div>
+            <div style="text-align:center; margin-top:8px;">
+                <button class="start-btn" id="start-btn" onclick="startBattle()">
+                    🗡️ Start Battle
+                </button>
             </div>
-
-            <div id="word-warning"></div>
-
-            <button class="start-btn" id="start-btn" onclick="startBattle()">
-                ⚔️ Start Battle
-            </button>
         </div>
 
-        <!-- Countdown Overlay -->
+        <!-- ═══ Countdown ═══ -->
         <div id="countdown-overlay">
-            <div class="cd-number" id="cd-number">3</div>
+            <div id="countdown-display"></div>
         </div>
 
-        <!-- Battle Arena -->
+        <!-- ═══ Battle Arena ═══ -->
         <div id="battle-arena" style="display:none;">
+
+            <!-- VS Scoreboard -->
             <div class="vs-scoreboard">
-                <div class="player-panel p1">
-                    <div class="p-name" id="p1-display">@playerName</div>
-                    <div class="p-score" id="p1-score">0</div>
+                <div class="player-panel p1" id="p1-panel">
+                    <div class="p-name" id="p1-name">Player</div>
+                    <div class="p-hp-text" id="p1-hp">100</div>
+                    <div class="hp-bar-track">
+                        <div class="hp-bar-fill" id="p1-hp-bar" style="width:100%"></div>
+                    </div>
                     <div class="p-stats">
-                        <div class="p-stat">Correct: <span id="p1-correct">0</span></div>
-                        <div class="p-stat">Combo: <span id="p1-combo">0×</span></div>
+                        <div class="p-stat">Combo: <span id="p1-combo">0</span></div>
+                        <div class="p-stat">Score: <span id="p1-score">0</span></div>
                     </div>
                 </div>
+
                 <div class="vs-divider">
                     <div class="vs-badge">VS</div>
                 </div>
-                <div class="player-panel p2">
-                    <div class="p-name" id="p2-display">@player2Name</div>
-                    <div class="p-score" id="p2-score">0</div>
+
+                <div class="player-panel p2" id="p2-panel">
+                    <div class="p-name">🤖 AI Opponent</div>
+                    <div class="p-hp-text" id="p2-hp">100</div>
+                    <div class="hp-bar-track">
+                        <div class="hp-bar-fill" id="p2-hp-bar" style="width:100%"></div>
+                    </div>
                     <div class="p-stats">
-                        <div class="p-stat">Correct: <span id="p2-correct">0</span></div>
-                        <div class="p-stat">Combo: <span id="p2-combo">0×</span></div>
+                        <div class="p-stat">Acc: <span id="p2-acc">—</span></div>
+                        <div class="p-stat">Strk: <span id="p2-streak">0</span></div>
                     </div>
                 </div>
             </div>
 
+            <!-- AI Thinking -->
+            <div class="ai-thinking" id="ai-thinking">
+                <span style="font-size:0.8rem;font-weight:800;color:var(--ba-red);">AI is thinking</span>
+                <div class="ai-dots">
+                    <div class="ai-dot"></div>
+                    <div class="ai-dot"></div>
+                    <div class="ai-dot"></div>
+                </div>
+            </div>
+
+            <!-- Timer -->
             <div class="timer-bar-track">
-                <div class="timer-bar-fill" id="timer-bar"></div>
+                <div class="timer-bar-fill" id="timer-bar" style="width:100%"></div>
             </div>
 
-            <div class="round-info">
-                <div>
-                    <div class="ri-label">Round</div>
-                    <div class="ri-val" id="round-num">1</div>
-                </div>
-                <div>
-                    <div class="ri-label">Time</div>
-                    <div class="ri-val timer-val" id="hud-time">60</div>
-                </div>
-                <div>
-                    <div class="ri-label">Question</div>
-                    <div class="ri-val" id="q-num">1</div>
-                </div>
+            <!-- Question -->
+            <div class="question-card" id="question-card">
+                <div class="question-label" id="q-label">What is this kana?</div>
+                <div class="question-kana" id="q-kana">—</div>
+                <div class="question-category" id="q-category">—</div>
             </div>
 
-            <div class="turn-indicator" id="turn-indicator">
-                🗡️ @playerName's Turn
-            </div>
-
-            <div class="question-card anim-slide-right" id="question-card">
-                <div class="q-category" id="q-category">—</div>
-                <div class="q-kana" id="q-kana">—</div>
-                <div class="q-missing-highlight" id="q-missing">?</div>
-                <div class="q-romaji" id="q-romaji">—</div>
-                <div class="q-meaning" id="q-meaning">—</div>
-                <div class="q-prompt">Select the missing kana</div>
-            </div>
-
-            <div class="answers-grid" id="answers-grid"></div>
+            <!-- Options -->
+            <div class="options-grid" id="options-grid"></div>
         </div>
 
-        <!-- Results Screen -->
+        <!-- ═══ Results ═══ -->
         <div id="results-screen">
-            <span class="result-icon" id="result-icon">🏆</span>
-            <h2 id="result-title">Battle Complete!</h2>
-            <div class="result-sub" id="result-sub">The results are in.</div>
+            <div class="results-card">
+                <div class="results-icon" id="results-icon">🏆</div>
+                <div class="results-title" id="results-title">Victory!</div>
+                <div class="results-subtitle" id="results-subtitle">You defeated the AI!</div>
 
-            <div class="vs-scoreboard" id="results-vs" style="margin-bottom:28px;">
-                <div class="player-panel p1" id="results-p1">
-                    <div class="p-name" id="res-p1-name">Player 1</div>
-                    <div class="p-score" id="res-p1-score">0</div>
-                    <div class="p-stats">
-                        <div class="p-stat">Accuracy: <span id="res-p1-acc">0%</span></div>
+                <div class="results-stats">
+                    <div class="result-stat">
+                        <div class="rs-label">Final Score</div>
+                        <div class="rs-value gold" id="rs-score">0</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="rs-label">Rounds Won</div>
+                        <div class="rs-value blue" id="rs-rounds">0</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="rs-label">Best Combo</div>
+                        <div class="rs-value green" id="rs-combo">0×</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="rs-label">XP Earned</div>
+                        <div class="rs-value gold" id="rs-xp">+0</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="rs-label">Player HP Left</div>
+                        <div class="rs-value blue" id="rs-php">0</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="rs-label">AI HP Left</div>
+                        <div class="rs-value red" id="rs-ahp">0</div>
                     </div>
                 </div>
-                <div class="vs-divider">
-                    <div class="vs-badge" id="res-vs-icon">VS</div>
-                </div>
-                <div class="player-panel p2" id="results-p2">
-                    <div class="p-name" id="res-p2-name">Player 2</div>
-                    <div class="p-score" id="res-p2-score">0</div>
-                    <div class="p-stats">
-                        <div class="p-stat">Accuracy: <span id="res-p2-acc">0%</span></div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="results-actions">
-                <button class="btn-rematch" onclick="rematch()">⚔️ Rematch</button>
-                <button class="btn-new-setup" onclick="newSetup()">Change Setup</button>
-                <a href="/KanaBattle/Index" class="btn-back-hub">Mode Selection</a>
+                <div class="results-actions">
+                    <button class="result-btn primary" onclick="playAgain()">🗡️ Battle Again</button>
+                    <button class="result-btn secondary" onclick="backToSetup()">⚙️ Change Settings</button>
+                    <a href="/KanaBlitz" class="result-btn secondary" style="text-decoration:none">← Back to Hub</a>
+                </div>
             </div>
         </div>
 
         <!-- Feedback Toast -->
         <div class="feedback-toast" id="feedback-toast"></div>
+
     </div>
 </div>
 
 <script>
-    // ═══════════════════════════════════════════════════════════
-    //  KanaBattle Multiplayer Engine
-    // ═══════════════════════════════════════════════════════════
-
-    // ── Audio Architecture (placeholder hooks) ──
-    const AudioHooks = {
-        correct: () => { },
-        incorrect: () => { },
-        victory: () => { },
-        countdown: () => { },
-        click: () => { },
-        combo: () => { }
+    /* ══════════════════════════════════════════════════════════════
+       SoundFX Engine — Web Audio API
+    ══════════════════════════════════════════════════════════════ */
+    const SoundFX = {
+        ctx: null,
+        init() { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} },
+        _ensure() {
+            if (!this.ctx) this.init();
+            if (!this.ctx) return false;
+            if (this.ctx.state === 'suspended') this.ctx.resume();
+            return true;
+        },
+        play(type) {
+            if (!this._ensure()) return;
+            const now = this.ctx.currentTime;
+            switch (type) {
+                case 'correct': {
+                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                    o.connect(g); g.connect(this.ctx.destination);
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(523, now);
+                    o.frequency.linearRampToValueAtTime(784, now + 0.1);
+                    g.gain.setValueAtTime(0.15, now);
+                    g.gain.linearRampToValueAtTime(0, now + 0.2);
+                    o.start(now); o.stop(now + 0.2);
+                    break;
+                }
+                case 'incorrect': {
+                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                    o.connect(g); g.connect(this.ctx.destination);
+                    o.type = 'sawtooth';
+                    o.frequency.setValueAtTime(300, now);
+                    o.frequency.linearRampToValueAtTime(150, now + 0.2);
+                    g.gain.setValueAtTime(0.1, now);
+                    g.gain.linearRampToValueAtTime(0, now + 0.3);
+                    o.start(now); o.stop(now + 0.3);
+                    break;
+                }
+                case 'combo': {
+                    [600, 800, 1000, 1200].forEach((f, i) => {
+                        const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                        o.connect(g); g.connect(this.ctx.destination);
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(f, now + i * 0.06);
+                        g.gain.setValueAtTime(0.1, now + i * 0.06);
+                        g.gain.linearRampToValueAtTime(0, now + i * 0.06 + 0.1);
+                        o.start(now + i * 0.06); o.stop(now + i * 0.06 + 0.1);
+                    });
+                    break;
+                }
+                case 'victory': {
+                    [523, 659, 784, 1047].forEach((f, i) => {
+                        const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                        o.connect(g); g.connect(this.ctx.destination);
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(f, now + i * 0.15);
+                        g.gain.setValueAtTime(0.12, now + i * 0.15);
+                        g.gain.linearRampToValueAtTime(0, now + i * 0.15 + 0.25);
+                        o.start(now + i * 0.15); o.stop(now + i * 0.15 + 0.25);
+                    });
+                    break;
+                }
+                case 'defeat': {
+                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                    o.connect(g); g.connect(this.ctx.destination);
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(400, now);
+                    o.frequency.linearRampToValueAtTime(100, now + 0.6);
+                    g.gain.setValueAtTime(0.12, now);
+                    g.gain.linearRampToValueAtTime(0, now + 0.7);
+                    o.start(now); o.stop(now + 0.7);
+                    break;
+                }
+                case 'countdown': {
+                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                    o.connect(g); g.connect(this.ctx.destination);
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(440, now);
+                    g.gain.setValueAtTime(0.1, now);
+                    g.gain.linearRampToValueAtTime(0, now + 0.12);
+                    o.start(now); o.stop(now + 0.12);
+                    break;
+                }
+                case 'click': {
+                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                    o.connect(g); g.connect(this.ctx.destination);
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(800, now);
+                    g.gain.setValueAtTime(0.06, now);
+                    g.gain.linearRampToValueAtTime(0, now + 0.04);
+                    o.start(now); o.stop(now + 0.04);
+                    break;
+                }
+                case 'damage': {
+                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                    o.connect(g); g.connect(this.ctx.destination);
+                    o.type = 'sawtooth';
+                    o.frequency.setValueAtTime(200, now);
+                    o.frequency.linearRampToValueAtTime(80, now + 0.15);
+                    g.gain.setValueAtTime(0.1, now);
+                    g.gain.linearRampToValueAtTime(0, now + 0.2);
+                    o.start(now); o.stop(now + 0.2);
+                    break;
+                }
+                case 'tick': {
+                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                    o.connect(g); g.connect(this.ctx.destination);
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(1000, now);
+                    g.gain.setValueAtTime(0.04, now);
+                    g.gain.linearRampToValueAtTime(0, now + 0.03);
+                    o.start(now); o.stop(now + 0.03);
+                    break;
+                }
+            }
+        }
     };
 
-    // ── State ──
-    let selectedDifficulty = '@(difficulty)';
-    let selectedAlphabet = '@(script)';
-    let gameWords = [];
-    let currentIndex = 0;
-    let isPlaying = false;
-    let timeLeft = 60;
-    let maxTime = 60;
-    let timerInterval = null;
-    let currentTurn = 1; // 1 = P1, 2 = P2
+    /* ══════════════════════════════════════════════════════════════
+       AI Configuration per Difficulty
+    ══════════════════════════════════════════════════════════════ */
+    const AI_CONFIG = {
+        easy:     { hp: 80,  minDelay: 3000, maxDelay: 5500, accuracy: 0.50, damage: 8  },
+        normal:   { hp: 100, minDelay: 2000, maxDelay: 4000, accuracy: 0.70, damage: 10 },
+        hard:     { hp: 150, minDelay: 1200, maxDelay: 2500, accuracy: 0.85, damage: 12 },
+        insanity: { hp: 200, minDelay: 600,  maxDelay: 1500, accuracy: 0.95, damage: 15 }
+    };
 
-    const TOTAL_ROUNDS = 10;
-    let currentRound = 0;
+    const PLAYER_MAX_HP = 100;
+    const BASE_DAMAGE = 10;
+    const QUICK_DRAW_TIME = 2; // seconds for bonus damage
+    const MAX_ROUNDS = 15;
+    const TIME_PER_ROUND = { easy: 18, normal: 14, hard: 10, insanity: 7 };
 
-    let p1 = { name: '@(playerName)', score: 0, correct: 0, total: 0, combo: 0, maxCombo: 0 };
-    let p2 = { name: '@(player2Name)', score: 0, correct: 0, total: 0, combo: 0, maxCombo: 0 };
+    /* ══════════════════════════════════════════════════════════════
+       Battle State
+    ══════════════════════════════════════════════════════════════ */
+    const B = {
+        difficulty: '@(difficulty)',
+        alphabet: '@(script)',
+        playerName: '@(playerName)',
+        words: [],
+        currentWord: null,
+        round: 0,
+        playerHP: PLAYER_MAX_HP,
+        playerMaxHP: PLAYER_MAX_HP,
+        aiHP: 100,
+        aiMaxHP: 100,
+        playerCombo: 0,
+        maxCombo: 0,
+        playerScore: 0,
+        playerCorrect: 0,
+        playerIncorrect: 0,
+        aiCorrect: 0,
+        aiTotal: 0,
+        aiStreak: 0,
+        timePerRound: 14,
+        timeLeft: 0,
+        timerInterval: null,
+        aiTimeout: null,
+        answered: false,
+        running: false,
+        shieldActive: false
+    };
 
-    const TIME_PER_DIFFICULTY = { easy: 90, normal: 75, hard: 60, insanity: 45 };
-    const MIN_WORDS = 4;
-
-    // ── Initialize ──
+    /* ── Init ── */
     document.addEventListener('DOMContentLoaded', () => {
-        // Set initial active states from model
-        const diffCard = document.querySelector(`[data-diff="${selectedDifficulty}"]`);
-        if (diffCard) {
-            document.querySelectorAll('#diff-grid .choice-card').forEach(c => c.classList.remove('active'));
-            diffCard.classList.add('active');
-        }
-        const alphaCard = document.querySelector(`[data-alpha="${selectedAlphabet}"]`);
-        if (alphaCard) {
-            document.querySelectorAll('#alpha-grid .choice-card').forEach(c => c.classList.remove('active'));
-            alphaCard.classList.add('active');
-        }
+        // Set initial selections from model
+        const diffCards = document.querySelectorAll('#diff-grid .choice-card');
+        diffCards.forEach(c => {
+            c.classList.toggle('active', c.dataset.diff === B.difficulty);
+        });
+        const alphaCards = document.querySelectorAll('#alpha-grid .choice-card');
+        alphaCards.forEach(c => {
+            c.classList.toggle('active', c.dataset.alpha === B.alphabet);
+        });
     });
 
-    // ── Selection Handlers ──
+    /* ── Selection ── */
     function selectDifficulty(diff) {
-        AudioHooks.click();
-        selectedDifficulty = diff;
+        SoundFX.play('click');
         document.querySelectorAll('#diff-grid .choice-card').forEach(c => c.classList.remove('active'));
-        document.querySelector(`[data-diff="${diff}"]`).classList.add('active');
-
-        document.getElementById('header-diff-tag').textContent = diff.charAt(0).toUpperCase() + diff.slice(1);
+        document.querySelector(`#diff-grid .choice-card[data-diff="${diff}"]`).classList.add('active');
+        B.difficulty = diff;
     }
 
     function selectAlphabet(alpha) {
-        AudioHooks.click();
-        selectedAlphabet = alpha;
+        SoundFX.play('click');
         document.querySelectorAll('#alpha-grid .choice-card').forEach(c => c.classList.remove('active'));
-        document.querySelector(`[data-alpha="${alpha}"]`).classList.add('active');
-
-        document.getElementById('header-alpha-tag').textContent = alpha.charAt(0).toUpperCase() + alpha.slice(1);
+        document.querySelector(`#alpha-grid .choice-card[data-alpha="${alpha}"]`).classList.add('active');
+        B.alphabet = alpha;
     }
 
-    // ── Start Battle ──
+    /* ── Show Error ── */
+    function showError(msg) {
+        const el = document.getElementById('error-banner');
+        el.textContent = msg;
+        el.style.display = 'block';
+        setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+
+    /* ── Start Battle ── */
     async function startBattle() {
+        SoundFX.play('click');
         const btn = document.getElementById('start-btn');
         btn.disabled = true;
-        btn.textContent = 'Loading words…';
-
-        // Read player names
-        p1.name = document.getElementById('p1-name').value.trim() || 'Player 1';
-        p2.name = document.getElementById('p2-name').value.trim() || 'Player 2';
-        p1.score = 0; p1.correct = 0; p1.total = 0; p1.combo = 0; p1.maxCombo = 0;
-        p2.score = 0; p2.correct = 0; p2.total = 0; p2.combo = 0; p2.maxCombo = 0;
-
-        // Update display names
-        document.getElementById('p1-display').textContent = p1.name;
-        document.getElementById('p2-display').textContent = p2.name;
+        btn.innerHTML = '<span class="loading-spinner"></span> Loading...';
 
         try {
-            const res = await fetch(`/KanaBlitz/GetWords?difficulty=${selectedDifficulty}&alphabet=${selectedAlphabet}`);
-            if (!res.ok) throw new Error('Failed to fetch words');
-            const data = await res.json();
+            const resp = await fetch(`/KanaBlitz/GetWords?difficulty=${B.difficulty}&alphabet=${B.alphabet}`);
+            if (!resp.ok) throw new Error('Failed to fetch words from database.');
+            const data = await resp.json();
 
-            if (!Array.isArray(data) || data.length < MIN_WORDS) {
-                throw new Error(`Not enough words (${data ? data.length : 0}). Try another combination.`);
+            if (!Array.isArray(data) || data.length < 4) {
+                throw new Error(`Not enough words for ${B.difficulty}/${B.alphabet} (${data?.length || 0} found). Try a different combination.`);
             }
 
-            gameWords = shuffleArray([...data]);
-            currentIndex = 0;
-            currentRound = 0;
-            currentTurn = 1;
-            maxTime = TIME_PER_DIFFICULTY[selectedDifficulty] || 75;
-            timeLeft = maxTime;
+            B.words = shuffleArray([...data]);
+            B.round = 0;
+            B.playerHP = PLAYER_MAX_HP;
+            B.playerMaxHP = PLAYER_MAX_HP;
+            const aiConf = AI_CONFIG[B.difficulty] || AI_CONFIG.normal;
+            B.aiHP = aiConf.hp;
+            B.aiMaxHP = aiConf.hp;
+            B.playerCombo = 0;
+            B.maxCombo = 0;
+            B.playerScore = 0;
+            B.playerCorrect = 0;
+            B.playerIncorrect = 0;
+            B.aiCorrect = 0;
+            B.aiTotal = 0;
+            B.aiStreak = 0;
+            B.timePerRound = TIME_PER_ROUND[B.difficulty] || 14;
+            B.running = true;
+            B.shieldActive = false;
 
-            showCountdown(() => {
-                document.getElementById('lobby-panel').style.display = 'none';
-                document.getElementById('battle-arena').style.display = 'block';
-                isPlaying = true;
-                updateScoreboard();
-                nextRound();
-                startTimer();
-            });
-        } catch (e) {
-            console.error('Start battle error:', e);
-            const warning = document.getElementById('word-warning');
-            warning.style.display = 'block';
-            warning.innerHTML = `❌ ${e.message}`;
             btn.disabled = false;
-            btn.textContent = '⚔️ Try Again';
+            btn.innerHTML = '🗡️ Start Battle';
+
+            document.getElementById('setup-panel').style.display = 'none';
+            document.getElementById('results-screen').style.display = 'none';
+            document.getElementById('battle-arena').style.display = 'block';
+
+            updateScoreboard();
+
+            await showCountdown();
+            nextRound();
+
+        } catch (err) {
+            btn.disabled = false;
+            btn.innerHTML = '🗡️ Start Battle';
+            showError(err.message);
         }
     }
 
-    function showCountdown(callback) {
-        const overlay = document.getElementById('countdown-overlay');
-        const numEl = document.getElementById('cd-number');
-        overlay.style.display = 'flex';
-        let count = 3;
-        numEl.textContent = count;
+    /* ── Countdown ── */
+    function showCountdown() {
+        return new Promise(resolve => {
+            const overlay = document.getElementById('countdown-overlay');
+            const display = document.getElementById('countdown-display');
+            overlay.style.display = 'flex';
 
-        const interval = setInterval(() => {
-            AudioHooks.countdown();
-            count--;
-            if (count > 0) {
-                numEl.textContent = count;
-                numEl.style.animation = 'none';
-                numEl.offsetHeight;
-                numEl.style.animation = 'countdownPop 0.8s ease';
-            } else if (count === 0) {
-                numEl.textContent = 'GO!';
-                numEl.style.color = '#10b981';
-                numEl.style.animation = 'none';
-                numEl.offsetHeight;
-                numEl.style.animation = 'countdownPop 0.8s ease';
-            } else {
-                clearInterval(interval);
-                overlay.style.display = 'none';
-                numEl.style.color = '';
-                callback();
-            }
-        }, 800);
+            let count = 3;
+            display.className = 'countdown-number';
+            display.textContent = count;
+            SoundFX.play('countdown');
+
+            const iv = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    display.textContent = count;
+                    display.style.animation = 'none';
+                    void display.offsetHeight;
+                    display.style.animation = '';
+                    SoundFX.play('countdown');
+                } else if (count === 0) {
+                    display.className = 'countdown-go';
+                    display.textContent = 'FIGHT!';
+                    display.style.animation = 'none';
+                    void display.offsetHeight;
+                    display.style.animation = '';
+                    SoundFX.play('combo');
+                } else {
+                    clearInterval(iv);
+                    overlay.style.display = 'none';
+                    resolve();
+                }
+            }, 800);
+        });
     }
 
-    function startTimer() {
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            updateTimerDisplay();
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                endBattle();
-            }
-        }, 1000);
-    }
-
-    function updateTimerDisplay() {
-        document.getElementById('hud-time').textContent = timeLeft;
-        const pct = (timeLeft / maxTime) * 100;
-        const bar = document.getElementById('timer-bar');
-        bar.style.width = pct + '%';
-        bar.className = 'timer-bar-fill' + (pct < 25 ? ' low' : '');
-    }
-
-    // ── Game Flow (alternating turns) ──
+    /* ── Next Round ── */
     function nextRound() {
-        if (!isPlaying) return;
-
-        currentRound++;
-        if (currentRound > TOTAL_ROUNDS * 2) {
+        if (B.playerHP <= 0 || B.aiHP <= 0 || B.round >= MAX_ROUNDS || !B.running) {
             endBattle();
             return;
         }
 
-        // Alternate turns: P1 on odd rounds, P2 on even
-        currentTurn = (currentRound % 2 === 1) ? 1 : 2;
+        B.answered = false;
 
-        updateTurnIndicator();
-        showQuestion();
-        updateRoundInfo();
+        // Pick a word (cycle through the shuffled pool)
+        const wordIndex = B.round % B.words.length;
+        B.currentWord = B.words[wordIndex];
+        B.round++;
+
+        // Update timer config
+        const bar = document.getElementById('timer-bar');
+        bar.style.width = '100%';
+        bar.className = 'timer-bar-fill';
+
+        // Display question
+        const qCard = document.getElementById('question-card');
+        qCard.classList.remove('animate-in');
+        void qCard.offsetHeight;
+        qCard.classList.add('animate-in');
+
+        document.getElementById('q-kana').textContent = B.currentWord.wordKana || B.currentWord.WordKana || '—';
+        document.getElementById('q-category').textContent = B.currentWord.categoryTag || B.currentWord.CategoryTag || 'Kana';
+
+        // Build options
+        buildOptions();
+
+        // Start timer
+        startTimer();
+
+        // Start AI thinking
+        startAI();
+
+        updateScoreboard();
     }
 
-    function updateTurnIndicator() {
-        const indicator = document.getElementById('turn-indicator');
-        if (currentTurn === 1) {
-            indicator.textContent = `🗡️ ${p1.name}'s Turn`;
-            indicator.className = 'turn-indicator';
-        } else {
-            indicator.textContent = `🗡️ ${p2.name}'s Turn`;
-            indicator.className = 'turn-indicator p2-turn';
-        }
-    }
+    /* ── Build Options (no hints!) ── */
+    function buildOptions() {
+        const correctRomaji = B.currentWord.wordRomaji || B.currentWord.WordRomaji || '';
+        const pool = B.words.filter(w => {
+            const r = w.wordRomaji || w.WordRomaji || '';
+            return r && r !== correctRomaji;
+        });
 
-    function updateRoundInfo() {
-        document.getElementById('round-num').textContent = Math.ceil(currentRound / 2);
-        document.getElementById('q-num').textContent = currentRound;
-    }
+        const wrongAnswers = shuffleArray([...pool]).slice(0, 3).map(w => w.wordRomaji || w.WordRomaji || '');
+        const allAnswers = shuffleArray([correctRomaji, ...wrongAnswers]);
 
-    function showQuestion() {
-        if (currentIndex >= gameWords.length) {
-            gameWords = shuffleArray([...gameWords]);
-            currentIndex = 0;
-        }
-
-        const word = gameWords[currentIndex];
-        const card = document.getElementById('question-card');
-        card.classList.remove('anim-slide-right');
-        card.offsetHeight;
-        card.classList.add('anim-slide-right');
-
-        document.getElementById('q-category').textContent = word.categoryTag || word.alphabet || '—';
-
-        let displayKana = word.wordKana || '';
-        const parenMatch = displayKana.match(/^(.+?)\s*\((.+?)\)$/);
-        if (parenMatch) {
-            document.getElementById('q-kana').textContent = parenMatch[1];
-            document.getElementById('q-romaji').textContent = parenMatch[2] + ' · ' + (word.wordRomaji || '');
-        } else {
-            document.getElementById('q-kana').textContent = displayKana;
-            document.getElementById('q-romaji').textContent = word.wordRomaji || '';
-        }
-
-        document.getElementById('q-meaning').textContent = word.meaningEnglish || '';
-        document.getElementById('q-missing').textContent = word.missingKana || '?';
-
-        generateAnswers(word);
-    }
-
-    function generateAnswers(word) {
-        const correctAnswer = word.missingKana || '';
-        const grid = document.getElementById('answers-grid');
+        const grid = document.getElementById('options-grid');
         grid.innerHTML = '';
 
-        let distractors = gameWords
-            .filter(w => w.missingKana && w.missingKana !== correctAnswer)
-            .map(w => w.missingKana);
-        distractors = [...new Set(distractors)];
-        distractors = shuffleArray(distractors).slice(0, 3);
-
-        const fallbackKana = ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ',
-            'た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ',
-            'ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を','ん'];
-
-        while (distractors.length < 3) {
-            const random = fallbackKana[Math.floor(Math.random() * fallbackKana.length)];
-            if (random !== correctAnswer && !distractors.includes(random)) {
-                distractors.push(random);
-            }
-        }
-
-        const options = shuffleArray([correctAnswer, ...distractors.slice(0, 3)]);
-        const labels = ['A', 'B', 'C', 'D'];
-
-        options.forEach((opt, i) => {
+        allAnswers.forEach((ans, i) => {
             const btn = document.createElement('button');
-            btn.className = 'answer-btn';
-            btn.innerHTML = `<span class="ans-label">${labels[i]}</span>${opt}`;
-            btn.onclick = () => handleAnswer(btn, opt, correctAnswer);
+            btn.className = 'option-btn';
+            btn.textContent = ans || '—';
+            btn.dataset.answer = ans;
+            btn.style.animation = `baFadeUp 0.3s ease ${i * 0.05}s both`;
+            btn.addEventListener('click', () => handlePlayerAnswer(ans, correctRomaji, btn));
             grid.appendChild(btn);
         });
     }
 
-    function handleAnswer(btn, selected, correct) {
-        if (!isPlaying) return;
-        document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+    /* ── Start Timer ── */
+    function startTimer() {
+        B.timeLeft = B.timePerRound;
+        const startTime = Date.now();
+        const duration = B.timePerRound * 1000;
 
-        const activePlayer = currentTurn === 1 ? p1 : p2;
-        activePlayer.total++;
+        B.timerInterval = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            const pct = Math.max(0, 1 - elapsed / duration) * 100;
+            B.timeLeft = Math.max(0, B.timePerRound - elapsed / 1000);
+
+            const bar = document.getElementById('timer-bar');
+            bar.style.width = pct + '%';
+
+            if (pct < 20) {
+                bar.className = 'timer-bar-fill danger';
+                if (Math.floor(B.timeLeft * 2) % 2 === 0) SoundFX.play('tick');
+            } else {
+                bar.className = 'timer-bar-fill';
+            }
+
+            if (pct <= 0) {
+                clearInterval(B.timerInterval);
+                handleTimeout();
+            }
+        }, 100);
+    }
+
+    /* ── AI System ── */
+    function startAI() {
+        const aiConf = AI_CONFIG[B.difficulty] || AI_CONFIG.normal;
+        const delay = aiConf.minDelay + Math.random() * (aiConf.maxDelay - aiConf.minDelay);
+
+        // Show AI thinking
+        document.getElementById('ai-thinking').style.display = 'block';
+
+        B.aiTimeout = setTimeout(() => {
+            if (B.answered) return;
+            // AI attempts to answer
+            B.aiTotal++;
+            const correctRomaji = B.currentWord.wordRomaji || B.currentWord.WordRomaji || '';
+            const isCorrect = Math.random() < aiConf.accuracy;
+
+            if (isCorrect) {
+                B.aiCorrect++;
+                B.aiStreak++;
+                // AI deals damage to player
+                const aiDmg = aiConf.damage;
+                const actualDmg = B.shieldActive ? Math.floor(aiDmg * 0.5) : aiDmg;
+                B.playerHP = Math.max(0, B.playerHP - actualDmg);
+                B.shieldActive = false;
+
+                document.getElementById('ai-thinking').style.display = 'none';
+                showDamageFlash();
+                showFloatingText(document.getElementById('p1-panel'), '-' + actualDmg + ' HP', 'damage');
+                SoundFX.play('damage');
+
+                // If player hasn't answered yet, they can still answer but took damage
+                updateScoreboard();
+
+                if (B.playerHP <= 0) {
+                    clearInterval(B.timerInterval);
+                    B.answered = true;
+                    disableAllOptions();
+                    setTimeout(() => endBattle(), 1000);
+                }
+            } else {
+                B.aiStreak = 0;
+                document.getElementById('ai-thinking').style.display = 'none';
+                updateScoreboard();
+            }
+
+            document.getElementById('p2-acc').textContent = B.aiTotal > 0 ? Math.round(B.aiCorrect / B.aiTotal * 100) + '%' : '—';
+            document.getElementById('p2-streak').textContent = B.aiStreak;
+
+        }, delay);
+    }
+
+    /* ── Handle Player Answer ── */
+    function handlePlayerAnswer(selected, correct, btnEl) {
+        if (B.answered) return;
+        B.answered = true;
+        clearInterval(B.timerInterval);
+        clearTimeout(B.aiTimeout);
+        document.getElementById('ai-thinking').style.display = 'none';
+
+        const allBtns = document.querySelectorAll('.option-btn');
+        allBtns.forEach(b => b.disabled = true);
 
         if (selected === correct) {
-            btn.classList.add('correct');
-            activePlayer.correct++;
-            activePlayer.combo++;
-            if (activePlayer.combo > activePlayer.maxCombo) activePlayer.maxCombo = activePlayer.combo;
-            activePlayer.score += 10 * Math.max(1, activePlayer.combo);
+            btnEl.classList.add('correct');
+            B.playerCorrect++;
+            B.playerCombo++;
+            if (B.playerCombo > B.maxCombo) B.maxCombo = B.playerCombo;
 
-            timeLeft += 2;
-            if (timeLeft > maxTime + 20) timeLeft = maxTime + 20;
-
-            AudioHooks.correct();
-            showFeedback(`✓ ${activePlayer.name} Correct!`, 'correct');
-        } else {
-            btn.classList.add('incorrect');
-            document.querySelectorAll('.answer-btn').forEach(b => {
-                if (b.textContent.includes(correct)) b.classList.add('correct');
-            });
-            activePlayer.combo = 0;
-            timeLeft = Math.max(0, timeLeft - 3);
-
-            AudioHooks.incorrect();
-            showFeedback(`✗ ${activePlayer.name} Wrong!`, 'incorrect');
-        }
-
-        currentIndex++;
-        updateScoreboard();
-        updateTimerDisplay();
-
-        setTimeout(() => {
-            if (isPlaying && timeLeft > 0) {
-                nextRound();
+            // Calculate damage to AI
+            let damage = BASE_DAMAGE;
+            // Quick Draw bonus
+            if (B.timeLeft >= B.timePerRound - QUICK_DRAW_TIME) {
+                damage = Math.floor(damage * 1.5);
             }
-        }, 700);
-    }
+            // Combo bonus
+            if (B.playerCombo >= 5) {
+                damage = Math.floor(damage * 2.5); // Execution Blow
+            } else if (B.playerCombo >= 3) {
+                damage = Math.floor(damage * 1.5);
+            }
 
-    function updateScoreboard() {
-        document.getElementById('p1-score').textContent = p1.score;
-        document.getElementById('p1-correct').textContent = p1.correct;
-        document.getElementById('p1-combo').textContent = p1.combo + '×';
+            B.aiHP = Math.max(0, B.aiHP - damage);
 
-        document.getElementById('p2-score').textContent = p2.score;
-        document.getElementById('p2-correct').textContent = p2.correct;
-        document.getElementById('p2-combo').textContent = p2.combo + '×';
-    }
+            // Shield: 3+ combo activates shield
+            B.shieldActive = B.playerCombo >= 3;
 
-    // ── End Battle ──
-    function endBattle() {
-        isPlaying = false;
-        clearInterval(timerInterval);
-        AudioHooks.victory();
+            // Score
+            const points = damage * 10 + Math.floor(B.timeLeft * 5);
+            B.playerScore += points;
 
-        const p1Acc = p1.total > 0 ? Math.round((p1.correct / p1.total) * 100) : 0;
-        const p2Acc = p2.total > 0 ? Math.round((p2.correct / p2.total) * 100) : 0;
+            showFloatingText(document.getElementById('p2-panel'), '-' + damage + ' HP', 'damage');
+            showFloatingText(btnEl, '+' + points, 'heal');
 
-        document.getElementById('res-p1-name').textContent = p1.name;
-        document.getElementById('res-p1-score').textContent = p1.score;
-        document.getElementById('res-p1-acc').textContent = p1Acc + '%';
+            if (B.playerCombo >= 5) {
+                SoundFX.play('combo');
+                showToast('💀 Execution Blow!', 'combo-toast');
+            } else if (B.playerCombo >= 3) {
+                SoundFX.play('combo');
+                showToast('🛡️ Shield Active! ' + B.playerCombo + '× Combo', 'combo-toast');
+            } else {
+                SoundFX.play('correct');
+                showToast('Correct! -' + damage + ' HP', 'correct-toast');
+            }
 
-        document.getElementById('res-p2-name').textContent = p2.name;
-        document.getElementById('res-p2-score').textContent = p2.score;
-        document.getElementById('res-p2-acc').textContent = p2Acc + '%';
+            // Animate AI HP bar
+            document.getElementById('p2-panel').style.animation = 'baHPDamage 0.4s ease';
+            setTimeout(() => { document.getElementById('p2-panel').style.animation = ''; }, 400);
 
-        let icon, title, sub;
-        if (p1.score > p2.score) {
-            icon = '🏆'; title = `${p1.name} Wins!`;
-            sub = `Dominant performance with ${p1Acc}% accuracy!`;
-            document.getElementById('results-p1').style.boxShadow = '0 0 0 3px rgba(30,64,175,0.3)';
-            document.getElementById('res-vs-icon').textContent = '👑';
-        } else if (p2.score > p1.score) {
-            icon = '🏆'; title = `${p2.name} Wins!`;
-            sub = `Impressive victory with ${p2Acc}% accuracy!`;
-            document.getElementById('results-p2').style.boxShadow = '0 0 0 3px rgba(153,27,27,0.3)';
-            document.getElementById('res-vs-icon').textContent = '👑';
         } else {
-            icon = '🤝'; title = 'Draw!';
-            sub = 'An evenly matched battle — both warriors proved their worth!';
-            document.getElementById('res-vs-icon').textContent = '=';
+            btnEl.classList.add('incorrect');
+            B.playerIncorrect++;
+            B.playerCombo = 0;
+            B.shieldActive = false;
+
+            // Reveal correct answer
+            allBtns.forEach(b => {
+                if (b.dataset.answer === correct) b.classList.add('reveal-correct');
+            });
+
+            SoundFX.play('incorrect');
+            showToast('Incorrect!', 'incorrect-toast');
         }
 
-        document.getElementById('result-icon').textContent = icon;
-        document.getElementById('result-title').textContent = title;
-        document.getElementById('result-sub').textContent = sub;
+        updateScoreboard();
 
+        if (B.aiHP <= 0) {
+            setTimeout(() => endBattle(), 1200);
+        } else {
+            setTimeout(() => nextRound(), 1400);
+        }
+    }
+
+    /* ── Handle Timeout ── */
+    function handleTimeout() {
+        if (B.answered) return;
+        B.answered = true;
+        clearTimeout(B.aiTimeout);
+        document.getElementById('ai-thinking').style.display = 'none';
+
+        B.playerIncorrect++;
+        B.playerCombo = 0;
+        B.shieldActive = false;
+
+        const correctRomaji = B.currentWord.wordRomaji || B.currentWord.WordRomaji || '';
+        const allBtns = document.querySelectorAll('.option-btn');
+        allBtns.forEach(b => {
+            b.disabled = true;
+            if (b.dataset.answer === correctRomaji) b.classList.add('reveal-correct');
+        });
+
+        SoundFX.play('incorrect');
+        showToast("Time's Up!", 'incorrect-toast');
+        updateScoreboard();
+
+        if (B.playerHP > 0 && B.aiHP > 0) {
+            setTimeout(() => nextRound(), 1200);
+        } else {
+            setTimeout(() => endBattle(), 1200);
+        }
+    }
+
+    /* ── Update Scoreboard ── */
+    function updateScoreboard() {
+        document.getElementById('p1-name').textContent = B.playerName;
+        document.getElementById('p1-hp').textContent = B.playerHP;
+        document.getElementById('p1-combo').textContent = B.playerCombo;
+        document.getElementById('p1-score').textContent = B.playerScore;
+
+        const p1Pct = Math.max(0, (B.playerHP / B.playerMaxHP) * 100);
+        const p1Bar = document.getElementById('p1-hp-bar');
+        p1Bar.style.width = p1Pct + '%';
+        p1Bar.className = 'hp-bar-fill' + (p1Pct < 25 ? ' low' : '');
+
+        document.getElementById('p2-hp').textContent = B.aiHP;
+
+        const p2Pct = Math.max(0, (B.aiHP / B.aiMaxHP) * 100);
+        const p2Bar = document.getElementById('p2-hp-bar');
+        p2Bar.style.width = p2Pct + '%';
+        p2Bar.className = 'hp-bar-fill' + (p2Pct < 25 ? ' low' : '');
+    }
+
+    /* ── End Battle ── */
+    async function endBattle() {
+        B.running = false;
+        clearInterval(B.timerInterval);
+        clearTimeout(B.aiTimeout);
+
+        const playerWon = B.aiHP <= 0;
+        const draw = B.playerHP > 0 && B.aiHP > 0 && B.round >= MAX_ROUNDS;
+        const playerWonByHP = draw && B.playerHP > B.aiHP;
+
+        const isVictory = playerWon || playerWonByHP;
+
+        if (isVictory) {
+            SoundFX.play('victory');
+        } else {
+            SoundFX.play('defeat');
+        }
+
+        // Calculate XP
+        const xpEarned = isVictory
+            ? Math.floor(B.playerScore * 0.8 + B.playerCorrect * 15 + 50)
+            : Math.floor(B.playerScore * 0.3 + B.playerCorrect * 5);
+
+        // Submit score
+        try {
+            await fetch('/KanaBlitz/SubmitScore', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    score: B.playerScore,
+                    difficulty: B.difficulty,
+                    alphabet: B.alphabet,
+                    correct: B.playerCorrect,
+                    total: B.round,
+                    maxCombo: B.maxCombo,
+                    xpEarned: xpEarned
+                })
+            });
+        } catch (e) { /* silent */ }
+
+        // Show results
         document.getElementById('battle-arena').style.display = 'none';
         document.getElementById('results-screen').style.display = 'block';
+
+        if (isVictory) {
+            document.getElementById('results-icon').textContent = '🏆';
+            document.getElementById('results-title').textContent = 'Victory!';
+            document.getElementById('results-subtitle').textContent = 'You defeated the AI Opponent! Outstanding performance!';
+        } else if (draw && !playerWonByHP) {
+            document.getElementById('results-icon').textContent = '🤝';
+            document.getElementById('results-title').textContent = 'Draw!';
+            document.getElementById('results-subtitle').textContent = 'A close match! The battle ended in a draw.';
+        } else {
+            document.getElementById('results-icon').textContent = '💀';
+            document.getElementById('results-title').textContent = 'Defeat!';
+            document.getElementById('results-subtitle').textContent = 'The AI won this round. Train harder and try again!';
+        }
+
+        document.getElementById('rs-score').textContent = B.playerScore;
+        document.getElementById('rs-rounds').textContent = B.playerCorrect + '/' + B.round;
+        document.getElementById('rs-combo').textContent = B.maxCombo + '×';
+        document.getElementById('rs-xp').textContent = '+' + xpEarned;
+        document.getElementById('rs-php').textContent = B.playerHP;
+        document.getElementById('rs-ahp').textContent = B.aiHP;
     }
 
-    function rematch() {
+    /* ── Play Again / Back ── */
+    async function playAgain() {
+        SoundFX.play('click');
         document.getElementById('results-screen').style.display = 'none';
-        p1.score = 0; p1.correct = 0; p1.total = 0; p1.combo = 0; p1.maxCombo = 0;
-        p2.score = 0; p2.correct = 0; p2.total = 0; p2.combo = 0; p2.maxCombo = 0;
-        gameWords = shuffleArray([...gameWords]);
-        currentIndex = 0;
-        currentRound = 0;
-        currentTurn = 1;
-        timeLeft = maxTime;
+        try {
+            const resp = await fetch(`/KanaBlitz/GetWords?difficulty=${B.difficulty}&alphabet=${B.alphabet}`);
+            if (!resp.ok) throw new Error('Failed to fetch words.');
+            const data = await resp.json();
+            if (!Array.isArray(data) || data.length < 4) throw new Error('Not enough words.');
 
-        showCountdown(() => {
+            B.words = shuffleArray([...data]);
+            B.round = 0;
+            B.playerHP = PLAYER_MAX_HP;
+            B.playerMaxHP = PLAYER_MAX_HP;
+            const aiConf = AI_CONFIG[B.difficulty] || AI_CONFIG.normal;
+            B.aiHP = aiConf.hp;
+            B.aiMaxHP = aiConf.hp;
+            B.playerCombo = 0; B.maxCombo = 0; B.playerScore = 0;
+            B.playerCorrect = 0; B.playerIncorrect = 0;
+            B.aiCorrect = 0; B.aiTotal = 0; B.aiStreak = 0;
+            B.running = true; B.shieldActive = false;
+            B.timePerRound = TIME_PER_ROUND[B.difficulty] || 14;
+
             document.getElementById('battle-arena').style.display = 'block';
-            isPlaying = true;
             updateScoreboard();
+            await showCountdown();
             nextRound();
-            startTimer();
-        });
+        } catch (e) {
+            showError(e.message);
+            backToSetup();
+        }
     }
 
-    function newSetup() {
+    function backToSetup() {
+        SoundFX.play('click');
+        B.running = false;
+        clearInterval(B.timerInterval);
+        clearTimeout(B.aiTimeout);
+        document.getElementById('battle-arena').style.display = 'none';
         document.getElementById('results-screen').style.display = 'none';
-        document.getElementById('lobby-panel').style.display = 'block';
-        const btn = document.getElementById('start-btn');
-        btn.disabled = false;
-        btn.textContent = '⚔️ Start Battle';
+        document.getElementById('setup-panel').style.display = 'block';
     }
 
-    // ── Utility ──
+    /* ── Helpers ── */
     function shuffleArray(arr) {
         for (let i = arr.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -1529,22 +1974,42 @@
         return arr;
     }
 
-    // ── Feedback Toast ──
-    function showFeedback(text, type) {
-        const toast = document.getElementById('feedback-toast');
-        toast.textContent = text;
-        toast.className = 'feedback-toast toast-' + type + ' show';
-        setTimeout(() => { toast.classList.remove('show'); }, 1200);
+    function showToast(msg, cls) {
+        const t = document.getElementById('feedback-toast');
+        t.textContent = msg;
+        t.className = 'feedback-toast ' + cls + ' show';
+        setTimeout(() => { t.className = 'feedback-toast'; }, 900);
     }
 
-    // ── Keyboard Support ──
-    document.addEventListener('keydown', (e) => {
-        if (!isPlaying) return;
-        const keyMap = { 'a': 0, 'b': 1, 'c': 2, 'd': 3, '1': 0, '2': 1, '3': 2, '4': 3 };
-        const index = keyMap[e.key.toLowerCase()];
-        if (index !== undefined) {
-            const btns = document.querySelectorAll('.answer-btn:not(:disabled)');
-            if (btns[index]) btns[index].click();
+    function showFloatingText(anchor, text, type) {
+        const el = document.createElement('div');
+        el.className = 'xp-float' + (type === 'damage' ? ' damage' : ' heal');
+        el.textContent = text;
+        const rect = anchor.getBoundingClientRect();
+        el.style.left = rect.left + rect.width / 2 + 'px';
+        el.style.top = rect.top + 'px';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1000);
+    }
+
+    function showDamageFlash() {
+        const flash = document.createElement('div');
+        flash.className = 'damage-flash';
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 400);
+    }
+
+    function disableAllOptions() {
+        document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+    }
+
+    /* Keyboard shortcuts */
+    document.addEventListener('keydown', e => {
+        if (!B.running || B.answered) return;
+        const num = parseInt(e.key);
+        if (num >= 1 && num <= 4) {
+            const btns = document.querySelectorAll('.option-btn');
+            if (btns[num - 1]) btns[num - 1].click();
         }
     });
 </script>

@@ -6,6 +6,7 @@
     ║  API        : GET /KanaBlitz/GetWords?difficulty=&alphabet=     ║
     ║  API        : GET /KanaBlitz/GetArenaPayload?alphabet=&diff=    ║
     ║  API        : GET /KanaBlitz/GetUnlocks                         ║
+    ║  API        : POST /KanaBlitz/SubmitScore                       ║
     ║  Purpose    : Full solo KanaBlitz game with difficulty select   ║
     ║  Aesthetic  : White background · Black / Gold / White / Blue    ║
     ╚══════════════════════════════════════════════════════════════════╝
@@ -17,9 +18,9 @@
 
 <style>
     /* ══════════════════════════════════════════════════════════════
-               NIPPONQUEST — KanaBlitz Solo Arena
-               Palette : White bg · Black text · Gold accents · Blue action
-            ══════════════════════════════════════════════════════════════ */
+           NIPPONQUEST — KanaBlitz Solo Arena
+           Palette : White bg · Black text · Gold accents · Blue action
+        ══════════════════════════════════════════════════════════════ */
     @@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
 
     :root {
@@ -44,6 +45,7 @@
         --kb-green: #065f46;
         --kb-green-lt: #10b981;
         --kb-green-bg: #ecfdf5;
+        --kb-green-bd: #6ee7b7;
         --kb-red: #991b1b;
         --kb-red-lt: #ef4444;
         --kb-red-bg: #fff1f2;
@@ -79,6 +81,167 @@
         max-width: 1060px;
         margin: 0 auto;
         padding: 32px 16px;
+    }
+
+    /* ── Keyframes ── */
+    @@keyframes kbFadeUp {
+        0% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes kbScaleIn {
+        0% {
+            transform: scale(0.9);
+            opacity: 0;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes kbShake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        10%, 50%, 90% {
+            transform: translateX(-4px);
+        }
+
+        30%, 70% {
+            transform: translateX(4px);
+        }
+    }
+
+    @@keyframes kbPopCorrect {
+        0% {
+            transform: scale(1);
+        }
+
+        40% {
+            transform: scale(1.08);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    @@keyframes kbComboFlash {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.3);
+            opacity: 0.8;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes kbCountdownPop {
+        0% {
+            transform: scale(0.3);
+            opacity: 0;
+        }
+
+        50% {
+            transform: scale(1.2);
+            opacity: 1;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes kbTimerPulse {
+        0%, 100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    @@keyframes kbSlideUp {
+        0% {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes kbFloat {
+        0%, 100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-4px);
+        }
+    }
+
+    @@keyframes kbVictoryBounce {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        50% {
+            transform: scale(1.15);
+        }
+
+        70% {
+            transform: scale(0.95);
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes kbXPFloat {
+        0% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        100% {
+            opacity: 0;
+            transform: translateY(-40px);
+        }
+    }
+
+    @@keyframes kbPulseRing {
+        0% {
+            box-shadow: 0 0 0 0 rgba(16,185,129,0.4);
+        }
+
+        100% {
+            box-shadow: 0 0 0 20px rgba(16,185,129,0);
+        }
     }
 
     /* ── Header Bar ── */
@@ -137,7 +300,13 @@
         .arena-tag.green {
             background: var(--kb-green-bg);
             color: var(--kb-green);
-            border: 1px solid #6ee7b7;
+            border: 1px solid var(--kb-green-bd);
+        }
+
+        .arena-tag.red {
+            background: var(--kb-red-bg);
+            color: var(--kb-red);
+            border: 1px solid var(--kb-red-bd);
         }
 
     .back-link {
@@ -170,6 +339,7 @@
         padding: 32px 28px;
         margin-bottom: 24px;
         box-shadow: var(--kb-shadow);
+        animation: kbFadeUp 0.4s ease both;
     }
 
     .section-label {
@@ -276,81 +446,45 @@
             display: block;
         }
 
-        .choice-card .c-tag {
-            font-size: 0.66rem;
-            color: var(--kb-blue);
-            margin-top: 3px;
-            display: block;
-            font-weight: 700;
-        }
-
         .choice-card .c-count {
-            font-size: 0.63rem;
+            font-size: 0.65rem;
             color: var(--kb-faint);
-            margin-top: 2px;
+            margin-top: 4px;
             display: block;
         }
 
-    .diff-pip {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        margin-bottom: 6px;
-    }
-
-    .pip-easy {
-        background: var(--kb-green-lt);
-    }
-
-    .pip-normal {
-        background: var(--kb-blue-lt);
-    }
-
-    .pip-hard {
-        background: var(--kb-gold);
-    }
-
-    .pip-insanity {
-        background: var(--kb-red-lt);
-    }
-
-    /* ── Word Count Warning ── */
-    #word-warning {
-        display: none;
-        background: var(--kb-red-bg);
-        border: 1.5px solid var(--kb-red-bd);
-        border-radius: var(--kb-radius-sm);
-        padding: 14px 18px;
-        margin-bottom: 20px;
-        font-size: 0.85rem;
-        color: var(--kb-red);
-        font-weight: 700;
-    }
+        .choice-card .lock-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 0.85rem;
+        }
 
     /* ── Start Button ── */
     .start-btn {
-        display: block;
-        width: 100%;
-        padding: 16px;
-        border: none;
-        border-radius: var(--kb-radius);
-        background: linear-gradient(135deg, var(--kb-blue), var(--kb-blue-lt));
-        color: #fff;
-        font-family: 'Nunito', sans-serif;
-        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 16px 36px;
+        border-radius: 14px;
         font-weight: 900;
-        letter-spacing: 0.08em;
+        font-size: 1rem;
+        letter-spacing: 0.06em;
+        border: none;
         cursor: pointer;
         transition: var(--kb-trans);
-        text-transform: uppercase;
+        background: linear-gradient(135deg, var(--kb-blue), var(--kb-blue-lt));
+        color: #fff;
+        box-shadow: 0 6px 20px rgba(30,64,175,0.25);
         position: relative;
         overflow: hidden;
     }
 
         .start-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(30,64,175,0.3);
+            box-shadow: 0 10px 30px rgba(30,64,175,0.35);
+            filter: brightness(1.05);
         }
 
         .start-btn:disabled {
@@ -363,26 +497,30 @@
     /* ── Game Arena ── */
     #game-arena {
         display: none;
+        animation: kbFadeUp 0.4s ease both;
     }
 
-    /* ── HUD ── */
+    /* HUD */
     .game-hud {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
-        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
     }
 
-    .hud-item {
+    .hud-stat {
         background: var(--kb-surface);
         border: 1.5px solid var(--kb-border);
         border-radius: var(--kb-radius-sm);
-        padding: 14px 12px;
+        padding: 10px 18px;
         text-align: center;
+        min-width: 100px;
     }
 
-        .hud-item .hud-label {
-            font-size: 0.62rem;
+        .hud-stat .hud-label {
+            font-size: 0.6rem;
             font-weight: 900;
             letter-spacing: 0.15em;
             text-transform: uppercase;
@@ -390,216 +528,240 @@
             margin-bottom: 4px;
         }
 
-        .hud-item .hud-val {
-            font-size: 1.6rem;
+        .hud-stat .hud-value {
+            font-size: 1.5rem;
             font-weight: 900;
             color: var(--kb-black);
             line-height: 1;
         }
 
-        .hud-item.timer .hud-val {
-            color: var(--kb-gold);
-        }
+            .hud-stat .hud-value.score-val {
+                color: var(--kb-gold);
+            }
 
-        .hud-item.combo .hud-val {
-            color: var(--kb-blue-lt);
-        }
+            .hud-stat .hud-value.combo-val {
+                color: var(--kb-red-lt);
+            }
 
-        .hud-item.streak .hud-val {
-            color: var(--kb-green-lt);
-        }
+            .hud-stat .hud-value.round-val {
+                color: var(--kb-blue);
+            }
 
-    /* ── Timer Bar ── */
+    /* Timer Bar */
     .timer-bar-track {
         width: 100%;
-        height: 6px;
+        height: 8px;
         background: var(--kb-surface2);
-        border-radius: 3px;
+        border-radius: 4px;
         margin-bottom: 24px;
         overflow: hidden;
     }
 
     .timer-bar-fill {
         height: 100%;
-        background: linear-gradient(90deg, var(--kb-gold-lt), var(--kb-gold));
-        border-radius: 3px;
-        transition: width 0.3s ease;
-        width: 100%;
+        border-radius: 4px;
+        transition: width 0.3s linear, background 0.3s ease;
+        background: linear-gradient(90deg, var(--kb-green-lt), var(--kb-blue-lt));
     }
 
-        .timer-bar-fill.low {
-            background: linear-gradient(90deg, var(--kb-red-lt), var(--kb-red));
+        .timer-bar-fill.warning {
+            background: linear-gradient(90deg, var(--kb-gold-lt), var(--kb-gold));
         }
 
-    /* ── Question Card ── */
+        .timer-bar-fill.danger {
+            background: linear-gradient(90deg, var(--kb-red-lt), var(--kb-red));
+            animation: kbTimerPulse 0.5s ease infinite;
+        }
+
+    /* Question Card */
     .question-card {
         background: var(--kb-surface);
         border: 1.5px solid var(--kb-border);
         border-radius: var(--kb-radius-lg);
-        padding: 36px 28px;
+        padding: 40px 28px;
         text-align: center;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
         box-shadow: var(--kb-shadow);
-        position: relative;
-        overflow: hidden;
+        animation: kbScaleIn 0.3s ease both;
     }
 
-        .question-card .q-category {
-            font-size: 0.65rem;
-            font-weight: 900;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--kb-blue);
-            margin-bottom: 12px;
-        }
+    .question-label {
+        font-size: 0.65rem;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--kb-faint);
+        margin-bottom: 12px;
+    }
 
-        .question-card .q-kana {
-            font-size: clamp(2rem, 6vw, 3.5rem);
-            font-weight: 900;
-            color: var(--kb-black);
-            margin-bottom: 8px;
-            line-height: 1.2;
-        }
+    .question-kana {
+        font-size: clamp(3rem, 8vw, 5rem);
+        font-weight: 900;
+        color: var(--kb-black);
+        line-height: 1.1;
+        margin-bottom: 8px;
+        word-break: break-all;
+    }
 
-        .question-card .q-romaji {
-            font-size: 1rem;
-            color: var(--kb-muted);
-            margin-bottom: 4px;
-        }
+    .question-meaning {
+        font-size: 0.85rem;
+        color: var(--kb-muted);
+        margin-top: 8px;
+    }
 
-        .question-card .q-meaning {
-            font-size: 0.85rem;
-            color: var(--kb-faint);
-            margin-bottom: 16px;
-        }
+    .question-category {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--kb-faint);
+        background: var(--kb-surface2);
+        margin-top: 12px;
+    }
 
-        .question-card .q-prompt {
-            font-size: 0.72rem;
-            font-weight: 800;
-            color: var(--kb-gold);
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        .question-card .q-missing-highlight {
-            display: inline-block;
-            background: var(--kb-gold-bg);
-            border: 1.5px dashed var(--kb-gold-bd);
-            border-radius: 8px;
-            padding: 4px 16px;
-            font-size: 1.5rem;
-            font-weight: 900;
-            color: var(--kb-gold);
-            margin: 8px 0;
-            min-width: 60px;
-        }
-
-    /* ── Answer Options ── */
-    .answers-grid {
+    /* Answer Options */
+    .options-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-        margin-bottom: 20px;
+        gap: 14px;
+        margin-bottom: 24px;
     }
 
-    .answer-btn {
+    .option-btn {
         background: var(--kb-bg);
         border: 2px solid var(--kb-border);
         border-radius: var(--kb-radius);
         padding: 20px 16px;
-        font-family: 'Nunito', sans-serif;
-        font-size: 1.4rem;
-        font-weight: 900;
+        font-size: 1.15rem;
+        font-weight: 800;
         color: var(--kb-charcoal);
         cursor: pointer;
         transition: var(--kb-trans);
         text-align: center;
+        font-family: 'Nunito', sans-serif;
         position: relative;
         overflow: hidden;
     }
 
-        .answer-btn:hover {
+        .option-btn:hover:not(:disabled) {
             border-color: var(--kb-blue-lt);
             background: var(--kb-blue-bg);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(30,64,175,0.1);
+            box-shadow: 0 6px 18px rgba(30,64,175,0.12);
         }
 
-        .answer-btn.correct {
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .option-btn.correct {
             border-color: var(--kb-green-lt);
             background: var(--kb-green-bg);
             color: var(--kb-green);
-            animation: popIn 0.3s ease;
+            animation: kbPopCorrect 0.4s ease;
         }
 
-        .answer-btn.incorrect {
+        .option-btn.incorrect {
             border-color: var(--kb-red-lt);
             background: var(--kb-red-bg);
             color: var(--kb-red);
-            animation: shakeX 0.4s ease;
+            animation: kbShake 0.4s ease;
         }
 
-        .answer-btn:disabled {
-            cursor: default;
-            pointer-events: none;
+        .option-btn.reveal-correct {
+            border-color: var(--kb-green-lt);
+            background: var(--kb-green-bg);
+            color: var(--kb-green);
         }
 
-        .answer-btn .ans-label {
-            position: absolute;
-            top: 6px;
-            left: 10px;
-            font-size: 0.58rem;
-            font-weight: 900;
-            color: var(--kb-faint);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
+    /* Feedback Toast */
+    .feedback-toast {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        font-size: 2rem;
+        font-weight: 900;
+        padding: 20px 40px;
+        border-radius: var(--kb-radius-lg);
+        z-index: 9999;
+        pointer-events: none;
+        transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        font-family: 'Nunito', sans-serif;
+    }
+
+        .feedback-toast.show {
+            transform: translate(-50%, -50%) scale(1);
         }
 
-    /* ── Progress Bar ── */
-    .progress-track {
-        width: 100%;
-        height: 4px;
-        background: var(--kb-surface2);
-        border-radius: 2px;
-        margin-bottom: 8px;
+        .feedback-toast.correct-toast {
+            background: var(--kb-green-bg);
+            color: var(--kb-green);
+            border: 2px solid var(--kb-green-bd);
+        }
+
+        .feedback-toast.incorrect-toast {
+            background: var(--kb-red-bg);
+            color: var(--kb-red);
+            border: 2px solid var(--kb-red-bd);
+        }
+
+        .feedback-toast.combo-toast {
+            background: var(--kb-gold-bg);
+            color: var(--kb-gold);
+            border: 2px solid var(--kb-gold-bd);
+        }
+
+    /* XP Float */
+    .xp-float {
+        position: fixed;
+        font-weight: 900;
+        font-size: 1.2rem;
+        color: var(--kb-gold);
+        pointer-events: none;
+        z-index: 9998;
+        animation: kbXPFloat 1s ease forwards;
     }
 
-    .progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--kb-blue), var(--kb-blue-lt));
-        border-radius: 2px;
-        transition: width 0.4s ease;
-    }
-
-    .progress-text {
-        font-size: 0.68rem;
-        color: var(--kb-faint);
-        font-weight: 700;
-        text-align: right;
-    }
-
-    /* ── Countdown Overlay ── */
+    /* Countdown Overlay */
     #countdown-overlay {
         display: none;
         position: fixed;
-        inset: 0;
-        background: rgba(15,23,42,0.85);
-        z-index: 9999;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.95);
+        z-index: 10000;
         justify-content: center;
         align-items: center;
     }
 
-        #countdown-overlay .cd-number {
-            font-size: 8rem;
-            font-weight: 900;
-            color: var(--kb-gold-lt);
-            animation: countdownPop 0.8s ease;
-            text-shadow: 0 0 40px rgba(245,158,11,0.4);
-        }
+    .countdown-number {
+        font-size: 8rem;
+        font-weight: 900;
+        color: var(--kb-black);
+        animation: kbCountdownPop 0.8s ease;
+    }
+
+    .countdown-go {
+        font-size: 5rem;
+        font-weight: 900;
+        color: var(--kb-gold);
+        animation: kbCountdownPop 0.8s ease;
+    }
 
     /* ── Results Screen ── */
     #results-screen {
         display: none;
+        animation: kbSlideUp 0.5s ease both;
+    }
+
+    .results-card {
         background: var(--kb-surface);
         border: 1.5px solid var(--kb-border);
         border-radius: var(--kb-radius-lg);
@@ -608,28 +770,28 @@
         box-shadow: var(--kb-shadow-lg);
     }
 
-        #results-screen .result-icon {
-            font-size: 4rem;
-            margin-bottom: 16px;
-            display: block;
-        }
+    .results-icon {
+        font-size: 4rem;
+        margin-bottom: 16px;
+        animation: kbVictoryBounce 0.6s ease both;
+    }
 
-        #results-screen h2 {
-            font-size: 2rem;
-            font-weight: 900;
-            color: var(--kb-black);
-            margin-bottom: 8px;
-        }
+    .results-title {
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--kb-black);
+        margin-bottom: 8px;
+    }
 
-        #results-screen .result-sub {
-            font-size: 0.9rem;
-            color: var(--kb-muted);
-            margin-bottom: 28px;
-        }
+    .results-subtitle {
+        font-size: 1rem;
+        color: var(--kb-muted);
+        margin-bottom: 28px;
+    }
 
-    .results-grid {
+    .results-stats {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         gap: 16px;
         margin-bottom: 32px;
     }
@@ -638,11 +800,11 @@
         background: var(--kb-bg);
         border: 1.5px solid var(--kb-border);
         border-radius: var(--kb-radius-sm);
-        padding: 18px 12px;
+        padding: 16px 12px;
     }
 
         .result-stat .rs-label {
-            font-size: 0.62rem;
+            font-size: 0.6rem;
             font-weight: 900;
             letter-spacing: 0.15em;
             text-transform: uppercase;
@@ -650,22 +812,26 @@
             margin-bottom: 6px;
         }
 
-        .result-stat .rs-val {
+        .result-stat .rs-value {
             font-size: 1.8rem;
             font-weight: 900;
-            color: var(--kb-black);
+            line-height: 1;
         }
 
-            .result-stat .rs-val.gold {
+            .result-stat .rs-value.gold {
                 color: var(--kb-gold);
             }
 
-            .result-stat .rs-val.green {
+            .result-stat .rs-value.blue {
+                color: var(--kb-blue);
+            }
+
+            .result-stat .rs-value.green {
                 color: var(--kb-green-lt);
             }
 
-            .result-stat .rs-val.blue {
-                color: var(--kb-blue-lt);
+            .result-stat .rs-value.red {
+                color: var(--kb-red-lt);
             }
 
     .results-actions {
@@ -675,212 +841,50 @@
         flex-wrap: wrap;
     }
 
-        .results-actions button, .results-actions a {
-            padding: 12px 28px;
-            border-radius: var(--kb-radius-sm);
-            font-family: 'Nunito', sans-serif;
-            font-weight: 900;
-            font-size: 0.85rem;
-            letter-spacing: 0.06em;
-            cursor: pointer;
-            transition: var(--kb-trans);
-            text-decoration: none;
-            border: none;
-        }
-
-    .btn-play-again {
-        background: linear-gradient(135deg, var(--kb-blue), var(--kb-blue-lt));
-        color: #fff;
-    }
-
-        .btn-play-again:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(30,64,175,0.3);
-            color: #fff;
-        }
-
-    .btn-change-setup {
-        background: var(--kb-surface2);
-        color: var(--kb-dark);
-        border: 1.5px solid var(--kb-border) !important;
-    }
-
-        .btn-change-setup:hover {
-            background: var(--kb-border);
-            transform: translateY(-2px);
-        }
-
-    .btn-back-hub {
-        background: var(--kb-gold-bg);
-        color: var(--kb-gold);
-        border: 1.5px solid var(--kb-gold-bd) !important;
-    }
-
-        .btn-back-hub:hover {
-            transform: translateY(-2px);
-            color: var(--kb-gold);
-        }
-
-    /* ── Feedback Toast ── */
-    .feedback-toast {
-        position: fixed;
-        top: 20%;
-        left: 50%;
-        transform: translateX(-50%) scale(0);
-        font-size: 1.2rem;
+    .result-btn {
+        padding: 14px 28px;
+        border-radius: 12px;
         font-weight: 900;
-        padding: 12px 28px;
-        border-radius: var(--kb-radius);
-        z-index: 10000;
-        pointer-events: none;
-        transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        font-size: 0.88rem;
+        letter-spacing: 0.04em;
+        border: none;
+        cursor: pointer;
+        transition: var(--kb-trans);
+        text-decoration: none;
+        font-family: 'Nunito', sans-serif;
     }
 
-        .feedback-toast.show {
-            transform: translateX(-50%) scale(1);
+        .result-btn.primary {
+            background: linear-gradient(135deg, var(--kb-blue), var(--kb-blue-lt));
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(30,64,175,0.25);
         }
 
-        .feedback-toast.toast-correct {
-            background: var(--kb-green-bg);
-            color: var(--kb-green);
-            border: 1.5px solid #6ee7b7;
+            .result-btn.primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 30px rgba(30,64,175,0.35);
+            }
+
+        .result-btn.secondary {
+            background: var(--kb-surface2);
+            color: var(--kb-dark);
+            border: 1.5px solid var(--kb-border);
         }
 
-        .feedback-toast.toast-incorrect {
-            background: var(--kb-red-bg);
-            color: var(--kb-red);
-            border: 1.5px solid var(--kb-red-bd);
-        }
+            .result-btn.secondary:hover {
+                background: var(--kb-border);
+                transform: translateY(-2px);
+            }
 
-        .feedback-toast.toast-combo {
-            background: var(--kb-gold-bg);
-            color: var(--kb-gold);
-            border: 1.5px solid var(--kb-gold-bd);
-        }
-
-    /* ── Animations ── */
-    @@keyframes countdownPop {
-        0% {
-            transform: scale(0.3);
-            opacity: 0;
-        }
-
-        50% {
-            transform: scale(1.2);
-            opacity: 1;
-        }
-
-        100% {
-            transform: scale(1);
-            opacity: 1;
-        }
-    }
-
-    @@keyframes popIn {
-        0% {
-            transform: scale(0.9);
-        }
-
-        50% {
-            transform: scale(1.05);
-        }
-
-        100% {
-            transform: scale(1);
-        }
-    }
-
-    @@keyframes shakeX {
-        0%, 100% {
-            transform: translateX(0);
-        }
-
-        10% {
-            transform: translateX(-6px);
-        }
-
-        20% {
-            transform: translateX(6px);
-        }
-
-        30% {
-            transform: translateX(-4px);
-        }
-
-        40% {
-            transform: translateX(4px);
-        }
-
-        50% {
-            transform: translateX(-2px);
-        }
-
-        60% {
-            transform: translateX(2px);
-        }
-    }
-
-    @@keyframes fadeInUp {
-        0% {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        100% {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @@keyframes floatSoft {
-        0%, 100% {
-            transform: translateY(0);
-        }
-
-        50% {
-            transform: translateY(-4px);
-        }
-    }
-
-    @@keyframes glowPulse {
-        0%, 100% {
-            box-shadow: 0 0 0 0 rgba(217,119,6,0.2);
-        }
-
-        50% {
-            box-shadow: 0 0 20px 4px rgba(217,119,6,0.1);
-        }
-    }
-
-    @@keyframes slideInRight {
-        0% {
-            opacity: 0;
-            transform: translateX(30px);
-        }
-
-        100% {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-
-    .anim-fade-up {
-        animation: fadeInUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
-    }
-
-    .anim-slide-right {
-        animation: slideInRight 0.4s ease both;
-    }
-
-    /* ── Loading Spinner ── */
+    /* ── Loading State ── */
     .loading-spinner {
         display: inline-block;
         width: 24px;
         height: 24px;
         border: 3px solid var(--kb-border);
-        border-top-color: var(--kb-blue);
+        border-top-color: var(--kb-blue-lt);
         border-radius: 50%;
-        animation: spin 0.8s linear infinite;
+        animation: spin 0.7s linear infinite;
     }
 
     @@keyframes spin {
@@ -893,724 +897,763 @@
         }
     }
 
+    /* ── Error Message ── */
+    .error-banner {
+        background: var(--kb-red-bg);
+        border: 1.5px solid var(--kb-red-bd);
+        border-radius: var(--kb-radius-sm);
+        padding: 16px 20px;
+        color: var(--kb-red);
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+        display: none;
+    }
+
     /* ── Responsive ── */
     @@media (max-width: 768px) {
-        .game-hud {
-            grid-template-columns: repeat(2, 1fr);
+        .kb-wrapper {
+            padding: 20px 12px;
         }
 
-        .answers-grid {
-            grid-template-columns: repeat(2, 1fr);
+        #setup-panel {
+            padding: 24px 18px;
         }
 
-        .results-grid {
+        .choice-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .options-grid {
             grid-template-columns: 1fr;
         }
 
+        .question-kana {
+            font-size: 3rem;
+        }
+
+        .game-hud {
+            gap: 10px;
+        }
+
+        .hud-stat {
+            padding: 8px 12px;
+            min-width: 80px;
+        }
+
+            .hud-stat .hud-value {
+                font-size: 1.2rem;
+            }
+
+        .results-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 480px) {
         .arena-header {
             flex-direction: column;
             align-items: flex-start;
         }
 
-        .question-card {
-            padding: 24px 16px;
-        }
-
-            .question-card .q-kana {
-                font-size: 2rem;
-            }
-
-        .answer-btn {
-            font-size: 1.1rem;
-            padding: 16px 12px;
-        }
-    }
-
-    @@media (max-width: 480px) {
         .choice-grid {
             grid-template-columns: repeat(2, 1fr);
         }
 
-        #setup-panel {
-            padding: 20px 14px;
+        .question-card {
+            padding: 28px 16px;
         }
 
-        .game-hud {
-            gap: 8px;
+        .question-kana {
+            font-size: 2.5rem;
         }
 
-        .hud-item {
-            padding: 10px 8px;
+        .results-card {
+            padding: 28px 18px;
         }
-
-            .hud-item .hud-val {
-                font-size: 1.3rem;
-            }
     }
 </style>
 
 <div class="kb-page">
     <div class="kb-wrapper">
-        <!-- Header -->
-        <div class="arena-header anim-fade-up">
+
+        <!-- ═══ Header ═══ -->
+        <div class="arena-header">
             <div class="arena-title-wrap">
-                <h2>🗡️ KanaBlitz <span style="color:var(--kb-gold)">Solo</span></h2>
+                <h2>⚔️ Solo Training</h2>
                 <div class="arena-meta">
-                    <span class="arena-tag gold">Solo Training</span>
-                    <span class="arena-tag blue" id="header-diff-tag">Normal</span>
-                    <span class="arena-tag black" id="header-alpha-tag">Hiragana</span>
+                    <span class="arena-tag black">KanaBlitz</span>
+                    <span class="arena-tag gold">Solo</span>
                 </div>
             </div>
-            <a href="/KanaBlitz/Index" class="back-link">← Back to Modes</a>
+            <a href="/KanaBlitz" class="back-link" onclick="SoundFX.play('click')">← Back to Hub</a>
         </div>
 
-        <!-- Setup Panel -->
-        <div id="setup-panel" class="anim-fade-up" style="animation-delay:0.1s">
+        <!-- ═══ Error Banner ═══ -->
+        <div id="error-banner" class="error-banner"></div>
+
+        <!-- ═══ Setup Panel ═══ -->
+        <div id="setup-panel">
+            <!-- Difficulty Selection -->
             <div class="section-label">Difficulty</div>
             <div class="choice-grid" id="diff-grid">
                 <div class="choice-card" data-diff="easy" onclick="selectDifficulty('easy')">
-                    <span class="diff-pip pip-easy"></span>
                     <span class="c-icon">🌱</span>
                     <span class="c-label">Easy</span>
                     <span class="c-sub">Single Characters</span>
-                    <span class="c-count" id="count-easy">—</span>
+                    <span class="c-count" id="count-easy">Loading...</span>
                 </div>
                 <div class="choice-card active" data-diff="normal" onclick="selectDifficulty('normal')">
-                    <span class="diff-pip pip-normal"></span>
-                    <span class="c-icon">⚔️</span>
+                    <span class="c-icon">⚡</span>
                     <span class="c-label">Normal</span>
                     <span class="c-sub">Common Words</span>
-                    <span class="c-count" id="count-normal">—</span>
+                    <span class="c-count" id="count-normal">Loading...</span>
                 </div>
                 <div class="choice-card" data-diff="hard" onclick="selectDifficulty('hard')">
-                    <span class="diff-pip pip-hard"></span>
                     <span class="c-icon">🔥</span>
                     <span class="c-label">Hard</span>
-                    <span class="c-sub">Yōon & Compounds</span>
-                    <span class="c-tag" id="lock-hard">🔒 Locked</span>
-                    <span class="c-count" id="count-hard">—</span>
+                    <span class="c-sub">Compounds &amp; Yōon</span>
+                    <span class="c-count" id="count-hard">Loading...</span>
+                    <span class="lock-badge" id="lock-hard" style="display:none">🔒</span>
                 </div>
                 <div class="choice-card" data-diff="insanity" onclick="selectDifficulty('insanity')">
-                    <span class="diff-pip pip-insanity"></span>
                     <span class="c-icon">💀</span>
                     <span class="c-label">Insanity</span>
-                    <span class="c-sub">Kanji Mastery</span>
-                    <span class="c-tag" id="lock-insanity">🔒 Locked</span>
-                    <span class="c-count" id="count-insanity">—</span>
+                    <span class="c-sub">Kanji + Furigana</span>
+                    <span class="c-count" id="count-insanity">Loading...</span>
+                    <span class="lock-badge" id="lock-insanity" style="display:none">🔒</span>
                 </div>
             </div>
 
+            <!-- Alphabet Selection -->
             <div class="section-label">Alphabet</div>
             <div class="choice-grid" id="alpha-grid">
                 <div class="choice-card active" data-alpha="hiragana" onclick="selectAlphabet('hiragana')">
                     <span class="c-icon">あ</span>
                     <span class="c-label">Hiragana</span>
-                    <span class="c-sub">平仮名</span>
                 </div>
                 <div class="choice-card" data-alpha="katakana" onclick="selectAlphabet('katakana')">
                     <span class="c-icon">ア</span>
                     <span class="c-label">Katakana</span>
-                    <span class="c-sub">片仮名</span>
                 </div>
                 <div class="choice-card" data-alpha="dakuten" onclick="selectAlphabet('dakuten')">
                     <span class="c-icon">が</span>
                     <span class="c-label">Dakuten</span>
-                    <span class="c-sub">濁点</span>
                 </div>
                 <div class="choice-card" data-alpha="mixed" onclick="selectAlphabet('mixed')">
-                    <span class="c-icon">混</span>
+                    <span class="c-icon">🀄</span>
                     <span class="c-label">Mixed</span>
-                    <span class="c-sub">総合</span>
                 </div>
             </div>
 
-            <div id="word-warning"></div>
-
-            <button class="start-btn" id="start-btn" onclick="startGame()" disabled>
-                <span id="start-btn-text">Loading word counts…</span>
-            </button>
+            <!-- Start Button -->
+            <div style="text-align:center; margin-top:8px;">
+                <button class="start-btn" id="start-btn" onclick="startGame()">
+                    ⚔️ Start Training
+                </button>
+            </div>
         </div>
 
-        <!-- Countdown Overlay -->
+        <!-- ═══ Countdown Overlay ═══ -->
         <div id="countdown-overlay">
-            <div class="cd-number" id="cd-number">3</div>
+            <div id="countdown-display"></div>
         </div>
 
-        <!-- Game Arena -->
+        <!-- ═══ Game Arena ═══ -->
         <div id="game-arena">
+            <!-- HUD -->
             <div class="game-hud">
-                <div class="hud-item timer">
-                    <div class="hud-label">Time</div>
-                    <div class="hud-val" id="hud-time">60</div>
-                </div>
-                <div class="hud-item">
+                <div class="hud-stat">
                     <div class="hud-label">Score</div>
-                    <div class="hud-val" id="hud-score">0</div>
+                    <div class="hud-value score-val" id="hud-score">0</div>
                 </div>
-                <div class="hud-item combo">
+                <div class="hud-stat">
                     <div class="hud-label">Combo</div>
-                    <div class="hud-val" id="hud-combo">0×</div>
+                    <div class="hud-value combo-val" id="hud-combo">0×</div>
                 </div>
-                <div class="hud-item streak">
+                <div class="hud-stat">
+                    <div class="hud-label">Round</div>
+                    <div class="hud-value round-val" id="hud-round">1/10</div>
+                </div>
+                <div class="hud-stat">
                     <div class="hud-label">Correct</div>
-                    <div class="hud-val" id="hud-correct">0</div>
+                    <div class="hud-value green" style="color:var(--kb-green-lt)" id="hud-correct">0</div>
                 </div>
             </div>
 
+            <!-- Timer -->
             <div class="timer-bar-track">
-                <div class="timer-bar-fill" id="timer-bar"></div>
+                <div class="timer-bar-fill" id="timer-bar" style="width:100%"></div>
             </div>
 
-            <div class="progress-track">
-                <div class="progress-fill" id="progress-bar" style="width:0%"></div>
-            </div>
-            <div class="progress-text" id="progress-text">0 / 0</div>
-
-            <div class="question-card anim-slide-right" id="question-card">
-                <div class="q-category" id="q-category">—</div>
-                <div class="q-kana" id="q-kana">—</div>
-                <div class="q-missing-highlight" id="q-missing">?</div>
-                <div class="q-romaji" id="q-romaji">—</div>
-                <div class="q-meaning" id="q-meaning">—</div>
-                <div class="q-prompt">Select the missing kana</div>
+            <!-- Question -->
+            <div class="question-card" id="question-card">
+                <div class="question-label" id="q-label">What is this kana?</div>
+                <div class="question-kana" id="q-kana">—</div>
+                <div class="question-category" id="q-category">—</div>
             </div>
 
-            <div class="answers-grid" id="answers-grid"></div>
+            <!-- Options -->
+            <div class="options-grid" id="options-grid"></div>
         </div>
 
-        <!-- Results Screen -->
+        <!-- ═══ Results Screen ═══ -->
         <div id="results-screen">
-            <span class="result-icon" id="result-icon">🏆</span>
-            <h2 id="result-title">Training Complete!</h2>
-            <div class="result-sub" id="result-sub">Great effort on your solo run.</div>
+            <div class="results-card">
+                <div class="results-icon" id="results-icon">🏆</div>
+                <div class="results-title" id="results-title">Training Complete!</div>
+                <div class="results-subtitle" id="results-subtitle">Great work on your kana practice!</div>
 
-            <div class="results-grid">
-                <div class="result-stat">
-                    <div class="rs-label">Final Score</div>
-                    <div class="rs-val gold" id="rs-score">0</div>
+                <div class="results-stats">
+                    <div class="result-stat">
+                        <div class="rs-label">Final Score</div>
+                        <div class="rs-value gold" id="rs-score">0</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="rs-label">Accuracy</div>
+                        <div class="rs-value blue" id="rs-accuracy">0%</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="rs-label">Best Combo</div>
+                        <div class="rs-value green" id="rs-combo">0×</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="rs-label">XP Earned</div>
+                        <div class="rs-value gold" id="rs-xp">+0</div>
+                    </div>
                 </div>
-                <div class="result-stat">
-                    <div class="rs-label">Accuracy</div>
-                    <div class="rs-val green" id="rs-accuracy">0%</div>
-                </div>
-                <div class="result-stat">
-                    <div class="rs-label">Best Combo</div>
-                    <div class="rs-val blue" id="rs-combo">0×</div>
-                </div>
-                <div class="result-stat">
-                    <div class="rs-label">Questions</div>
-                    <div class="rs-val" id="rs-total">0</div>
-                </div>
-                <div class="result-stat">
-                    <div class="rs-label">Correct</div>
-                    <div class="rs-val green" id="rs-correct">0</div>
-                </div>
-                <div class="result-stat">
-                    <div class="rs-label">XP Earned</div>
-                    <div class="rs-val gold" id="rs-xp">0</div>
-                </div>
-            </div>
 
-            <div class="results-actions">
-                <button class="btn-play-again" onclick="playAgain()">Play Again</button>
-                <button class="btn-change-setup" onclick="changeSetup()">Change Setup</button>
-                <a href="/KanaBlitz/Index" class="btn-back-hub">Mode Selection</a>
+                <div class="results-actions">
+                    <button class="result-btn primary" onclick="playAgain()">⚔️ Play Again</button>
+                    <button class="result-btn secondary" onclick="backToSetup()">⚙️ Change Settings</button>
+                    <a href="/KanaBlitz" class="result-btn secondary" style="text-decoration:none">← Back to Hub</a>
+                </div>
             </div>
         </div>
 
         <!-- Feedback Toast -->
         <div class="feedback-toast" id="feedback-toast"></div>
+
     </div>
 </div>
 
 <script>
-    // ═══════════════════════════════════════════════════════════
-    //  KanaBlitz Solo Game Engine
-    // ═══════════════════════════════════════════════════════════
-
-    // ── Audio Architecture (placeholder hooks for future sounds) ──
-    const AudioHooks = {
-        correct: () => { /* placeholder: play correct answer sound */ },
-        incorrect: () => { /* placeholder: play incorrect answer sound */ },
-        victory: () => { /* placeholder: play victory fanfare */ },
-        countdown: () => { /* placeholder: play countdown tick */ },
-        click: () => { /* placeholder: play button click */ },
-        combo: () => { /* placeholder: play combo streak sound */ }
-    };
-
-    // ── State ──
-    let selectedDifficulty = 'normal';
-    let selectedAlphabet = 'hiragana';
-    let gameWords = [];
-    let currentIndex = 0;
-    let score = 0;
-    let combo = 0;
-    let maxCombo = 0;
-    let correctCount = 0;
-    let totalAnswered = 0;
-    let timeLeft = 60;
-    let maxTime = 60;
-    let timerInterval = null;
-    let isPlaying = false;
-    let wordCounts = {};
-    let unlockData = null;
-
-    // ── Constants ──
-    const TIME_PER_DIFFICULTY = { easy: 75, normal: 60, hard: 50, insanity: 40 };
-    const BONUS_TIME = { easy: 4, normal: 3, hard: 2, insanity: 1 };
-    const MIN_WORDS = 4; // Minimum words required to start a game (reduced from high thresholds)
-
-    // ── Initialize ──
-    document.addEventListener('DOMContentLoaded', async () => {
-        await loadWordCounts();
-        await loadUnlocks();
-        updateStartButton();
-    });
-
-    // ── Load Word Counts from API ──
-    async function loadWordCounts() {
-        try {
-            const diffs = ['easy', 'normal', 'hard', 'insanity'];
-            const alphas = ['hiragana', 'katakana', 'dakuten', 'mixed'];
-            wordCounts = {};
-
-            for (const diff of diffs) {
-                for (const alpha of alphas) {
-                    try {
-                        const res = await fetch(`/KanaBlitz/GetWords?difficulty=${diff}&alphabet=${alpha}`);
-                        if (res.ok) {
-                            const data = await res.json();
-                            const key = `${diff}:${alpha}`;
-                            wordCounts[key] = Array.isArray(data) ? data.length : 0;
-                        }
-                    } catch (e) {
-                        // Silently handle - word count will show as 0
-                    }
+    /* ══════════════════════════════════════════════════════════════
+       SoundFX Engine — Web Audio API Synthesized Sounds
+    ══════════════════════════════════════════════════════════════ */
+    const SoundFX = {
+        ctx: null,
+        init() {
+            try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+        },
+        _ensure() {
+            if (!this.ctx) this.init();
+            if (!this.ctx) return false;
+            if (this.ctx.state === 'suspended') this.ctx.resume();
+            return true;
+        },
+        play(type) {
+            if (!this._ensure()) return;
+            const now = this.ctx.currentTime;
+            switch (type) {
+                case 'correct': {
+                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                    o.connect(g); g.connect(this.ctx.destination);
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(523, now);
+                    o.frequency.linearRampToValueAtTime(784, now + 0.1);
+                    g.gain.setValueAtTime(0.15, now);
+                    g.gain.linearRampToValueAtTime(0, now + 0.2);
+                    o.start(now); o.stop(now + 0.2);
+                    break;
+                }
+                case 'incorrect': {
+                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                    o.connect(g); g.connect(this.ctx.destination);
+                    o.type = 'sawtooth';
+                    o.frequency.setValueAtTime(300, now);
+                    o.frequency.linearRampToValueAtTime(150, now + 0.2);
+                    g.gain.setValueAtTime(0.1, now);
+                    g.gain.linearRampToValueAtTime(0, now + 0.3);
+                    o.start(now); o.stop(now + 0.3);
+                    break;
+                }
+                case 'combo': {
+                    [600, 800, 1000, 1200].forEach((f, i) => {
+                        const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                        o.connect(g); g.connect(this.ctx.destination);
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(f, now + i * 0.06);
+                        g.gain.setValueAtTime(0.1, now + i * 0.06);
+                        g.gain.linearRampToValueAtTime(0, now + i * 0.06 + 0.1);
+                        o.start(now + i * 0.06); o.stop(now + i * 0.06 + 0.1);
+                    });
+                    break;
+                }
+                case 'victory': {
+                    [523, 659, 784, 1047].forEach((f, i) => {
+                        const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                        o.connect(g); g.connect(this.ctx.destination);
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(f, now + i * 0.15);
+                        g.gain.setValueAtTime(0.12, now + i * 0.15);
+                        g.gain.linearRampToValueAtTime(0, now + i * 0.15 + 0.25);
+                        o.start(now + i * 0.15); o.stop(now + i * 0.15 + 0.25);
+                    });
+                    break;
+                }
+                case 'defeat': {
+                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                    o.connect(g); g.connect(this.ctx.destination);
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(400, now);
+                    o.frequency.linearRampToValueAtTime(100, now + 0.6);
+                    g.gain.setValueAtTime(0.12, now);
+                    g.gain.linearRampToValueAtTime(0, now + 0.7);
+                    o.start(now); o.stop(now + 0.7);
+                    break;
+                }
+                case 'countdown': {
+                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                    o.connect(g); g.connect(this.ctx.destination);
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(440, now);
+                    g.gain.setValueAtTime(0.1, now);
+                    g.gain.linearRampToValueAtTime(0, now + 0.12);
+                    o.start(now); o.stop(now + 0.12);
+                    break;
+                }
+                case 'click': {
+                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                    o.connect(g); g.connect(this.ctx.destination);
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(800, now);
+                    g.gain.setValueAtTime(0.06, now);
+                    g.gain.linearRampToValueAtTime(0, now + 0.04);
+                    o.start(now); o.stop(now + 0.04);
+                    break;
+                }
+                case 'tick': {
+                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                    o.connect(g); g.connect(this.ctx.destination);
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(1000, now);
+                    g.gain.setValueAtTime(0.04, now);
+                    g.gain.linearRampToValueAtTime(0, now + 0.03);
+                    o.start(now); o.stop(now + 0.03);
+                    break;
                 }
             }
-
-            // Update displayed counts for selected alphabet
-            updateWordCountDisplay();
-        } catch (e) {
-            console.error('Failed to load word counts:', e);
-            updateWordCountDisplay();
         }
-    }
+    };
 
-    function updateWordCountDisplay() {
-        ['easy', 'normal', 'hard', 'insanity'].forEach(diff => {
-            const key = `${diff}:${selectedAlphabet}`;
-            const count = wordCounts[key] || 0;
-            const el = document.getElementById(`count-${diff}`);
-            if (el) el.textContent = count > 0 ? `${count} words` : 'No words';
-        });
-    }
+    /* ══════════════════════════════════════════════════════════════
+       Game State
+    ══════════════════════════════════════════════════════════════ */
+    const G = {
+        difficulty: 'normal',
+        alphabet: 'hiragana',
+        words: [],
+        currentWord: null,
+        round: 0,
+        totalRounds: 10,
+        score: 0,
+        combo: 0,
+        maxCombo: 0,
+        correct: 0,
+        incorrect: 0,
+        timePerRound: 15,
+        timeLeft: 0,
+        timerInterval: null,
+        answered: false,
+        running: false
+    };
 
-    // ── Load Unlocks ──
-    async function loadUnlocks() {
-        try {
-            const res = await fetch('/KanaBlitz/GetUnlocks');
-            if (res.ok) {
-                unlockData = await res.json();
-                applyUnlocks();
+    /* ── Time limits per difficulty ── */
+    const TIME_MAP = { easy: 20, normal: 15, hard: 10, insanity: 7 };
+
+    /* ── Init: Load word counts ── */
+    document.addEventListener('DOMContentLoaded', () => {
+        loadWordCounts();
+    });
+
+    async function loadWordCounts() {
+        const diffs = ['easy', 'normal', 'hard', 'insanity'];
+        const alphas = ['hiragana', 'katakana', 'dakuten', 'mixed'];
+
+        for (const d of diffs) {
+            try {
+                let total = 0;
+                for (const a of alphas) {
+                    const resp = await fetch(`/KanaBlitz/GetWords?difficulty=${d}&alphabet=${a}`);
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        if (Array.isArray(data)) total += data.length;
+                    }
+                }
+                const el = document.getElementById(`count-${d}`);
+                if (el) el.textContent = `${total} words`;
+            } catch (e) {
+                const el = document.getElementById(`count-${d}`);
+                if (el) el.textContent = 'Error loading';
             }
-        } catch (e) {
-            // If not logged in, default unlocks apply
-            applyDefaultUnlocks();
         }
     }
 
-    function applyUnlocks() {
-        if (!unlockData) { applyDefaultUnlocks(); return; }
-
-        // Hard difficulty
-        const hardCard = document.querySelector('[data-diff="hard"]');
-        if (unlockData.hard && unlockData.hard.unlocked) {
-            hardCard.classList.remove('locked');
-            const lockTag = document.getElementById('lock-hard');
-            if (lockTag) lockTag.style.display = 'none';
-        } else {
-            hardCard.classList.add('locked');
-        }
-
-        // Insanity difficulty
-        const insCard = document.querySelector('[data-diff="insanity"]');
-        if (unlockData.insanity && unlockData.insanity.unlocked) {
-            insCard.classList.remove('locked');
-            const lockTag = document.getElementById('lock-insanity');
-            if (lockTag) lockTag.style.display = 'none';
-        } else {
-            insCard.classList.add('locked');
-        }
-    }
-
-    function applyDefaultUnlocks() {
-        // Easy and Normal always unlocked
-        document.querySelector('[data-diff="hard"]').classList.add('locked');
-        document.querySelector('[data-diff="insanity"]').classList.add('locked');
-    }
-
-    // ── Selection Handlers ──
+    /* ── Selection ── */
     function selectDifficulty(diff) {
-        const card = document.querySelector(`[data-diff="${diff}"]`);
-        if (card.classList.contains('locked')) return;
-
-        AudioHooks.click();
-        selectedDifficulty = diff;
+        SoundFX.play('click');
         document.querySelectorAll('#diff-grid .choice-card').forEach(c => c.classList.remove('active'));
-        card.classList.add('active');
-
-        // Update header tag
-        const tagEl = document.getElementById('header-diff-tag');
-        tagEl.textContent = diff.charAt(0).toUpperCase() + diff.slice(1);
-
-        updateWordCountDisplay();
-        updateStartButton();
+        document.querySelector(`#diff-grid .choice-card[data-diff="${diff}"]`).classList.add('active');
+        G.difficulty = diff;
     }
 
     function selectAlphabet(alpha) {
-        AudioHooks.click();
-        selectedAlphabet = alpha;
+        SoundFX.play('click');
         document.querySelectorAll('#alpha-grid .choice-card').forEach(c => c.classList.remove('active'));
-        document.querySelector(`[data-alpha="${alpha}"]`).classList.add('active');
-
-        const tagEl = document.getElementById('header-alpha-tag');
-        tagEl.textContent = alpha.charAt(0).toUpperCase() + alpha.slice(1);
-
-        updateWordCountDisplay();
-        updateStartButton();
+        document.querySelector(`#alpha-grid .choice-card[data-alpha="${alpha}"]`).classList.add('active');
+        G.alphabet = alpha;
     }
 
-    function updateStartButton() {
-        const btn = document.getElementById('start-btn');
-        const btnText = document.getElementById('start-btn-text');
-        const key = `${selectedDifficulty}:${selectedAlphabet}`;
-        const count = wordCounts[key] || 0;
-
-        if (count < MIN_WORDS) {
-            btn.disabled = true;
-            btnText.textContent = `Not enough words (${count}/${MIN_WORDS} needed)`;
-
-            const warning = document.getElementById('word-warning');
-            warning.style.display = 'block';
-            warning.innerHTML = `⚠️ Only <strong>${count}</strong> words available for <strong>${selectedDifficulty} ${selectedAlphabet}</strong>. Try a different combination. Minimum ${MIN_WORDS} required.`;
-        } else {
-            btn.disabled = false;
-            btnText.textContent = `Start Training — ${count} Words Available`;
-            document.getElementById('word-warning').style.display = 'none';
-        }
+    /* ── Show Error ── */
+    function showError(msg) {
+        const el = document.getElementById('error-banner');
+        el.textContent = msg;
+        el.style.display = 'block';
+        setTimeout(() => { el.style.display = 'none'; }, 5000);
     }
 
-    // ── Game Flow ──
+    /* ── Start Game ── */
     async function startGame() {
+        SoundFX.play('click');
         const btn = document.getElementById('start-btn');
         btn.disabled = true;
-        document.getElementById('start-btn-text').textContent = 'Loading words…';
+        btn.innerHTML = '<span class="loading-spinner"></span> Loading...';
 
         try {
-            const res = await fetch(`/KanaBlitz/GetWords?difficulty=${selectedDifficulty}&alphabet=${selectedAlphabet}`);
-            if (!res.ok) throw new Error('Failed to fetch words');
-            const data = await res.json();
+            const resp = await fetch(`/KanaBlitz/GetWords?difficulty=${G.difficulty}&alphabet=${G.alphabet}`);
+            if (!resp.ok) throw new Error('Failed to fetch words from database.');
+            const data = await resp.json();
 
-            if (!Array.isArray(data) || data.length < MIN_WORDS) {
-                throw new Error(`Not enough words (${data ? data.length : 0})`);
+            if (!Array.isArray(data) || data.length < 4) {
+                throw new Error(`Not enough words available for ${G.difficulty}/${G.alphabet} (${data?.length || 0} found). Try a different combination.`);
             }
 
-            gameWords = shuffleArray([...data]);
-            currentIndex = 0;
-            score = 0;
-            combo = 0;
-            maxCombo = 0;
-            correctCount = 0;
-            totalAnswered = 0;
-            maxTime = TIME_PER_DIFFICULTY[selectedDifficulty] || 60;
-            timeLeft = maxTime;
+            G.words = shuffleArray([...data]);
+            G.totalRounds = Math.min(10, G.words.length);
+            G.round = 0;
+            G.score = 0;
+            G.combo = 0;
+            G.maxCombo = 0;
+            G.correct = 0;
+            G.incorrect = 0;
+            G.timePerRound = TIME_MAP[G.difficulty] || 15;
+            G.running = true;
 
-            // Show countdown
-            showCountdown(() => {
-                document.getElementById('setup-panel').style.display = 'none';
-                document.getElementById('game-arena').style.display = 'block';
-                isPlaying = true;
-                updateHUD();
-                showQuestion();
-                startTimer();
-            });
-        } catch (e) {
-            console.error('Start game error:', e);
-            const warning = document.getElementById('word-warning');
-            warning.style.display = 'block';
-            warning.innerHTML = `❌ Failed to load words: ${e.message}. Please try again or select a different combination.`;
             btn.disabled = false;
-            document.getElementById('start-btn-text').textContent = 'Try Again';
+            btn.innerHTML = '⚔️ Start Training';
+
+            document.getElementById('setup-panel').style.display = 'none';
+            document.getElementById('results-screen').style.display = 'none';
+            document.getElementById('game-arena').style.display = 'block';
+
+            await showCountdown();
+            nextRound();
+
+        } catch (err) {
+            btn.disabled = false;
+            btn.innerHTML = '⚔️ Start Training';
+            showError(err.message);
         }
     }
 
-    function showCountdown(callback) {
-        const overlay = document.getElementById('countdown-overlay');
-        const numEl = document.getElementById('cd-number');
-        overlay.style.display = 'flex';
+    /* ── Countdown ── */
+    function showCountdown() {
+        return new Promise(resolve => {
+            const overlay = document.getElementById('countdown-overlay');
+            const display = document.getElementById('countdown-display');
+            overlay.style.display = 'flex';
 
-        let count = 3;
-        numEl.textContent = count;
+            let count = 3;
+            display.className = 'countdown-number';
+            display.textContent = count;
+            SoundFX.play('countdown');
 
-        const interval = setInterval(() => {
-            AudioHooks.countdown();
-            count--;
-            if (count > 0) {
-                numEl.textContent = count;
-                numEl.style.animation = 'none';
-                numEl.offsetHeight; // Trigger reflow
-                numEl.style.animation = 'countdownPop 0.8s ease';
-            } else if (count === 0) {
-                numEl.textContent = 'GO!';
-                numEl.style.color = '#10b981';
-                numEl.style.animation = 'none';
-                numEl.offsetHeight;
-                numEl.style.animation = 'countdownPop 0.8s ease';
-            } else {
-                clearInterval(interval);
-                overlay.style.display = 'none';
-                numEl.style.color = '';
-                callback();
-            }
-        }, 800);
+            const iv = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    display.textContent = count;
+                    display.style.animation = 'none';
+                    void display.offsetHeight;
+                    display.style.animation = '';
+                    SoundFX.play('countdown');
+                } else if (count === 0) {
+                    display.className = 'countdown-go';
+                    display.textContent = 'GO!';
+                    display.style.animation = 'none';
+                    void display.offsetHeight;
+                    display.style.animation = '';
+                    SoundFX.play('correct');
+                } else {
+                    clearInterval(iv);
+                    overlay.style.display = 'none';
+                    resolve();
+                }
+            }, 800);
+        });
     }
 
-    function startTimer() {
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            updateTimerDisplay();
-
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                endGame();
-            }
-        }, 1000);
-    }
-
-    function updateTimerDisplay() {
-        document.getElementById('hud-time').textContent = timeLeft;
-        const pct = (timeLeft / maxTime) * 100;
-        const bar = document.getElementById('timer-bar');
-        bar.style.width = pct + '%';
-        bar.className = 'timer-bar-fill' + (pct < 25 ? ' low' : '');
-    }
-
-    function updateHUD() {
-        document.getElementById('hud-score').textContent = score;
-        document.getElementById('hud-combo').textContent = combo + '×';
-        document.getElementById('hud-correct').textContent = correctCount;
-        updateTimerDisplay();
-    }
-
-    // ── Question Display ──
-    function showQuestion() {
-        if (currentIndex >= gameWords.length) {
-            // Reshuffle and continue
-            gameWords = shuffleArray([...gameWords]);
-            currentIndex = 0;
+    /* ── Next Round ── */
+    function nextRound() {
+        if (G.round >= G.totalRounds || !G.running) {
+            endGame();
+            return;
         }
 
-        const word = gameWords[currentIndex];
-        const card = document.getElementById('question-card');
+        G.answered = false;
+        G.currentWord = G.words[G.round];
+        G.round++;
 
-        // Animate card entrance
-        card.classList.remove('anim-slide-right');
-        card.offsetHeight;
-        card.classList.add('anim-slide-right');
+        // Update HUD
+        document.getElementById('hud-score').textContent = G.score;
+        document.getElementById('hud-combo').textContent = G.combo + '×';
+        document.getElementById('hud-round').textContent = G.round + '/' + G.totalRounds;
+        document.getElementById('hud-correct').textContent = G.correct;
 
-        // Display question data
-        document.getElementById('q-category').textContent = word.categoryTag || word.alphabet || '—';
+        // Display question
+        const qCard = document.getElementById('question-card');
+        qCard.style.animation = 'none';
+        void qCard.offsetHeight;
+        qCard.style.animation = 'kbScaleIn 0.3s ease both';
 
-        // Handle kanji display (strip furigana annotations for the kana display)
-        let displayKana = word.wordKana || '';
-        const parenMatch = displayKana.match(/^(.+?)\s*\((.+?)\)$/);
-        if (parenMatch) {
-            document.getElementById('q-kana').textContent = parenMatch[1];
-            // Show furigana hint
-            document.getElementById('q-romaji').textContent = parenMatch[2] + ' · ' + (word.wordRomaji || '');
-        } else {
-            document.getElementById('q-kana').textContent = displayKana;
-            document.getElementById('q-romaji').textContent = word.wordRomaji || '';
-        }
+        document.getElementById('q-kana').textContent = G.currentWord.wordKana || G.currentWord.WordKana || '—';
+        document.getElementById('q-category').textContent = G.currentWord.categoryTag || G.currentWord.CategoryTag || 'Kana';
 
-        document.getElementById('q-meaning').textContent = word.meaningEnglish || '';
-        document.getElementById('q-missing').textContent = word.missingKana || '?';
+        // Build options — pick 3 wrong answers from the word pool
+        buildOptions();
 
-        // Generate answer options
-        generateAnswers(word);
-        updateProgress();
+        // Start timer
+        startTimer();
     }
 
-    function generateAnswers(word) {
-        const correctAnswer = word.missingKana || '';
-        const grid = document.getElementById('answers-grid');
+    /* ── Build Options ── */
+    function buildOptions() {
+        const correctRomaji = G.currentWord.wordRomaji || G.currentWord.WordRomaji || '';
+        const pool = G.words.filter(w => {
+            const r = w.wordRomaji || w.WordRomaji || '';
+            return r && r !== correctRomaji;
+        });
+
+        const wrongAnswers = shuffleArray([...pool]).slice(0, 3).map(w => w.wordRomaji || w.WordRomaji || '');
+        const allAnswers = shuffleArray([correctRomaji, ...wrongAnswers]);
+
+        const grid = document.getElementById('options-grid');
         grid.innerHTML = '';
 
-        // Collect distractors from other words
-        let distractors = gameWords
-            .filter(w => w.missingKana && w.missingKana !== correctAnswer)
-            .map(w => w.missingKana);
-
-        // Remove duplicates and shuffle
-        distractors = [...new Set(distractors)];
-        distractors = shuffleArray(distractors).slice(0, 3);
-
-        // If not enough distractors, add generic kana
-        const fallbackKana = ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ',
-            'た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ',
-            'ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を','ん'];
-
-        while (distractors.length < 3) {
-            const random = fallbackKana[Math.floor(Math.random() * fallbackKana.length)];
-            if (random !== correctAnswer && !distractors.includes(random)) {
-                distractors.push(random);
-            }
-        }
-
-        const options = shuffleArray([correctAnswer, ...distractors.slice(0, 3)]);
-        const labels = ['A', 'B', 'C', 'D'];
-
-        options.forEach((opt, i) => {
+        allAnswers.forEach((ans, i) => {
             const btn = document.createElement('button');
-            btn.className = 'answer-btn';
-            btn.innerHTML = `<span class="ans-label">${labels[i]}</span>${opt}`;
-            btn.onclick = () => handleAnswer(btn, opt, correctAnswer);
+            btn.className = 'option-btn';
+            btn.textContent = ans || '—';
+            btn.dataset.answer = ans;
+            btn.style.animation = `kbFadeUp 0.3s ease ${i * 0.05}s both`;
+            btn.addEventListener('click', () => handleAnswer(ans, correctRomaji, btn));
             grid.appendChild(btn);
         });
     }
 
-    function handleAnswer(btn, selected, correct) {
-        if (!isPlaying) return;
+    /* ── Handle Answer ── */
+    function handleAnswer(selected, correct, btnEl) {
+        if (G.answered) return;
+        G.answered = true;
+        clearInterval(G.timerInterval);
 
-        // Disable all answer buttons
-        document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-        totalAnswered++;
+        const allBtns = document.querySelectorAll('.option-btn');
+        allBtns.forEach(b => b.disabled = true);
 
         if (selected === correct) {
-            // Correct
-            btn.classList.add('correct');
-            correctCount++;
-            combo++;
-            if (combo > maxCombo) maxCombo = combo;
+            // Correct!
+            btnEl.classList.add('correct');
+            G.correct++;
+            G.combo++;
+            if (G.combo > G.maxCombo) G.maxCombo = G.combo;
 
-            const points = 10 * Math.max(1, combo);
-            score += points;
+            const comboMultiplier = Math.min(G.combo, 5);
+            const timeBonus = Math.floor(G.timeLeft / G.timePerRound * 50);
+            const points = 100 * comboMultiplier + timeBonus;
+            G.score += points;
 
-            // Bonus time
-            timeLeft += BONUS_TIME[selectedDifficulty] || 2;
-            if (timeLeft > maxTime + 20) timeLeft = maxTime + 20;
+            document.getElementById('hud-score').textContent = G.score;
+            document.getElementById('hud-combo').textContent = G.combo + '×';
+            document.getElementById('hud-correct').textContent = G.correct;
 
-            AudioHooks.correct();
-            showFeedback('✓ Correct!', 'correct');
+            showXPFloat(btnEl, '+' + points);
 
-            if (combo >= 3) {
-                AudioHooks.combo();
-                showFeedback(`🔥 ${combo}× Combo! +${points}`, 'combo');
+            if (G.combo >= 3) {
+                SoundFX.play('combo');
+                showToast(`${G.combo}× Combo!`, 'combo-toast');
+            } else {
+                SoundFX.play('correct');
+                showToast('Correct!', 'correct-toast');
             }
         } else {
             // Incorrect
-            btn.classList.add('incorrect');
-            // Highlight correct answer
-            document.querySelectorAll('.answer-btn').forEach(b => {
-                if (b.textContent.includes(correct)) b.classList.add('correct');
-            });
-            combo = 0;
-            timeLeft = Math.max(0, timeLeft - 2);
+            btnEl.classList.add('incorrect');
+            G.incorrect++;
+            G.combo = 0;
 
-            AudioHooks.incorrect();
-            showFeedback('✗ Incorrect', 'incorrect');
+            document.getElementById('hud-combo').textContent = '0×';
+
+            // Reveal the correct answer
+            allBtns.forEach(b => {
+                if (b.dataset.answer === correct) {
+                    b.classList.add('reveal-correct');
+                }
+            });
+
+            SoundFX.play('incorrect');
+            showToast('Incorrect', 'incorrect-toast');
         }
 
-        updateHUD();
-        currentIndex++;
+        // Next round after delay
+        setTimeout(() => nextRound(), 1200);
+    }
 
-        // Next question after delay
-        setTimeout(() => {
-            if (isPlaying && timeLeft > 0) {
-                showQuestion();
+    /* ── Timer ── */
+    function startTimer() {
+        G.timeLeft = G.timePerRound;
+        const bar = document.getElementById('timer-bar');
+        bar.style.width = '100%';
+        bar.className = 'timer-bar-fill';
+
+        const startTime = Date.now();
+        const duration = G.timePerRound * 1000;
+
+        G.timerInterval = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            const pct = Math.max(0, 1 - elapsed / duration) * 100;
+            bar.style.width = pct + '%';
+            G.timeLeft = Math.max(0, G.timePerRound - elapsed / 1000);
+
+            if (pct < 20) {
+                bar.className = 'timer-bar-fill danger';
+                if (Math.floor(G.timeLeft * 2) % 2 === 0) SoundFX.play('tick');
+            } else if (pct < 40) {
+                bar.className = 'timer-bar-fill warning';
+            } else {
+                bar.className = 'timer-bar-fill';
             }
-        }, 600);
+
+            if (pct <= 0) {
+                clearInterval(G.timerInterval);
+                handleTimeout();
+            }
+        }, 100);
     }
 
-    function showFeedback(text, type) {
-        const toast = document.getElementById('feedback-toast');
-        toast.textContent = text;
-        toast.className = 'feedback-toast toast-' + type + ' show';
+    function handleTimeout() {
+        if (G.answered) return;
+        G.answered = true;
+        G.incorrect++;
+        G.combo = 0;
 
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 1200);
+        const correctRomaji = G.currentWord.wordRomaji || G.currentWord.WordRomaji || '';
+        const allBtns = document.querySelectorAll('.option-btn');
+        allBtns.forEach(b => {
+            b.disabled = true;
+            if (b.dataset.answer === correctRomaji) {
+                b.classList.add('reveal-correct');
+            }
+        });
+
+        document.getElementById('hud-combo').textContent = '0×';
+        SoundFX.play('incorrect');
+        showToast('Time\'s Up!', 'incorrect-toast');
+
+        setTimeout(() => nextRound(), 1200);
     }
 
-    function updateProgress() {
-        const total = Math.max(gameWords.length, totalAnswered + 1);
-        const pct = Math.min(100, ((currentIndex) / total) * 100);
-        document.getElementById('progress-bar').style.width = pct + '%';
-        document.getElementById('progress-text').textContent = `${totalAnswered} answered · ${currentIndex} shown`;
-    }
+    /* ── End Game ── */
+    async function endGame() {
+        G.running = false;
+        clearInterval(G.timerInterval);
 
-    // ── End Game ──
-    function endGame() {
-        isPlaying = false;
-        clearInterval(timerInterval);
+        const accuracy = G.totalRounds > 0 ? Math.round((G.correct / G.totalRounds) * 100) : 0;
+        const xpEarned = Math.floor(G.score * 0.5 + G.correct * 5);
 
-        AudioHooks.victory();
+        // Play sound
+        if (accuracy >= 80) {
+            SoundFX.play('victory');
+        } else {
+            SoundFX.play('defeat');
+        }
 
-        const accuracy = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
-        const xpEarned = Math.floor(score * 0.5) + (correctCount * 5);
-
-        // Determine result icon and message
-        let icon, title, sub;
-        if (accuracy >= 90) { icon = '🏆'; title = 'Outstanding!'; sub = 'Near-perfect performance, master!'; }
-        else if (accuracy >= 70) { icon = '⭐'; title = 'Great Run!'; sub = 'Strong accuracy, keep it up!'; }
-        else if (accuracy >= 50) { icon = '🎯'; title = 'Good Effort!'; sub = 'Room to grow — practice makes perfect.'; }
-        else { icon = '📝'; title = 'Keep Practicing!'; sub = 'Every attempt makes you stronger.'; }
-
-        document.getElementById('result-icon').textContent = icon;
-        document.getElementById('result-title').textContent = title;
-        document.getElementById('result-sub').textContent = sub;
-        document.getElementById('rs-score').textContent = score;
-        document.getElementById('rs-accuracy').textContent = accuracy + '%';
-        document.getElementById('rs-combo').textContent = maxCombo + '×';
-        document.getElementById('rs-total').textContent = totalAnswered;
-        document.getElementById('rs-correct').textContent = correctCount;
-        document.getElementById('rs-xp').textContent = '+' + xpEarned;
-
-        document.getElementById('game-arena').style.display = 'none';
-        document.getElementById('results-screen').style.display = 'block';
-
-        // Submit score to server if logged in (fire and forget)
+        // Submit score
         try {
-            fetch('/KanaBlitz/SubmitScore', {
+            await fetch('/KanaBlitz/SubmitScore', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    score: score,
-                    difficulty: selectedDifficulty,
-                    alphabet: selectedAlphabet,
-                    correct: correctCount,
-                    total: totalAnswered,
-                    maxCombo: maxCombo,
+                    score: G.score,
+                    difficulty: G.difficulty,
+                    alphabet: G.alphabet,
+                    correct: G.correct,
+                    total: G.totalRounds,
+                    maxCombo: G.maxCombo,
                     xpEarned: xpEarned
                 })
-            }).catch(() => { });
-        } catch (e) { }
+            });
+        } catch (e) { /* silent fail */ }
+
+        // Show results
+        document.getElementById('game-arena').style.display = 'none';
+        document.getElementById('results-screen').style.display = 'block';
+
+        const icon = accuracy >= 90 ? '🏆' : accuracy >= 70 ? '⭐' : accuracy >= 50 ? '💪' : '📚';
+        const title = accuracy >= 90 ? 'Outstanding!' : accuracy >= 70 ? 'Great Job!' : accuracy >= 50 ? 'Keep Practicing!' : 'Don\'t Give Up!';
+        const sub = accuracy >= 90 ? 'You\'re a kana master!' : accuracy >= 70 ? 'Strong performance!' : accuracy >= 50 ? 'You\'re making progress!' : 'Every attempt makes you stronger!';
+
+        document.getElementById('results-icon').textContent = icon;
+        document.getElementById('results-title').textContent = title;
+        document.getElementById('results-subtitle').textContent = sub;
+        document.getElementById('rs-score').textContent = G.score;
+        document.getElementById('rs-accuracy').textContent = accuracy + '%';
+        document.getElementById('rs-combo').textContent = G.maxCombo + '×';
+        document.getElementById('rs-xp').textContent = '+' + xpEarned;
     }
 
-    function playAgain() {
+    /* ── Play Again ── */
+    async function playAgain() {
+        SoundFX.play('click');
         document.getElementById('results-screen').style.display = 'none';
-        startGame();
+        try {
+            const resp = await fetch(`/KanaBlitz/GetWords?difficulty=${G.difficulty}&alphabet=${G.alphabet}`);
+            if (!resp.ok) throw new Error('Failed to fetch words.');
+            const data = await resp.json();
+            if (!Array.isArray(data) || data.length < 4) throw new Error('Not enough words.');
+            G.words = shuffleArray([...data]);
+            G.totalRounds = Math.min(10, G.words.length);
+            G.round = 0; G.score = 0; G.combo = 0; G.maxCombo = 0; G.correct = 0; G.incorrect = 0;
+            G.running = true;
+            document.getElementById('game-arena').style.display = 'block';
+            await showCountdown();
+            nextRound();
+        } catch (e) {
+            showError(e.message);
+            backToSetup();
+        }
     }
 
-    function changeSetup() {
+    function backToSetup() {
+        SoundFX.play('click');
+        G.running = false;
+        clearInterval(G.timerInterval);
+        document.getElementById('game-arena').style.display = 'none';
         document.getElementById('results-screen').style.display = 'none';
         document.getElementById('setup-panel').style.display = 'block';
-        updateStartButton();
     }
 
-    // ── Utility ──
+    /* ── Helpers ── */
     function shuffleArray(arr) {
         for (let i = arr.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -1619,14 +1662,31 @@
         return arr;
     }
 
-    // ── Keyboard Support ──
-    document.addEventListener('keydown', (e) => {
-        if (!isPlaying) return;
-        const keyMap = { 'a': 0, 'b': 1, 'c': 2, 'd': 3, '1': 0, '2': 1, '3': 2, '4': 3 };
-        const index = keyMap[e.key.toLowerCase()];
-        if (index !== undefined) {
-            const btns = document.querySelectorAll('.answer-btn:not(:disabled)');
-            if (btns[index]) btns[index].click();
+    function showToast(msg, cls) {
+        const t = document.getElementById('feedback-toast');
+        t.textContent = msg;
+        t.className = 'feedback-toast ' + cls + ' show';
+        setTimeout(() => { t.className = 'feedback-toast'; }, 800);
+    }
+
+    function showXPFloat(anchor, text) {
+        const el = document.createElement('div');
+        el.className = 'xp-float';
+        el.textContent = text;
+        const rect = anchor.getBoundingClientRect();
+        el.style.left = rect.left + rect.width / 2 + 'px';
+        el.style.top = rect.top + 'px';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1000);
+    }
+
+    /* Keyboard shortcuts: 1-4 for options */
+    document.addEventListener('keydown', e => {
+        if (!G.running || G.answered) return;
+        const num = parseInt(e.key);
+        if (num >= 1 && num <= 4) {
+            const btns = document.querySelectorAll('.option-btn');
+            if (btns[num - 1]) btns[num - 1].click();
         }
     });
 </script>
