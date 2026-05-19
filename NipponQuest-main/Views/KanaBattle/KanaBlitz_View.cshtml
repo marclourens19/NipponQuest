@@ -1,10 +1,11 @@
 ﻿@*
-    ╔══════════════════════════════════════════════════════════════╗
-    ║  KanaBlitz_View.cshtml  —  KanaBattle Lobby / Setup         ║
-    ║  Controller : KanaBattleController → MainView()             ║
-    ║  Route      : /KanaBattle/MainView                          ║
-    ║  Launches   : /KanaBattle/Battle?difficulty=&script=        ║
-    ╚══════════════════════════════════════════════════════════════╝
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║  KanaBlitz_View.cshtml  —  KanaBattle Hub / Lobby & Setup       ║
+    ║  Controller : KanaBattleController → MainView()                 ║
+    ║  Route      : /KanaBattle/MainView                              ║
+    ║  Launches   : /KanaBattle/Battle?difficulty=&script=            ║
+    ║  Refactored : Full audit, debug, redesign & UX overhaul         ║
+    ╚══════════════════════════════════════════════════════════════════╝
 *@
 @{
     ViewData["Title"] = "KanaBattle — Choose Your Battle";
@@ -12,663 +13,997 @@
 }
 
 <style>
-    /* ── palette ── */
+    /* ═══════════════════════════════════════════════
+           NIPPONQUEST DESIGN TOKENS — KanaBattle Hub
+           Matches site.css palette & Nunito font stack
+        ═══════════════════════════════════════════════ */
+    @@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
     :root {
-        --bg: #0d0d1a;
-        --panel: #12122a;
-        --border: #2a2a55;
-        --accent: #7c3aed;
-        --accent2: #a855f7;
-        --gold: #f59e0b;
-        --green: #10b981;
-        --red: #ef4444;
-        --text: #e2e8f0;
-        --muted: #94a3b8;
+        --nq-bg: #0b0b18;
+        --nq-surface: #12122a;
+        --nq-surface2: #1a1a38;
+        --nq-border: #2a2a55;
+        --nq-border2: #3a3a6a;
+        --nq-accent: #7c3aed;
+        --nq-accent2: #a855f7;
+        --nq-pink: #ec4899;
+        --nq-gold: #f59e0b;
+        --nq-green: #10b981;
+        --nq-red: #ef4444;
+        --nq-blue: #0ea5e9;
+        --nq-text: #e2e8f0;
+        --nq-muted: #94a3b8;
+        --nq-faint: #64748b;
+        --nq-radius: 14px;
+        --nq-radius-sm: 10px;
+        --nq-radius-lg: 20px;
+        --nq-transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    * {
+    *, *::before, *::after {
         box-sizing: border-box;
         margin: 0;
         padding: 0;
     }
 
-    body {
-        background: var(--bg);
-        color: var(--text);
-        font-family: 'Segoe UI', sans-serif;
+    .lv-page {
+        background: var(--nq-bg);
+        min-height: 100vh;
+        color: var(--nq-text);
+        font-family: 'Nunito', 'Segoe UI', sans-serif;
+        padding-bottom: 80px;
     }
+
+        /* ── Ambient gradient ── */
+        .lv-page::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse 80% 60% at 10% 10%, rgba(239,68,68,0.05) 0%, transparent 55%), radial-gradient(ellipse 70% 50% at 90% 80%, rgba(124,58,237,0.06) 0%, transparent 55%), radial-gradient(ellipse 60% 40% at 50% 50%, rgba(245,158,11,0.03) 0%, transparent 55%);
+            pointer-events: none;
+            z-index: 0;
+        }
 
     .lv-wrapper {
         max-width: 1100px;
         margin: 0 auto;
         padding: 24px 16px;
+        position: relative;
+        z-index: 1;
     }
 
-    /* ── hero ── */
+    /* ── Hero Section ── */
     .hero {
         text-align: center;
-        padding: 40px 20px;
+        padding: 36px 20px 40px;
+        position: relative;
     }
 
-        .hero h1 {
-            font-size: 2.8rem;
-            font-weight: 900;
-            letter-spacing: .06em;
-            background: linear-gradient(135deg,#ef4444,#f59e0b,#a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(239,68,68,0.12);
+        border: 1px solid rgba(239,68,68,0.3);
+        border-radius: 100px;
+        padding: 6px 18px;
+        font-size: 0.7rem;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+        color: #fca5a5;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+    }
 
-        .hero p {
-            color: var(--muted);
-            margin-top: 8px;
-            font-size: 1rem;
-            max-width: 560px;
-            margin-inline: auto;
-        }
+    .hero h1 {
+        font-size: clamp(2.2rem, 6vw, 3.8rem);
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        background: linear-gradient(135deg, #ef4444 0%, #f59e0b 50%, #a855f7 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.1;
+        margin-bottom: 12px;
+    }
 
-    /* ── live stats bar ── */
+    .hero p {
+        color: var(--nq-muted);
+        font-size: 1rem;
+        max-width: 560px;
+        margin-inline: auto;
+        line-height: 1.7;
+    }
+
+    /* ── Live stats pills ── */
     .live-stats {
         display: flex;
-        gap: 16px;
+        gap: 12px;
         justify-content: center;
         flex-wrap: wrap;
-        margin: 16px 0 28px;
+        margin: 20px 0 40px;
     }
 
     .stat-pill {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 20px;
+        background: var(--nq-surface);
+        border: 1px solid var(--nq-border);
+        border-radius: 100px;
         padding: 8px 20px;
-        font-size: .82rem;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+        .stat-pill .pill-val {
+            font-weight: 900;
+            color: var(--nq-gold);
+        }
+
+    /* ── Section Labels ── */
+    .section-label {
+        font-size: 0.7rem;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        color: var(--nq-accent2);
+        text-transform: uppercase;
+        margin-bottom: 14px;
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
-        .stat-pill .val {
-            font-weight: 700;
-            color: var(--gold);
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--nq-border);
         }
 
-    /* ── section title ── */
-    .section-title {
-        font-size: .75rem;
-        font-weight: 700;
-        letter-spacing: .12em;
-        color: var(--accent2);
-        text-transform: uppercase;
-        margin-bottom: 14px;
+    /* ── Config Panel ── */
+    .config-panel {
+        background: var(--nq-surface);
+        border: 1px solid var(--nq-border);
+        border-radius: 20px;
+        padding: 32px 28px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.35);
     }
 
-    /* ── choice grid ── */
+    /* ── Choice Grids ── */
     .choice-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 12px;
         margin-bottom: 28px;
     }
 
     .choice-card {
-        background: #1a1a35;
-        border: 2px solid var(--border);
-        border-radius: 14px;
-        padding: 18px 14px;
+        background: var(--nq-surface2);
+        border: 2px solid var(--nq-border);
+        border-radius: var(--nq-radius);
+        padding: 20px 14px;
         cursor: pointer;
-        transition: all .2s;
+        transition: var(--nq-transition);
         text-align: center;
+        position: relative;
+        overflow: hidden;
+        user-select: none;
     }
 
         .choice-card:hover {
-            border-color: var(--accent2);
-            background: #1e1e40;
+            border-color: var(--nq-accent2);
+            background: #1e1e42;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(124,58,237,0.2);
         }
 
         .choice-card.active {
-            border-color: var(--accent);
-            background: #2d1b6e;
-            box-shadow: 0 0 18px rgba(124,58,237,.4);
+            border-color: var(--nq-accent);
+            background: rgba(45,27,110,0.7);
+            box-shadow: 0 0 22px rgba(124,58,237,0.4), inset 0 0 0 1px rgba(168,85,247,0.3);
+            transform: translateY(-2px);
         }
 
-        .choice-card .icon {
-            font-size: 2rem;
-            margin-bottom: 8px;
+        /* Difficulty-colored active states */
+        .choice-card[data-diff="easy"].active {
+            border-color: var(--nq-green);
+            box-shadow: 0 0 22px rgba(16,185,129,0.35);
         }
 
-        .choice-card .label {
-            font-weight: 700;
+        .choice-card[data-diff="normal"].active {
+            border-color: var(--nq-blue);
+            box-shadow: 0 0 22px rgba(14,165,233,0.35);
+        }
+
+        .choice-card[data-diff="hard"].active {
+            border-color: var(--nq-gold);
+            box-shadow: 0 0 22px rgba(245,158,11,0.35);
+        }
+
+        .choice-card[data-diff="insanity"].active {
+            border-color: var(--nq-red);
+            box-shadow: 0 0 22px rgba(239,68,68,0.35);
+        }
+
+        .choice-card .c-icon {
+            font-size: 2.2rem;
+            margin-bottom: 9px;
+            display: block;
+        }
+
+        .choice-card .c-label {
+            font-weight: 800;
             font-size: 1rem;
+            display: block;
         }
 
-        .choice-card .sub {
-            font-size: .74rem;
-            color: var(--muted);
+        .choice-card .c-sub {
+            font-size: 0.72rem;
+            color: var(--nq-muted);
             margin-top: 4px;
+            display: block;
         }
 
-        .choice-card .tag {
-            font-size: .7rem;
-            color: var(--accent2);
+        .choice-card .c-tag {
+            font-size: 0.68rem;
+            color: var(--nq-accent2);
             margin-top: 3px;
+            display: block;
         }
 
-    /* ── battle button ── */
+        .choice-card .c-count {
+            font-size: 0.65rem;
+            color: var(--nq-faint);
+            margin-top: 2px;
+            display: block;
+        }
+
+    .diff-pip {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-bottom: 6px;
+    }
+
+    .pip-easy {
+        background: var(--nq-green);
+    }
+
+    .pip-normal {
+        background: var(--nq-blue);
+    }
+
+    .pip-hard {
+        background: var(--nq-gold);
+    }
+
+    .pip-insanity {
+        background: var(--nq-red);
+    }
+
+    /* ── Word Warning ── */
+    #word-warning {
+        display: none;
+        background: rgba(239,68,68,0.1);
+        border: 1px solid rgba(239,68,68,0.4);
+        border-radius: var(--nq-radius-sm);
+        padding: 12px 16px;
+        font-size: 0.82rem;
+        color: #fca5a5;
+        margin-bottom: 16px;
+        align-items: center;
+        gap: 10px;
+    }
+
+        #word-warning.visible {
+            display: flex;
+        }
+
+    /* ── Battle Button ── */
     #btn-battle {
         display: block;
         width: 100%;
-        padding: 18px;
-        border-radius: 14px;
+        padding: 20px;
+        border-radius: var(--nq-radius);
         border: none;
-        font-size: 1.15rem;
-        font-weight: 800;
+        font-size: 1.1rem;
+        font-weight: 900;
         cursor: pointer;
-        letter-spacing: .06em;
-        background: linear-gradient(135deg,#ef4444,#f59e0b);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #ef4444 0%, #f59e0b 60%, #a855f7 100%);
         color: #fff;
-        transition: opacity .2s;
-        margin-bottom: 32px;
+        transition: var(--nq-transition);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 28px rgba(239,68,68,0.35);
+        margin-bottom: 12px;
     }
 
-        #btn-battle:hover {
-            opacity: .88;
+        #btn-battle::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 30%;
+            height: 200%;
+            background: rgba(255,255,255,0.18);
+            transform: rotate(30deg);
         }
 
-    /* ── info panels ── */
+        #btn-battle:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 36px rgba(239,68,68,0.5);
+        }
+
+            #btn-battle:hover::after {
+                animation: btnSheen 0.7s ease;
+            }
+
+        #btn-battle:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    @@keyframes btnSheen {
+        from {
+            left: -60%;
+        }
+
+        to {
+            left: 140%;
+        }
+    }
+
+    /* ── Solo Link ── */
+    .solo-link-wrap {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .solo-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--nq-muted);
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-decoration: none;
+        padding: 10px 20px;
+        border: 1px solid var(--nq-border);
+        border-radius: 100px;
+        transition: var(--nq-transition);
+    }
+
+        .solo-link:hover {
+            color: var(--nq-accent2);
+            border-color: var(--nq-accent2);
+            background: rgba(168,85,247,0.05);
+        }
+
+    /* ── Info Grid ── */
     .info-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 16px;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
     }
 
-    @@media (max-width: 640px) {
+    @@media (max-width: 700px) {
         .info-grid {
             grid-template-columns: 1fr;
         }
     }
 
     .info-card {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 22px 20px;
+        background: var(--nq-surface);
+        border: 1px solid var(--nq-border);
+        border-radius: var(--nq-radius-lg);
+        padding: 24px 20px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     }
 
-        .info-card h3 {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: var(--accent2);
-        }
-
-        .info-card p, .info-card li {
-            font-size: .86rem;
-            color: var(--muted);
-            line-height: 1.65;
-        }
-
-        .info-card ul {
-            padding-left: 18px;
-        }
-
-    /* ── rank table ── */
-    .rank-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: .84rem;
-        margin-top: 10px;
+    .info-card-title {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: var(--nq-accent2);
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
-        .rank-table th {
-            color: var(--accent2);
-            text-align: left;
-            padding: 6px 10px;
-            border-bottom: 1px solid var(--border);
-            font-size: .72rem;
-            letter-spacing: .08em;
-        }
-
-        .rank-table td {
-            padding: 8px 10px;
-            border-bottom: 1px solid #1a1a35;
-            color: var(--muted);
-        }
-
-        .rank-table tr:last-child td {
-            border-bottom: none;
-        }
-
-    /* ── elo table ── */
-    .elo-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: .84rem;
-        margin-top: 10px;
+    .info-card p,
+    .info-card li {
+        font-size: 0.85rem;
+        color: var(--nq-muted);
+        line-height: 1.7;
     }
 
-        .elo-table th {
-            color: var(--accent2);
-            text-align: left;
-            padding: 6px 10px;
-            border-bottom: 1px solid var(--border);
-            font-size: .72rem;
-            letter-spacing: .08em;
-        }
+    .info-card ul {
+        padding-left: 18px;
+    }
 
-        .elo-table td {
-            padding: 8px 10px;
-            border-bottom: 1px solid #1a1a35;
-            color: var(--muted);
-        }
+    .info-card li {
+        margin-bottom: 4px;
+    }
 
-            .elo-table td:nth-child(2) {
-                color: var(--green);
-                font-weight: 700;
-            }
-
-            .elo-table td:nth-child(3) {
-                color: var(--red);
-                font-weight: 700;
-            }
-
-        .elo-table tr:last-child td {
-            border-bottom: none;
-        }
-
-    /* ── how to play ── */
+    /* ── How to play cards ── */
     .howto-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: repeat(3, 1fr);
         gap: 12px;
-        margin-top: 12px;
+        margin-top: 14px;
     }
 
-    @@media (max-width: 700px) {
+    @@media (max-width: 600px) {
         .howto-grid {
             grid-template-columns: 1fr;
         }
     }
 
     .howto-item {
-        background: #1a1a35;
-        border-radius: 10px;
-        padding: 14px;
+        background: var(--nq-surface2);
+        border: 1px solid var(--nq-border);
+        border-radius: var(--nq-radius-sm);
+        padding: 16px;
+        text-align: center;
+        transition: var(--nq-transition);
     }
 
-        .howto-item .h-icon {
-            font-size: 1.5rem;
-            margin-bottom: 6px;
+        .howto-item:hover {
+            border-color: var(--nq-border2);
+            transform: translateY(-1px);
         }
 
-        .howto-item .h-name {
-            font-weight: 700;
-            font-size: .88rem;
+        .howto-item .hi-icon {
+            font-size: 1.7rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .howto-item .hi-name {
+            font-weight: 800;
+            font-size: 0.85rem;
             margin-bottom: 4px;
+            color: var(--nq-text);
         }
 
-        .howto-item .h-desc {
-            font-size: .78rem;
-            color: var(--muted);
+        .howto-item .hi-desc {
+            font-size: 0.76rem;
+            color: var(--nq-muted);
             line-height: 1.55;
         }
 
-    /* ── diff breakdown ── */
+    /* ── Difficulty breakdown ── */
+    .diff-breakdown {
+        display: grid;
+        gap: 0;
+        margin-top: 12px;
+    }
+
     .diff-row {
         display: flex;
-        gap: 14px;
         align-items: flex-start;
-        padding: 12px 0;
-        border-bottom: 1px solid #1a1a35;
+        gap: 14px;
+        padding: 14px 0;
+        border-bottom: 1px solid rgba(42,42,85,0.5);
     }
 
         .diff-row:last-child {
             border-bottom: none;
         }
 
-        .diff-row .d-icon {
+        .diff-row .dr-icon {
             font-size: 1.6rem;
             flex-shrink: 0;
+            margin-top: 2px;
         }
 
-        .diff-row .d-name {
+        .diff-row .dr-name {
+            font-weight: 800;
+            font-size: 0.9rem;
+            margin-bottom: 3px;
+        }
+
+        .diff-row .dr-desc {
+            font-size: 0.78rem;
+            color: var(--nq-muted);
+            line-height: 1.55;
+        }
+
+    /* ── Rank table ── */
+    .nq-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.83rem;
+        margin-top: 12px;
+    }
+
+        .nq-table th {
+            color: var(--nq-accent2);
+            text-align: left;
+            padding: 7px 10px;
+            border-bottom: 1px solid var(--nq-border);
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+
+        .nq-table td {
+            padding: 9px 10px;
+            border-bottom: 1px solid rgba(42,42,85,0.4);
+            color: var(--nq-muted);
+            vertical-align: middle;
+        }
+
+        .nq-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .nq-table td:nth-child(2) {
+            color: var(--nq-green);
             font-weight: 700;
-            font-size: .9rem;
         }
 
-        .diff-row .d-desc {
-            font-size: .8rem;
-            color: var(--muted);
-            margin-top: 3px;
-            line-height: 1.5;
+        .nq-table td:nth-child(3) {
+            color: var(--nq-red);
+            font-weight: 700;
         }
 
-    /* ── skill list ── */
-    .skill-list {
-        display: grid;
-        gap: 10px;
-        margin-top: 10px;
-    }
-
-    .skill-item {
-        background: #1a1a35;
-        border-radius: 8px;
-        padding: 10px 14px;
-        font-size: .82rem;
-        color: var(--muted);
-        display: flex;
-        gap: 10px;
+    /* ── Skill chips ── */
+    .skill-chip {
+        display: inline-flex;
         align-items: center;
+        gap: 6px;
+        background: var(--nq-surface2);
+        border: 1px solid var(--nq-border);
+        border-radius: 100px;
+        padding: 6px 14px;
+        font-size: 0.78rem;
+        color: var(--nq-muted);
+        margin: 4px;
     }
 
-        .skill-item .s-icon {
-            font-size: 1.2rem;
-            flex-shrink: 0;
+        .skill-chip .sc-icon {
+            font-size: 1rem;
         }
+
+    /* ── Responsive ── */
+    @@media (max-width: 768px) {
+        .config-panel {
+            padding: 20px 16px;
+        }
+
+        .choice-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .hero h1 {
+            font-size: 2.2rem;
+        }
+    }
+
+    @@media (max-width: 420px) {
+        .choice-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ── Loading overlay ── */
+    #loading-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(11,11,24,0.88);
+        backdrop-filter: blur(4px);
+        z-index: 9000;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+        #loading-overlay.show {
+            display: flex;
+        }
+
+    .spinner {
+        width: 48px;
+        height: 48px;
+        border: 3px solid var(--nq-border);
+        border-top-color: #f59e0b;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @@keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .loading-text {
+        color: var(--nq-muted);
+        font-size: 0.88rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
 </style>
 
-<div class="lv-wrapper">
+<div class="lv-page">
+    <div class="lv-wrapper">
 
-    <!-- HERO -->
-    <div class="hero">
-        <h1>⚔️ KanaBattle — Live Arena</h1>
-        <p>
-            Type romaji to attack your opponent — first to KO wins!<br>
-            Collect power-up skills from falling kana to turn the tide.
-        </p>
-    </div>
+        <!-- ── Hero ── -->
+        <div class="hero">
+            <div class="hero-badge">⚔️ Battle Mode</div>
+            <h1>KanaBattle</h1>
+            <p>
+                Face off against an AI opponent in real-time kana combat.
+                Choose your script, pick your difficulty, and prove your mastery.
+            </p>
 
-    <!-- LIVE STATS BAR (decorative — real data via SignalR in future) -->
-    <div class="live-stats">
-        <div class="stat-pill">👥 Players online <span class="val" id="stat-online">—</span></div>
-        <div class="stat-pill">⚔️ Matches today <span class="val" id="stat-matches">—</span></div>
-        <div class="stat-pill">🏅 Your ELO <span class="val" id="stat-elo">—</span></div>
-    </div>
-
-    <!-- ① SCRIPT SELECTOR -->
-    <div class="section-title">① Choose Your Script</div>
-    <div class="choice-grid" id="script-grid">
-        <div class="choice-card active" data-val="hiragana">
-            <div class="icon">あ</div>
-            <div class="label">Hiragana</div>
-            <div class="sub">46 characters</div>
-            <div class="tag">Core native script</div>
-        </div>
-        <div class="choice-card" data-val="katakana">
-            <div class="icon">ア</div>
-            <div class="label">Katakana</div>
-            <div class="sub">46 characters</div>
-            <div class="tag">Foreign &amp; tech words</div>
-        </div>
-        <div class="choice-card" data-val="dakuten">
-            <div class="icon">が</div>
-            <div class="label">Dakuten</div>
-            <div class="sub">Voiced marks</div>
-            <div class="tag">Advanced variant sounds</div>
-        </div>
-        <div class="choice-card" data-val="mixed">
-            <div class="icon">混</div>
-            <div class="label">Mixed</div>
-            <div class="sub">All scripts</div>
-            <div class="tag">Ultimate challenge</div>
-        </div>
-    </div>
-
-    <!-- ② DIFFICULTY SELECTOR -->
-    <div class="section-title">② Choose Intensity</div>
-    <div class="choice-grid" id="diff-grid">
-        <div class="choice-card" data-val="easy">
-            <div class="icon">🌿</div>
-            <div class="label">Easy</div>
-            <div class="sub">Relaxed pace</div>
-            <div class="tag">3 min · ±12 ELO</div>
-        </div>
-        <div class="choice-card active" data-val="normal">
-            <div class="icon">⚡</div>
-            <div class="label">Normal</div>
-            <div class="sub">Balanced</div>
-            <div class="tag">2:15 · ±20 ELO</div>
-        </div>
-        <div class="choice-card" data-val="hard">
-            <div class="icon">🔥</div>
-            <div class="label">Hard</div>
-            <div class="sub">Fast &amp; furious</div>
-            <div class="tag">1:45 · ±32 ELO</div>
-        </div>
-        <div class="choice-card" data-val="insanity">
-            <div class="icon">💀</div>
-            <div class="label">Insanity</div>
-            <div class="sub">No mercy</div>
-            <div class="tag">1:30 · ±50 ELO</div>
-        </div>
-    </div>
-
-    <!-- SUMMARY + BATTLE BUTTON -->
-    <div style="text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:16px;">
-        Selected: <span id="sel-script" style="color:#a855f7;font-weight:700;">Hiragana</span>
-        &nbsp;·&nbsp;
-        <span id="sel-diff" style="color:#f59e0b;font-weight:700;">Normal</span>
-        &nbsp;·&nbsp;
-        <span id="sel-elo" style="color:#10b981;font-weight:700;">±20 ELO</span>
-    </div>
-
-    <!-- Routes to KanaBattleController.Battle(difficulty, script) -->
-    <button id="btn-battle" onclick="launchBattle()">⚔️ ENTER THE ARENA</button>
-
-    <!-- INFO PANELS -->
-    <div class="info-grid">
-
-        <!-- Rank table -->
-        <div class="info-card">
-            <h3>🏆 League Ranks</h3>
-            <p style="margin-bottom:10px">Win battles to earn ELO and climb the ranks. Each rank unlocks new titles and profile badges.</p>
-            <table class="rank-table">
-                <thead><tr><th>Rank</th><th>ELO Range</th><th>Badge</th></tr></thead>
-                <tbody>
-                    <tr><td>🌱 Seedling</td><td>0 – 499</td><td>Bronze Frame</td></tr>
-                    <tr><td>🌿 Apprentice</td><td>500 – 999</td><td>Silver Frame</td></tr>
-                    <tr><td>⚡ Adept</td><td>1000 – 1499</td><td>Gold Frame</td></tr>
-                    <tr><td>🔥 Veteran</td><td>1500 – 1999</td><td>Flame Frame</td></tr>
-                    <tr><td>💀 Master</td><td>2000+</td><td>Oni Frame</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- ELO table -->
-        <div class="info-card">
-            <h3>📊 ELO &amp; Matchmaking</h3>
-            <p style="margin-bottom:10px">KanaBattle uses an ELO rating system. Win → gain ELO. Lose → lose ELO. Amount depends on difficulty:</p>
-            <table class="elo-table">
-                <thead><tr><th>Difficulty</th><th>Win</th><th>Loss</th><th>Duration</th></tr></thead>
-                <tbody>
-                    <tr><td>🌿 Easy</td><td>+12</td><td>-8</td><td>3 min</td></tr>
-                    <tr><td>⚡ Normal</td><td>+20</td><td>-15</td><td>2:15</td></tr>
-                    <tr><td>🔥 Hard</td><td>+32</td><td>-24</td><td>1:45</td></tr>
-                    <tr><td>💀 Insanity</td><td>+50</td><td>-38</td><td>1:30</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-    </div>
-
-    <!-- Matchmaking note -->
-    <div class="info-card" style="margin-bottom:20px">
-        <h3>🤖 Current Matchmaking</h3>
-        <p>
-            All battles are currently fought against AI opponents tuned to the difficulty you select.
-            The AI difficulty scales precisely — Easy AI is patient and slow, while Insanity AI attacks relentlessly with double strikes.
-            Real multiplayer with ELO-based matchmaking is coming in a future update!
-        </p>
-    </div>
-
-    <!-- How to play -->
-    <div class="info-card" style="margin-bottom:20px">
-        <h3>📖 How To Play — Battle Mechanics</h3>
-        <div class="howto-grid">
-            <div class="howto-item">
-                <div class="h-icon">⚔️</div>
-                <div class="h-name">Core Combat Loop</div>
-                <div class="h-desc">
-                    Kana cards fall from the top of the arena. Type the romaji answer (e.g. "ka" for か) and press Enter or tap Attack to deal damage.
-                    The faster you answer, the more damage you deal. Build combos by answering correctly in a row.
+            <div class="live-stats">
+                <div class="stat-pill">
+                    ⚡ <span class="pill-val" id="stat-words">—</span> words available
                 </div>
-            </div>
-            <div class="howto-item">
-                <div class="h-icon">🤖</div>
-                <div class="h-name">AI Opponent</div>
-                <div class="h-desc">
-                    Your AI opponent attacks on a timer. Difficulty controls both how fast kana falls AND how often the AI attacks.
-                    On Insanity, the AI can double-strike and gains sword buffs. If kana reaches the bottom unanswered, you take chip damage.
+                <div class="stat-pill">
+                    🎮 <span class="pill-val">Solo + Multiplayer</span>
                 </div>
-            </div>
-            <div class="howto-item">
-                <div class="h-icon">❤️</div>
-                <div class="h-name">HP &amp; Winning</div>
-                <div class="h-desc">
-                    Both you and the opponent start with 1000 HP. Reduce the opponent's HP to 0 to win.
-                    If your HP reaches 0, you lose. If time runs out, the player with more HP wins.
-                    Wrong answers deal small self-damage — accuracy matters!
+                <div class="stat-pill">
+                    📚 <span class="pill-val">4</span> difficulty tiers
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Difficulty breakdown -->
-    <div class="info-card" style="margin-bottom:20px">
-        <h3>🗓️ Difficulty Breakdown</h3>
-        <div class="diff-row">
-            <div class="d-icon">🌿</div>
-            <div>
-                <div class="d-name">Easy</div>
-                <div class="d-desc">
-                    Slow fall speed, AI attacks every ~4 s, low damage. Great for beginners. 3 minute matches.
-                    Words sourced from <code>easy</code> difficulty entries in the database.
+        <!-- ══════════════════════════════════
+             CONFIG PANEL
+        ══════════════════════════════════ -->
+        <div class="config-panel">
+
+            <!-- Script Selection -->
+            <div class="section-label">① Select Script</div>
+            <div class="choice-grid" id="grid-script">
+                <div class="choice-card active" data-val="hiragana" onclick="selectScript('hiragana',this)">
+                    <span class="c-icon">あ</span>
+                    <span class="c-label">Hiragana</span>
+                    <span class="c-sub">Core syllabary</span>
+                    <span class="c-tag">Recommended start</span>
+                </div>
+                <div class="choice-card" data-val="katakana" onclick="selectScript('katakana',this)">
+                    <span class="c-icon">ア</span>
+                    <span class="c-label">Katakana</span>
+                    <span class="c-sub">Foreign loanwords</span>
+                    <span class="c-tag">Essential vocab</span>
+                </div>
+                <div class="choice-card" data-val="dakuten" onclick="selectScript('dakuten',this)">
+                    <span class="c-icon">が</span>
+                    <span class="c-label">Dakuten</span>
+                    <span class="c-sub">Voiced + small kana</span>
+                    <span class="c-tag">50+ characters</span>
+                </div>
+                <div class="choice-card" data-val="mixed" onclick="selectScript('mixed',this)">
+                    <span class="c-icon">混</span>
+                    <span class="c-label">Mixed</span>
+                    <span class="c-sub">All scripts blended</span>
+                    <span class="c-tag">Ultimate challenge</span>
                 </div>
             </div>
-        </div>
-        <div class="diff-row">
-            <div class="d-icon">⚡</div>
-            <div>
-                <div class="d-name">Normal</div>
-                <div class="d-desc">
-                    Medium fall speed, AI attacks every ~2.7 s. Balanced damage. 2:15 matches.
-                    Words sourced from <code>normal</code> difficulty entries.
+
+            <!-- Difficulty Selection -->
+            <div class="section-label">② Select Difficulty</div>
+            <div class="choice-grid" id="grid-diff">
+                <div class="choice-card active" data-diff="easy" data-val="easy" onclick="selectDiff('easy',this)">
+                    <span class="diff-pip pip-easy"></span>
+                    <span class="c-icon">🌸</span>
+                    <span class="c-label">Easy</span>
+                    <span class="c-sub">Single kana · slow timer</span>
+                    <span class="c-tag">Beginner</span>
+                    <span class="c-count" id="cnt-easy">—</span>
+                </div>
+                <div class="choice-card" data-diff="normal" data-val="normal" onclick="selectDiff('normal',this)">
+                    <span class="diff-pip pip-normal"></span>
+                    <span class="c-icon">⚔️</span>
+                    <span class="c-label">Normal</span>
+                    <span class="c-sub">Common vocab · medium pace</span>
+                    <span class="c-tag">Intermediate</span>
+                    <span class="c-count" id="cnt-normal">—</span>
+                </div>
+                <div class="choice-card" data-diff="hard" data-val="hard" onclick="selectDiff('hard',this)">
+                    <span class="diff-pip pip-hard"></span>
+                    <span class="c-icon">🔥</span>
+                    <span class="c-label">Hard</span>
+                    <span class="c-sub">Yōon & compounds · fast</span>
+                    <span class="c-tag">Advanced</span>
+                    <span class="c-count" id="cnt-hard">—</span>
+                </div>
+                <div class="choice-card" data-diff="insanity" data-val="insanity" onclick="selectDiff('insanity',this)">
+                    <span class="diff-pip pip-insanity"></span>
+                    <span class="c-icon">💀</span>
+                    <span class="c-label">Insanity</span>
+                    <span class="c-sub">Kanji + furigana · brutal</span>
+                    <span class="c-tag">Expert</span>
+                    <span class="c-count" id="cnt-insanity">—</span>
                 </div>
             </div>
-        </div>
-        <div class="diff-row">
-            <div class="d-icon">🔥</div>
-            <div>
-                <div class="d-name">Hard</div>
-                <div class="d-desc">
-                    Fast fall speed, AI attacks every ~1.7 s. Higher damage. Sword buffs for AI. 1:45 matches.
-                    Words sourced from <code>hard</code> difficulty entries.
-                </div>
+
+            <!-- Warning -->
+            <div id="word-warning" role="alert">
+                <span>⚠️</span>
+                <span id="warning-text">Not enough words available. Please choose another combination.</span>
+            </div>
+
+            <!-- Battle Button -->
+            <button id="btn-battle" onclick="launchBattle()">
+                ⚔️ Enter the Battle Arena
+            </button>
+
+            <!-- Solo Mode Link -->
+            <div class="solo-link-wrap">
+                <a href="/KanaBlitz/Index" class="solo-link">
+                    ⚡ Switch to Solo Training Mode →
+                </a>
             </div>
         </div>
-        <div class="diff-row">
-            <div class="d-icon">💀</div>
-            <div>
-                <div class="d-name">Insanity</div>
-                <div class="d-desc">
-                    Extreme speed, AI attacks every ~0.9 s with double strikes. Maximum chaos. 1:30 matches.
-                    Words sourced from <code>insanity</code> difficulty entries including kanji.
+
+        <!-- ══════════════════════════════════
+             INFO PANELS
+        ══════════════════════════════════ -->
+        <div class="info-grid">
+
+            <!-- How to Play -->
+            <div class="info-card">
+                <div class="info-card-title">⚔️ How Battle Works</div>
+                <div class="howto-grid">
+                    <div class="howto-item">
+                        <span class="hi-icon">👁️</span>
+                        <div class="hi-name">Read the Kana</div>
+                        <div class="hi-desc">A kana character or word appears on screen.</div>
+                    </div>
+                    <div class="howto-item">
+                        <span class="hi-icon">⌨️</span>
+                        <div class="hi-name">Type Romaji</div>
+                        <div class="hi-desc">Type the correct romaji pronunciation fast.</div>
+                    </div>
+                    <div class="howto-item">
+                        <span class="hi-icon">💥</span>
+                        <div class="hi-name">Deal Damage</div>
+                        <div class="hi-desc">Correct answers hit the enemy. Misses hurt you.</div>
+                    </div>
+                </div>
+                <div style="margin-top:16px">
+                    <div class="info-card-title" style="font-size:0.82rem; margin-bottom:10px">Battle Skills</div>
+                    <div>
+                        <span class="skill-chip"><span class="sc-icon">🌊</span> Kana Strike</span>
+                        <span class="skill-chip"><span class="sc-icon">⚡</span> Speed Burst</span>
+                        <span class="skill-chip"><span class="sc-icon">🔥</span> Combo Flame</span>
+                        <span class="skill-chip"><span class="sc-icon">🛡️</span> Guard Rune</span>
+                        <span class="skill-chip"><span class="sc-icon">💎</span> Perfect Block</span>
+                    </div>
                 </div>
             </div>
+
+            <!-- Difficulty Breakdown -->
+            <div class="info-card">
+                <div class="info-card-title">🎯 Difficulty Breakdown</div>
+                <div class="diff-breakdown">
+                    <div class="diff-row">
+                        <span class="dr-icon">🌸</span>
+                        <div>
+                            <div class="dr-name" style="color:var(--nq-green)">Easy</div>
+                            <div class="dr-desc">Single hiragana/katakana/dakuten characters. Slow timer. Perfect for beginners learning basic kana recognition.</div>
+                        </div>
+                    </div>
+                    <div class="diff-row">
+                        <span class="dr-icon">⚔️</span>
+                        <div>
+                            <div class="dr-name" style="color:var(--nq-blue)">Normal</div>
+                            <div class="dr-desc">Common vocabulary words. Medium-pace timer. Ideal for learners with basic kana knowledge.</div>
+                        </div>
+                    </div>
+                    <div class="diff-row">
+                        <span class="dr-icon">🔥</span>
+                        <div>
+                            <div class="dr-name" style="color:var(--nq-gold)">Hard</div>
+                            <div class="dr-desc">Yōon (compound kana) and sokuon. Fast timer. For intermediate to advanced learners.</div>
+                        </div>
+                    </div>
+                    <div class="diff-row">
+                        <span class="dr-icon">💀</span>
+                        <div>
+                            <div class="dr-name" style="color:var(--nq-red)">Insanity</div>
+                            <div class="dr-desc">Kanji with furigana and idioms. Brutal timer. Only for those who have truly mastered kana.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
-    </div>
 
-    <!-- Skills -->
-    <div class="info-card" style="margin-bottom:20px">
-        <h3>✨ Skills &amp; Power-Ups</h3>
-        <p style="margin-bottom:10px">
-            Some falling kana carry special power-up skills (shown with a glowing border).
-            Answer them correctly to activate the skill. Wrong answers on skill kana do NOT activate the skill.
-        </p>
-        <div class="skill-list">
-            <div class="skill-item"><span class="s-icon">🛡️</span><strong>Shield</strong> — absorbs the next AI attack completely.</div>
-            <div class="skill-item"><span class="s-icon">⚡</span><strong>Speed Boost</strong> — your next 3 answers deal 1.5× damage.</div>
-            <div class="skill-item"><span class="s-icon">❤️</span><strong>Heal</strong> — restores 100 HP instantly.</div>
-            <div class="skill-item"><span class="s-icon">🗡️</span><strong>Critical Strike</strong> — next answer deals 3× damage regardless of speed.</div>
+        <!-- ── ELO / Ranking Info ── -->
+        <div class="info-grid">
+
+            <div class="info-card">
+                <div class="info-card-title">🏆 Ranking & ELO</div>
+                <p style="margin-bottom:12px">Win battles to earn ELO points and climb the leaderboard. Your rank reflects your kana mastery.</p>
+                <table class="nq-table">
+                    <thead>
+                        <tr><th>Rank</th><th>ELO</th><th>Loss</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>🌱 Sprout</td><td>+8</td><td>-4</td></tr>
+                        <tr><td>🪵 Wood</td><td>+12</td><td>-6</td></tr>
+                        <tr><td>⚙️ Iron</td><td>+15</td><td>-8</td></tr>
+                        <tr><td>🥇 Gold</td><td>+18</td><td>-10</td></tr>
+                        <tr><td>💎 Diamond</td><td>+20</td><td>-14</td></tr>
+                        <tr><td>🔮 Master</td><td>+22</td><td>-16</td></tr>
+                        <tr><td>🐉 Dragon</td><td>+25</td><td>-20</td></tr>
+                        <tr><td>⭐ Legend</td><td>+28</td><td>-24</td></tr>
+                        <tr><td>👑 Challenger</td><td>+30</td><td>-28</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-title">📊 Battle Tips</div>
+                <ul style="margin-bottom:14px">
+                    <li>Type romaji <strong>exactly</strong> as shown — use standard Hepburn romanization.</li>
+                    <li>Build combo streaks to multiply damage dealt per correct answer.</li>
+                    <li>Use skills strategically — each has a cooldown timer.</li>
+                    <li>Watch the enemy's HP bar — burst them down before time expires.</li>
+                    <li>Missing an answer deals damage to <em>you</em>. Stay focused.</li>
+                    <li>Mixed mode combines all scripts — the highest XP reward.</li>
+                    <li>Practice in <a href="/KanaBlitz/Index" style="color:var(--nq-accent2); font-weight:700; text-decoration:none">Solo Training</a> first to warm up.</li>
+                </ul>
+                <div class="info-card-title" style="font-size:0.82rem; margin-bottom:8px">Common Romaji Notes</div>
+                <p>し = <strong>shi</strong>, ち = <strong>chi</strong>, つ = <strong>tsu</strong>, ふ = <strong>fu</strong>, じ = <strong>ji</strong></p>
+            </div>
+
         </div>
+
     </div>
+</div>
 
-    <!-- Combo system -->
-    <div class="info-card" style="margin-bottom:20px">
-        <h3>🔥 Combo System</h3>
-        <p>
-            Answer correctly in a row to build your combo streak. Each combo level adds 5% bonus damage (up to 25× = 2.25× total).
-            On top of combos, answer quickly for a speed bonus.<br><br>
-            At streak ≥ 4 you get ⚡ &nbsp;|&nbsp; ≥ 7 you get 🔥 &nbsp;|&nbsp; ≥ 12 you get 💥<br><br>
-            Wrong answer resets your streak to 0.
-        </p>
-    </div>
+<!-- ── Loading Overlay ── -->
+<div id="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Preparing arena...</div>
+</div>
 
-</div><!-- /lv-wrapper -->
+@section Scripts {
+    <script>
+        /*
+         * ═══════════════════════════════════════════════════════════════
+         *  KanaBlitz_View — Battle Hub / Lobby
+         *  Handles script & difficulty selection, word count validation,
+         *  and launches the battle arena at /KanaBattle/Battle
+         * ═══════════════════════════════════════════════════════════════
+         */
 
-<script>
-    // ══════════════════════════════════════════════════════════════
-    //  KanaBlitz_View — Lobby / Setup  (KanaBattleController.MainView)
-    //  Launches → KanaBattleController.Battle(difficulty, script)
-    // ══════════════════════════════════════════════════════════════
+        'use strict';
 
-    let selectedScript = 'hiragana';
-    let selectedDiff   = 'normal';
+        const MIN_WORDS = 5;
 
-    // ── ELO map (matches DbInitializer difficulty labels) ──
-    const ELO_MAP = { easy: '±12', normal: '±20', hard: '±32', insanity: '±50' };
+        // Current selections
+        let sel = { script: 'hiragana', diff: 'easy' };
 
-    // Script selector
-    document.querySelectorAll('#script-grid .choice-card').forEach(card => {
-        card.addEventListener('click', () => {
-            document.querySelectorAll('#script-grid .choice-card').forEach(c => c.classList.remove('active'));
-            card.classList.add('active');
-            selectedScript = card.dataset.val;
-            updateSummary();
+        // Word count cache
+        const wCache = {};
+
+        // ── DOM ──────────────────────────────────────────────────────────
+        const $$ = id => document.getElementById(id);
+
+        // ── Script / Diff selection ──────────────────────────────────────
+        function selectScript(val, el) {
+            sel.script = val;
+            document.querySelectorAll('#grid-script .choice-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            updateWordCounts();
+            validateSelection();
+        }
+
+        function selectDiff(val, el) {
+            sel.diff = val;
+            document.querySelectorAll('#grid-diff .choice-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            validateSelection();
+        }
+
+        // ── Word count fetch (with caching) ─────────────────────────────
+        async function fetchCount(diff, script) {
+            const key = `${diff}|${script}`;
+            if (wCache[key] !== undefined) return wCache[key];
+            try {
+                const r = await fetch(`/KanaBlitz/GetWords?difficulty=${encodeURIComponent(diff)}&script=${encodeURIComponent(script)}`);
+                if (!r.ok) return 0;
+                const d = await r.json();
+                const c = Array.isArray(d) ? d.length : 0;
+                wCache[key] = c;
+                return c;
+            } catch {
+                return 0;
+            }
+        }
+
+        // ── Update all difficulty word counts for current script ─────────
+        async function updateWordCounts() {
+            const diffs = ['easy', 'normal', 'hard', 'insanity'];
+
+            // Update total stat pill
+            let totalForScript = 0;
+
+            for (const d of diffs) {
+                const cnt = await fetchCount(d, sel.script);
+                totalForScript += cnt;
+
+                const el    = $$(`cnt-${d}`);
+                const card  = el ? el.closest('.choice-card') : null;
+
+                if (el) el.textContent = cnt > 0 ? `${cnt} words` : 'No words';
+
+                if (card) {
+                    const ok = cnt >= MIN_WORDS;
+                    card.style.opacity = ok ? '' : '0.45';
+                    card.style.cursor  = ok ? '' : 'not-allowed';
+                    card.title = ok ? '' : `Not enough words (${cnt}/${MIN_WORDS} minimum)`;
+                }
+            }
+
+            const statEl = $$('stat-words');
+            if (statEl) statEl.textContent = totalForScript;
+        }
+
+        // ── Validate current selection ───────────────────────────────────
+        async function validateSelection() {
+            const cnt = await fetchCount(sel.diff, sel.script);
+            const ok  = cnt >= MIN_WORDS;
+
+            const warningEl = $$('word-warning');
+            const textEl    = $$('warning-text');
+            const btn       = $$('btn-battle');
+
+            if (warningEl) warningEl.classList.toggle('visible', !ok);
+            if (!ok && textEl) {
+                textEl.textContent = `Only ${cnt} word(s) for "${sel.diff}" + "${sel.script}". Minimum ${MIN_WORDS} required. Try another combination.`;
+            }
+            if (btn) btn.disabled = !ok;
+            return ok;
+        }
+
+        // ── Launch battle ────────────────────────────────────────────────
+        async function launchBattle() {
+            const ok = await validateSelection();
+            if (!ok) return;
+
+            const overlay = $$('loading-overlay');
+            if (overlay) overlay.classList.add('show');
+
+            // Navigate to battle arena with selected params
+            // Route: /KanaBattle/Battle?difficulty=&script=
+            const url = `/KanaBattle/Battle?difficulty=${encodeURIComponent(sel.diff)}&script=${encodeURIComponent(sel.script)}`;
+            window.location.href = url;
+        }
+
+        // ── Init ──────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            updateWordCounts();
+            validateSelection();
+
+            // Keyboard shortcut: Enter to launch
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    const btn = $$('btn-battle');
+                    if (btn && !btn.disabled) launchBattle();
+                }
+            });
         });
-    });
-
-    // Difficulty selector
-    document.querySelectorAll('#diff-grid .choice-card').forEach(card => {
-        card.addEventListener('click', () => {
-            document.querySelectorAll('#diff-grid .choice-card').forEach(c => c.classList.remove('active'));
-            card.classList.add('active');
-            selectedDiff = card.dataset.val;
-            updateSummary();
-        });
-    });
-
-    function updateSummary() {
-        document.getElementById('sel-script').textContent = capitalize(selectedScript);
-        document.getElementById('sel-diff').textContent   = capitalize(selectedDiff);
-        document.getElementById('sel-elo').textContent    = ELO_MAP[selectedDiff] + ' ELO';
-    }
-
-    // Launch → KanaBattleController.Battle(difficulty, script)
-    // Route: /KanaBattle/Battle?difficulty={diff}&script={script}
-    function launchBattle() {
-        const url = `/KanaBattle/Battle?difficulty=${encodeURIComponent(selectedDiff)}&script=${encodeURIComponent(selectedScript)}`;
-        window.location.href = url;
-    }
-
-    function capitalize(str) {
-        return str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
-    }
-
-    // Fetch live ELO from user profile (if authenticated)
-    // Route: /KanaBlitz/GetPlayerStats
-    async function loadLiveStats() {
-        try {
-            const res = await fetch('/KanaBlitz/GetPlayerStats');
-            if (!res.ok) return;
-            const d = await res.json();
-            if (d.elo !== undefined)
-                document.getElementById('stat-elo').textContent = d.elo;
-            if (d.matchesToday !== undefined)
-                document.getElementById('stat-matches').textContent = d.matchesToday;
-            if (d.playersOnline !== undefined)
-                document.getElementById('stat-online').textContent = d.playersOnline;
-        } catch { /* silently ignore if endpoint not available */ }
-    }
-    loadLiveStats();
-</script>
+    </script>
+}
