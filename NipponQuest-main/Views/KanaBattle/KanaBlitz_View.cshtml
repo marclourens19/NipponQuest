@@ -7,7 +7,7 @@
     ║  API        : GET /KanaBlitz/GetArenaPayload?alphabet=&diff=    ║
     ║  API        : GET /KanaBlitz/GetUnlocks                         ║
     ║  API        : POST /KanaBlitz/SubmitScore                       ║
-    ║  Purpose    : Full solo KanaBlitz game with difficulty select   ║
+    ║  Purpose    : Full solo KanaBlitz game — all difficulty tiers   ║
     ║  Aesthetic  : White background · Black / Gold / White / Blue    ║
     ╚══════════════════════════════════════════════════════════════════╝
 *@
@@ -17,10 +17,6 @@
 }
 
 <style>
-    /* ══════════════════════════════════════════════════════════════
-           NIPPONQUEST — KanaBlitz Solo Arena
-           Palette : White bg · Black text · Gold accents · Blue action
-        ══════════════════════════════════════════════════════════════ */
     @@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
 
     :root {
@@ -83,7 +79,7 @@
         padding: 32px 16px;
     }
 
-    /* ── Keyframes ── */
+    /* ════ KEYFRAMES ════ */
     @@keyframes kbFadeUp {
         0% {
             opacity: 0;
@@ -98,7 +94,7 @@
 
     @@keyframes kbScaleIn {
         0% {
-            transform: scale(0.9);
+            transform: scale(0.88);
             opacity: 0;
         }
 
@@ -114,11 +110,11 @@
         }
 
         10%, 50%, 90% {
-            transform: translateX(-4px);
+            transform: translateX(-5px);
         }
 
         30%, 70% {
-            transform: translateX(4px);
+            transform: translateX(5px);
         }
     }
 
@@ -127,8 +123,8 @@
             transform: scale(1);
         }
 
-        40% {
-            transform: scale(1.08);
+        35% {
+            transform: scale(1.1);
         }
 
         100% {
@@ -143,7 +139,7 @@
         }
 
         50% {
-            transform: scale(1.3);
+            transform: scale(1.35);
             opacity: 0.8;
         }
 
@@ -155,12 +151,12 @@
 
     @@keyframes kbCountdownPop {
         0% {
-            transform: scale(0.3);
+            transform: scale(0.2);
             opacity: 0;
         }
 
-        50% {
-            transform: scale(1.2);
+        55% {
+            transform: scale(1.25);
             opacity: 1;
         }
 
@@ -176,7 +172,7 @@
         }
 
         50% {
-            opacity: 0.5;
+            opacity: 0.45;
         }
     }
 
@@ -198,7 +194,7 @@
         }
 
         50% {
-            transform: translateY(-4px);
+            transform: translateY(-5px);
         }
     }
 
@@ -209,11 +205,11 @@
         }
 
         50% {
-            transform: scale(1.15);
+            transform: scale(1.18);
         }
 
         70% {
-            transform: scale(0.95);
+            transform: scale(0.94);
         }
 
         100% {
@@ -230,13 +226,13 @@
 
         100% {
             opacity: 0;
-            transform: translateY(-40px);
+            transform: translateY(-44px);
         }
     }
 
     @@keyframes kbPulseRing {
         0% {
-            box-shadow: 0 0 0 0 rgba(16,185,129,0.4);
+            box-shadow: 0 0 0 0 rgba(16,185,129,0.45);
         }
 
         100% {
@@ -244,7 +240,73 @@
         }
     }
 
-    /* ── Header Bar ── */
+    @@keyframes kbGlow {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(217,119,6,0);
+        }
+
+        50% {
+            box-shadow: 0 0 20px 4px rgba(217,119,6,0.2);
+        }
+    }
+
+    @@keyframes kbBarFill {
+        from {
+            width: 100%;
+        }
+
+        to {
+            width: 0%;
+        }
+    }
+
+    @@keyframes kbParticleUp {
+        0% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        100% {
+            opacity: 0;
+            transform: translateY(-60px) scale(0.5);
+        }
+    }
+
+    @@keyframes kbWiggle {
+        0%, 100% {
+            transform: rotate(0deg);
+        }
+
+        25% {
+            transform: rotate(-3deg);
+        }
+
+        75% {
+            transform: rotate(3deg);
+        }
+    }
+
+    @@keyframes kbBorderFlash {
+        0%, 100% {
+            border-color: var(--kb-border);
+        }
+
+        50% {
+            border-color: var(--kb-green-lt);
+        }
+    }
+
+    @@keyframes kbBorderFlashRed {
+        0%, 100% {
+            border-color: var(--kb-border);
+        }
+
+        50% {
+            border-color: var(--kb-red-lt);
+        }
+    }
+
+    /* ════ HEADER BAR ════ */
     .arena-header {
         display: flex;
         align-items: center;
@@ -263,7 +325,7 @@
         margin-bottom: 4px;
     }
 
-    .arena-title-wrap .arena-meta {
+    .arena-meta {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
@@ -331,49 +393,84 @@
             transform: translateY(-1px);
         }
 
-    /* ── Setup Panel ── */
+    /* ════ SETUP PANEL ════ */
     #setup-panel {
         background: var(--kb-surface);
         border: 1.5px solid var(--kb-border);
         border-radius: var(--kb-radius-lg);
-        padding: 32px 28px;
-        margin-bottom: 24px;
-        box-shadow: var(--kb-shadow);
-        animation: kbFadeUp 0.4s ease both;
+        padding: 36px 32px;
+        animation: kbSlideUp 0.5s ease both;
     }
 
-    .section-label {
-        font-size: 0.67rem;
+    .setup-title {
+        font-size: 1.35rem;
         font-weight: 900;
-        letter-spacing: 0.2em;
-        color: var(--kb-blue);
-        text-transform: uppercase;
-        margin-bottom: 14px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        color: var(--kb-black);
+        margin-bottom: 6px;
     }
 
-        .section-label::after {
-            content: '';
-            flex: 1;
-            height: 1.5px;
-            background: linear-gradient(90deg, var(--kb-border2), transparent);
+    .setup-sub {
+        font-size: 0.88rem;
+        color: var(--kb-muted);
+        margin-bottom: 28px;
+        line-height: 1.6;
+    }
+
+    .setup-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 28px;
+    }
+
+    .setup-field label {
+        display: block;
+        font-size: 0.76rem;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--kb-muted);
+        margin-bottom: 8px;
+    }
+
+    .setup-select {
+        width: 100%;
+        padding: 11px 16px;
+        border-radius: var(--kb-radius-sm);
+        border: 1.5px solid var(--kb-border);
+        background: var(--kb-bg);
+        color: var(--kb-black);
+        font-size: 0.9rem;
+        font-weight: 700;
+        font-family: inherit;
+        transition: var(--kb-trans);
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 36px;
+    }
+
+        .setup-select:focus {
+            outline: none;
+            border-color: var(--kb-blue-lt);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
         }
 
-    /* ── Choice Cards ── */
-    .choice-grid {
+    /* Difficulty Cards */
+    .diff-card-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fit,minmax(160px,1fr));
         gap: 12px;
         margin-bottom: 28px;
     }
 
-    .choice-card {
-        background: var(--kb-bg);
-        border: 2px solid var(--kb-border);
+    .diff-card {
+        padding: 16px 14px;
         border-radius: var(--kb-radius);
-        padding: 18px 12px;
+        border: 2px solid var(--kb-border);
+        background: var(--kb-bg);
         cursor: pointer;
         transition: var(--kb-trans);
         text-align: center;
@@ -382,536 +479,791 @@
         user-select: none;
     }
 
-        .choice-card:hover {
-            border-color: var(--kb-blue-lt);
-            background: var(--kb-blue-bg);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(30,64,175,0.12);
+        .diff-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            opacity: 0;
+            transition: opacity 0.2s;
         }
 
-        .choice-card.active {
-            border-color: var(--kb-blue);
-            background: var(--kb-blue-bg);
-            box-shadow: 0 0 0 3px rgba(30,64,175,0.15);
+        .diff-card:hover {
             transform: translateY(-2px);
+            box-shadow: var(--kb-shadow);
         }
 
-        .choice-card[data-diff="easy"].active {
+        .diff-card.selected {
+            box-shadow: var(--kb-shadow-lg);
+        }
+
+            .diff-card.selected::before {
+                opacity: 1;
+            }
+
+        .diff-card[data-diff="easy"] .diff-card-name {
+            color: var(--kb-green);
+        }
+
+        .diff-card[data-diff="normal"] .diff-card-name {
+            color: var(--kb-blue);
+        }
+
+        .diff-card[data-diff="hard"] .diff-card-name {
+            color: var(--kb-gold);
+        }
+
+        .diff-card[data-diff="insanity"].diff-card-name {
+            color: var(--kb-red);
+        }
+
+        .diff-card[data-diff="easy"].selected {
             border-color: var(--kb-green-lt);
             background: var(--kb-green-bg);
-            box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
         }
 
-        .choice-card[data-diff="normal"].active {
+        .diff-card[data-diff="normal"].selected {
             border-color: var(--kb-blue-lt);
             background: var(--kb-blue-bg);
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
         }
 
-        .choice-card[data-diff="hard"].active {
+        .diff-card[data-diff="hard"].selected {
             border-color: var(--kb-gold);
             background: var(--kb-gold-bg);
-            box-shadow: 0 0 0 3px rgba(217,119,6,0.18);
         }
 
-        .choice-card[data-diff="insanity"].active {
+        .diff-card[data-diff="insanity"].selected {
             border-color: var(--kb-red-lt);
             background: var(--kb-red-bg);
-            box-shadow: 0 0 0 3px rgba(239,68,68,0.15);
         }
 
-        .choice-card.locked {
-            opacity: 0.45;
-            cursor: not-allowed;
-            pointer-events: none;
+        .diff-card[data-diff="easy"]::before {
+            background: linear-gradient(90deg,var(--kb-green-lt),var(--kb-green));
         }
 
-        .choice-card .c-icon {
-            font-size: 2rem;
-            margin-bottom: 8px;
-            display: block;
+        .diff-card[data-diff="normal"]::before {
+            background: linear-gradient(90deg,var(--kb-blue-lt),var(--kb-blue));
         }
 
-        .choice-card .c-label {
-            font-weight: 800;
-            font-size: 0.92rem;
-            color: var(--kb-charcoal);
-            display: block;
+        .diff-card[data-diff="hard"]::before {
+            background: linear-gradient(90deg,var(--kb-gold-lt),var(--kb-gold));
         }
 
-        .choice-card .c-sub {
-            font-size: 0.7rem;
-            color: var(--kb-muted);
-            margin-top: 4px;
-            display: block;
+        .diff-card[data-diff="insanity"]::before {
+            background: linear-gradient(90deg,var(--kb-red-lt),var(--kb-red));
         }
 
-        .choice-card .c-count {
-            font-size: 0.65rem;
-            color: var(--kb-faint);
-            margin-top: 4px;
-            display: block;
-        }
+    .diff-card-icon {
+        font-size: 1.6rem;
+        margin-bottom: 6px;
+    }
 
-        .choice-card .lock-badge {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            font-size: 0.85rem;
-        }
+    .diff-card-name {
+        font-size: 0.78rem;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
 
-    /* ── Start Button ── */
+    .diff-card-desc {
+        font-size: 0.72rem;
+        color: var(--kb-muted);
+        line-height: 1.5;
+    }
+
+    .diff-card-lock {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        font-size: 0.7rem;
+        background: var(--kb-surface2);
+        border: 1px solid var(--kb-border);
+        padding: 2px 7px;
+        border-radius: 100px;
+        color: var(--kb-muted);
+        font-weight: 800;
+    }
+
     .start-btn {
-        display: inline-flex;
+        width: 100%;
+        padding: 15px 24px;
+        border-radius: var(--kb-radius);
+        border: none;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: var(--kb-trans);
+        display: flex;
         align-items: center;
         justify-content: center;
         gap: 10px;
-        padding: 16px 36px;
-        border-radius: 14px;
-        font-weight: 900;
-        font-size: 1rem;
-        letter-spacing: 0.06em;
-        border: none;
-        cursor: pointer;
-        transition: var(--kb-trans);
-        background: linear-gradient(135deg, var(--kb-blue), var(--kb-blue-lt));
-        color: #fff;
-        box-shadow: 0 6px 20px rgba(30,64,175,0.25);
         position: relative;
         overflow: hidden;
+        box-shadow: 0 6px 20px rgba(15,23,42,0.25);
     }
+
+        .start-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 30%;
+            height: 200%;
+            background: rgba(255,255,255,0.18);
+            transform: rotate(30deg);
+            transition: left 0.45s ease;
+        }
+
+        .start-btn:hover::after {
+            left: 130%;
+        }
 
         .start-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(30,64,175,0.35);
-            filter: brightness(1.05);
+            box-shadow: 0 10px 28px rgba(15,23,42,0.3);
         }
 
         .start-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
-            box-shadow: none;
         }
 
-    /* ── Game Arena ── */
-    #game-arena {
-        display: none;
-        animation: kbFadeUp 0.4s ease both;
-    }
-
-    /* HUD */
-    .game-hud {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-    }
-
-    .hud-stat {
-        background: var(--kb-surface);
-        border: 1.5px solid var(--kb-border);
-        border-radius: var(--kb-radius-sm);
-        padding: 10px 18px;
-        text-align: center;
-        min-width: 100px;
-    }
-
-        .hud-stat .hud-label {
-            font-size: 0.6rem;
-            font-weight: 900;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--kb-faint);
-            margin-bottom: 4px;
-        }
-
-        .hud-stat .hud-value {
-            font-size: 1.5rem;
-            font-weight: 900;
-            color: var(--kb-black);
-            line-height: 1;
-        }
-
-            .hud-stat .hud-value.score-val {
-                color: var(--kb-gold);
-            }
-
-            .hud-stat .hud-value.combo-val {
-                color: var(--kb-red-lt);
-            }
-
-            .hud-stat .hud-value.round-val {
-                color: var(--kb-blue);
-            }
-
-    /* Timer Bar */
-    .timer-bar-track {
-        width: 100%;
-        height: 8px;
-        background: var(--kb-surface2);
-        border-radius: 4px;
-        margin-bottom: 24px;
-        overflow: hidden;
-    }
-
-    .timer-bar-fill {
-        height: 100%;
-        border-radius: 4px;
-        transition: width 0.3s linear, background 0.3s ease;
-        background: linear-gradient(90deg, var(--kb-green-lt), var(--kb-blue-lt));
-    }
-
-        .timer-bar-fill.warning {
-            background: linear-gradient(90deg, var(--kb-gold-lt), var(--kb-gold));
-        }
-
-        .timer-bar-fill.danger {
-            background: linear-gradient(90deg, var(--kb-red-lt), var(--kb-red));
-            animation: kbTimerPulse 0.5s ease infinite;
-        }
-
-    /* Question Card */
-    .question-card {
-        background: var(--kb-surface);
-        border: 1.5px solid var(--kb-border);
-        border-radius: var(--kb-radius-lg);
-        padding: 40px 28px;
-        text-align: center;
-        margin-bottom: 24px;
-        box-shadow: var(--kb-shadow);
-        animation: kbScaleIn 0.3s ease both;
-    }
-
-    .question-label {
-        font-size: 0.65rem;
-        font-weight: 900;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: var(--kb-faint);
-        margin-bottom: 12px;
-    }
-
-    .question-kana {
-        font-size: clamp(3rem, 8vw, 5rem);
-        font-weight: 900;
-        color: var(--kb-black);
-        line-height: 1.1;
-        margin-bottom: 8px;
-        word-break: break-all;
-    }
-
-    .question-meaning {
-        font-size: 0.85rem;
-        color: var(--kb-muted);
-        margin-top: 8px;
-    }
-
-    .question-category {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 100px;
-        font-size: 0.62rem;
-        font-weight: 800;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--kb-faint);
-        background: var(--kb-surface2);
-        margin-top: 12px;
-    }
-
-    /* Answer Options */
-    .options-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 14px;
-        margin-bottom: 24px;
-    }
-
-    .option-btn {
-        background: var(--kb-bg);
-        border: 2px solid var(--kb-border);
-        border-radius: var(--kb-radius);
-        padding: 20px 16px;
-        font-size: 1.15rem;
-        font-weight: 800;
-        color: var(--kb-charcoal);
-        cursor: pointer;
-        transition: var(--kb-trans);
-        text-align: center;
-        font-family: 'Nunito', sans-serif;
-        position: relative;
-        overflow: hidden;
-    }
-
-        .option-btn:hover:not(:disabled) {
-            border-color: var(--kb-blue-lt);
-            background: var(--kb-blue-bg);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(30,64,175,0.12);
-        }
-
-        .option-btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        .option-btn.correct {
-            border-color: var(--kb-green-lt);
-            background: var(--kb-green-bg);
-            color: var(--kb-green);
-            animation: kbPopCorrect 0.4s ease;
-        }
-
-        .option-btn.incorrect {
-            border-color: var(--kb-red-lt);
-            background: var(--kb-red-bg);
-            color: var(--kb-red);
-            animation: kbShake 0.4s ease;
-        }
-
-        .option-btn.reveal-correct {
-            border-color: var(--kb-green-lt);
-            background: var(--kb-green-bg);
-            color: var(--kb-green);
-        }
-
-    /* Feedback Toast */
-    .feedback-toast {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(0);
-        font-size: 2rem;
-        font-weight: 900;
-        padding: 20px 40px;
-        border-radius: var(--kb-radius-lg);
-        z-index: 9999;
-        pointer-events: none;
-        transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
-        font-family: 'Nunito', sans-serif;
-    }
-
-        .feedback-toast.show {
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        .feedback-toast.correct-toast {
-            background: var(--kb-green-bg);
-            color: var(--kb-green);
-            border: 2px solid var(--kb-green-bd);
-        }
-
-        .feedback-toast.incorrect-toast {
-            background: var(--kb-red-bg);
-            color: var(--kb-red);
-            border: 2px solid var(--kb-red-bd);
-        }
-
-        .feedback-toast.combo-toast {
-            background: var(--kb-gold-bg);
-            color: var(--kb-gold);
-            border: 2px solid var(--kb-gold-bd);
-        }
-
-    /* XP Float */
-    .xp-float {
-        position: fixed;
-        font-weight: 900;
-        font-size: 1.2rem;
-        color: var(--kb-gold);
-        pointer-events: none;
-        z-index: 9998;
-        animation: kbXPFloat 1s ease forwards;
-    }
-
-    /* Countdown Overlay */
+    /* ════ COUNTDOWN OVERLAY ════ */
     #countdown-overlay {
         display: none;
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(255,255,255,0.95);
-        z-index: 10000;
-        justify-content: center;
+        inset: 0;
+        background: rgba(255,255,255,0.92);
+        backdrop-filter: blur(8px);
+        z-index: 9000;
         align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 16px;
     }
 
     .countdown-number {
         font-size: 8rem;
         font-weight: 900;
         color: var(--kb-black);
-        animation: kbCountdownPop 0.8s ease;
+        animation: kbCountdownPop 0.8s ease both;
+        line-height: 1;
     }
 
-    .countdown-go {
-        font-size: 5rem;
-        font-weight: 900;
-        color: var(--kb-gold);
-        animation: kbCountdownPop 0.8s ease;
+    .countdown-text {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--kb-muted);
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
     }
 
-    /* ── Results Screen ── */
-    #results-screen {
+    /* ════ ARENA ════ */
+    #game-arena {
         display: none;
-        animation: kbSlideUp 0.5s ease both;
+        animation: kbFadeUp 0.5s ease both;
     }
 
-    .results-card {
+    /* Score Bar */
+    .score-bar {
+        display: grid;
+        grid-template-columns: repeat(4,1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+        padding: 16px;
         background: var(--kb-surface);
         border: 1.5px solid var(--kb-border);
-        border-radius: var(--kb-radius-lg);
-        padding: 40px 32px;
-        text-align: center;
-        box-shadow: var(--kb-shadow-lg);
+        border-radius: var(--kb-radius);
     }
 
-    .results-icon {
-        font-size: 4rem;
+    .score-stat {
+        text-align: center;
+    }
+
+    .score-stat-label {
+        font-size: 0.66rem;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--kb-faint);
+        margin-bottom: 4px;
+    }
+
+    .score-stat-value {
+        font-size: 1.4rem;
+        font-weight: 900;
+        color: var(--kb-black);
+        transition: var(--kb-trans);
+    }
+
+        .score-stat-value.score-bump {
+            animation: kbComboFlash 0.4s ease;
+            color: var(--kb-gold);
+        }
+
+    /* Timer bar */
+    .timer-track {
+        height: 6px;
+        background: var(--kb-border);
+        border-radius: 100px;
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .timer-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--kb-green-lt), var(--kb-blue-lt));
+        border-radius: 100px;
+        transition: width 0.1s linear, background 0.5s ease;
+    }
+
+        .timer-bar.warn {
+            background: linear-gradient(90deg, var(--kb-gold-lt), var(--kb-gold));
+        }
+
+        .timer-bar.danger {
+            background: linear-gradient(90deg, var(--kb-red-lt), var(--kb-red));
+            animation: kbTimerPulse 0.5s ease-in-out infinite;
+        }
+
+    /* Kana Display Card */
+    .kana-display-wrap {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+
+    .kana-card {
+        display: inline-block;
+        background: var(--kb-bg);
+        border: 2px solid var(--kb-border);
+        border-radius: var(--kb-radius-lg);
+        padding: 32px 48px;
+        box-shadow: var(--kb-shadow);
+        transition: var(--kb-trans);
+        min-width: 280px;
+        position: relative;
+        animation: kbFloat 4s ease-in-out infinite;
+    }
+
+        .kana-card.correct {
+            animation: kbPopCorrect 0.4s ease, kbBorderFlash 0.6s ease;
+            border-color: var(--kb-green-lt) !important;
+        }
+
+        .kana-card.wrong {
+            animation: kbShake 0.4s ease;
+            border-color: var(--kb-red-lt) !important;
+        }
+
+    .kana-main {
+        font-size: clamp(3.5rem, 10vw, 6rem);
+        font-weight: 900;
+        color: var(--kb-black);
+        line-height: 1.1;
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .kana-furigana {
+        font-size: 1.1rem;
+        color: var(--kb-muted);
+        font-weight: 700;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .kana-meaning {
+        font-size: 0.82rem;
+        color: var(--kb-faint);
+        font-weight: 600;
+    }
+
+    .kana-category {
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--kb-faint);
+        background: var(--kb-surface);
+        border: 1px solid var(--kb-border);
+        padding: 3px 9px;
+        border-radius: 100px;
+    }
+
+    /* Question counter */
+    .q-counter {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.78rem;
+        font-weight: 800;
+        color: var(--kb-muted);
+        margin-bottom: 18px;
+        letter-spacing: 0.06em;
+    }
+
+    /* ════ NORMAL MODE INPUT ════ */
+    .input-section {
+        margin-bottom: 20px;
+    }
+
+    .input-wrap {
+        position: relative;
+        max-width: 460px;
+        margin: 0 auto;
+    }
+
+    .romaji-input {
+        width: 100%;
+        padding: 14px 50px 14px 18px;
+        border: 2px solid var(--kb-border);
+        border-radius: var(--kb-radius);
+        font-size: 1.05rem;
+        font-weight: 700;
+        font-family: inherit;
+        color: var(--kb-black);
+        background: var(--kb-bg);
+        transition: var(--kb-trans);
+        text-align: center;
+    }
+
+        .romaji-input:focus {
+            outline: none;
+            border-color: var(--kb-blue-lt);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+        }
+
+        .romaji-input.correct-state {
+            border-color: var(--kb-green-lt);
+            background: var(--kb-green-bg);
+        }
+
+        .romaji-input.wrong-state {
+            border-color: var(--kb-red-lt);
+            background: var(--kb-red-bg);
+            animation: kbShake 0.3s ease;
+        }
+
+    .input-hint {
+        text-align: center;
+        font-size: 0.78rem;
+        color: var(--kb-faint);
+        margin-top: 8px;
+        font-weight: 600;
+    }
+
+    /* Feedback bubble */
+    .feedback-bubble {
+        text-align: center;
+        min-height: 32px;
+        font-size: 1rem;
+        font-weight: 800;
+        padding: 6px 0;
+        letter-spacing: 0.04em;
+        transition: var(--kb-trans);
+    }
+
+        .feedback-bubble.correct {
+            color: var(--kb-green);
+        }
+
+        .feedback-bubble.wrong {
+            color: var(--kb-red);
+        }
+
+    /* ════ HARD MODE — KANA SELECTOR ════ */
+    #kana-selector-section {
+        display: none;
+        margin-bottom: 20px;
+    }
+
+    .kana-word-display {
+        text-align: center;
+        font-size: 2.4rem;
+        font-weight: 900;
+        color: var(--kb-black);
         margin-bottom: 16px;
+        letter-spacing: 0.05em;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .kana-char {
+        display: inline-block;
+        padding: 0 2px;
+    }
+
+    .kana-blank {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 56px;
+        border-bottom: 3px solid var(--kb-gold);
+        margin: 0 4px;
+        font-size: 1.8rem;
+        color: var(--kb-gold);
+        font-weight: 900;
+        vertical-align: middle;
+        transition: var(--kb-trans);
+        border-radius: 0;
+        position: relative;
+    }
+
+        .kana-blank.filled {
+            border-color: var(--kb-green-lt);
+            color: var(--kb-green);
+            animation: kbPopCorrect 0.3s ease;
+        }
+
+        .kana-blank.wrong-fill {
+            border-color: var(--kb-red-lt);
+            color: var(--kb-red);
+            animation: kbShake 0.3s ease;
+        }
+
+    .kana-option-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        max-width: 540px;
+        margin: 0 auto 12px;
+    }
+
+    .kana-option-btn {
+        padding: 12px 18px;
+        min-width: 58px;
+        border: 2px solid var(--kb-border);
+        border-radius: var(--kb-radius-sm);
+        background: var(--kb-bg);
+        color: var(--kb-black);
+        font-size: 1.4rem;
+        font-weight: 900;
+        font-family: inherit;
+        cursor: pointer;
+        transition: var(--kb-trans);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .kana-option-btn:hover:not(:disabled) {
+            border-color: var(--kb-blue-lt);
+            background: var(--kb-blue-bg);
+            transform: translateY(-2px);
+            box-shadow: var(--kb-shadow);
+        }
+
+        .kana-option-btn.used {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .kana-option-btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+    .kana-selector-hint {
+        text-align: center;
+        font-size: 0.78rem;
+        color: var(--kb-faint);
+        font-weight: 600;
+        margin-top: 6px;
+    }
+
+    .submit-word-btn {
+        display: block;
+        margin: 12px auto 0;
+        padding: 11px 32px;
+        border-radius: var(--kb-radius-sm);
+        border: none;
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        color: #fff;
+        font-size: 0.88rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: var(--kb-trans);
+    }
+
+        .submit-word-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--kb-shadow);
+        }
+
+        .submit-word-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    /* ════ COMBO DISPLAY ════ */
+    .combo-display {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        min-height: 36px;
+    }
+
+    .combo-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 16px;
+        border-radius: 100px;
+        font-size: 0.82rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border: 2px solid transparent;
+        transition: var(--kb-trans);
+    }
+
+        .combo-badge.active {
+            background: var(--kb-gold-bg);
+            border-color: var(--kb-gold-bd);
+            color: var(--kb-gold);
+            animation: kbComboFlash 0.5s ease;
+        }
+
+        .combo-badge.inactive {
+            background: var(--kb-surface);
+            border-color: var(--kb-border);
+            color: var(--kb-faint);
+        }
+
+    .multiplier-badge {
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 0.76rem;
+        font-weight: 900;
+        background: var(--kb-blue-bg);
+        color: var(--kb-blue);
+        border: 1.5px solid var(--kb-blue-bd);
+    }
+
+    /* ════ RESULT OVERLAY ════ */
+    #result-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(255,255,255,0.94);
+        backdrop-filter: blur(10px);
+        z-index: 8000;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+    }
+
+    .result-card {
+        background: var(--kb-bg);
+        border: 2px solid var(--kb-border);
+        border-radius: var(--kb-radius-lg);
+        padding: 40px 36px;
+        max-width: 520px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 24px 64px rgba(15,23,42,0.18);
         animation: kbVictoryBounce 0.6s ease both;
     }
 
-    .results-title {
-        font-size: 2rem;
+    .result-emoji {
+        font-size: 3.5rem;
+        margin-bottom: 14px;
+        display: block;
+    }
+
+    .result-title {
+        font-size: 1.8rem;
         font-weight: 900;
         color: var(--kb-black);
         margin-bottom: 8px;
     }
 
-    .results-subtitle {
-        font-size: 1rem;
+    .result-sub {
+        font-size: 0.88rem;
         color: var(--kb-muted);
+        margin-bottom: 28px;
+        font-weight: 600;
+    }
+
+    .result-stats {
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+        gap: 14px;
         margin-bottom: 28px;
     }
 
-    .results-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 16px;
-        margin-bottom: 32px;
-    }
-
     .result-stat {
-        background: var(--kb-bg);
+        background: var(--kb-surface);
         border: 1.5px solid var(--kb-border);
-        border-radius: var(--kb-radius-sm);
-        padding: 16px 12px;
+        border-radius: var(--kb-radius);
+        padding: 14px 10px;
     }
 
-        .result-stat .rs-label {
-            font-size: 0.6rem;
-            font-weight: 900;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--kb-faint);
-            margin-bottom: 6px;
-        }
+    .result-stat-val {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--kb-black);
+        margin-bottom: 2px;
+    }
 
-        .result-stat .rs-value {
-            font-size: 1.8rem;
-            font-weight: 900;
-            line-height: 1;
-        }
+    .result-stat-lbl {
+        font-size: 0.66rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--kb-faint);
+    }
 
-            .result-stat .rs-value.gold {
-                color: var(--kb-gold);
-            }
+    .xp-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--kb-gold-bg);
+        border: 1.5px solid var(--kb-gold-bd);
+        color: var(--kb-gold);
+        font-weight: 900;
+        font-size: 0.88rem;
+        padding: 6px 16px;
+        border-radius: 100px;
+        margin-bottom: 24px;
+    }
 
-            .result-stat .rs-value.blue {
-                color: var(--kb-blue);
-            }
-
-            .result-stat .rs-value.green {
-                color: var(--kb-green-lt);
-            }
-
-            .result-stat .rs-value.red {
-                color: var(--kb-red-lt);
-            }
-
-    .results-actions {
+    .result-actions {
         display: flex;
         gap: 12px;
         justify-content: center;
         flex-wrap: wrap;
     }
 
-    .result-btn {
-        padding: 14px 28px;
-        border-radius: 12px;
+    .res-btn {
+        padding: 12px 24px;
+        border-radius: var(--kb-radius-sm);
+        font-size: 0.86rem;
         font-weight: 900;
-        font-size: 0.88rem;
-        letter-spacing: 0.04em;
-        border: none;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
         cursor: pointer;
         transition: var(--kb-trans);
+        border: 2px solid transparent;
         text-decoration: none;
-        font-family: 'Nunito', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
 
-        .result-btn.primary {
-            background: linear-gradient(135deg, var(--kb-blue), var(--kb-blue-lt));
-            color: #fff;
-            box-shadow: 0 6px 20px rgba(30,64,175,0.25);
+        .res-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--kb-shadow);
         }
 
-            .result-btn.primary:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 10px 30px rgba(30,64,175,0.35);
-            }
-
-        .result-btn.secondary {
-            background: var(--kb-surface2);
-            color: var(--kb-dark);
-            border: 1.5px solid var(--kb-border);
-        }
-
-            .result-btn.secondary:hover {
-                background: var(--kb-border);
-                transform: translateY(-2px);
-            }
-
-    /* ── Loading State ── */
-    .loading-spinner {
-        display: inline-block;
-        width: 24px;
-        height: 24px;
-        border: 3px solid var(--kb-border);
-        border-top-color: var(--kb-blue-lt);
-        border-radius: 50%;
-        animation: spin 0.7s linear infinite;
+    .res-btn-primary {
+        background: var(--kb-black);
+        color: #fff;
     }
 
-    @@keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
+    .res-btn-secondary {
+        background: var(--kb-surface);
+        color: var(--kb-dark);
+        border-color: var(--kb-border);
     }
 
-    /* ── Error Message ── */
-    .error-banner {
-        background: var(--kb-red-bg);
-        border: 1.5px solid var(--kb-red-bd);
-        border-radius: var(--kb-radius-sm);
-        padding: 16px 20px;
-        color: var(--kb-red);
+    .res-btn-gold {
+        background: var(--kb-gold-bg);
+        color: var(--kb-gold);
+        border-color: var(--kb-gold-bd);
+    }
+
+    /* ════ FLOATING SCORE POP ════ */
+    .score-float {
+        position: fixed;
+        pointer-events: none;
+        z-index: 9999;
+        font-size: 1.2rem;
+        font-weight: 900;
+        color: var(--kb-green);
+        animation: kbXPFloat 0.8s ease-out forwards;
+    }
+
+        .score-float.neg {
+            color: var(--kb-red);
+        }
+
+    /* ════ PROGRESS BAR (accuracy) ════ */
+    .acc-track {
+        height: 4px;
+        background: var(--kb-border);
+        border-radius: 100px;
+        overflow: hidden;
+        margin-bottom: 8px;
+    }
+
+    .acc-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--kb-green-lt), var(--kb-blue-lt));
+        border-radius: 100px;
+        transition: width 0.4s ease;
+    }
+
+    /* ════ UNLOCK NOTICE ════ */
+    .unlock-notice {
+        background: var(--kb-gold-bg);
+        border: 1.5px solid var(--kb-gold-bd);
+        border-radius: var(--kb-radius);
+        padding: 12px 16px;
+        font-size: 0.82rem;
         font-weight: 700;
-        font-size: 0.9rem;
-        margin-bottom: 20px;
+        color: var(--kb-gold);
+        margin-bottom: 16px;
         display: none;
+        align-items: center;
+        gap: 8px;
     }
 
-    /* ── Responsive ── */
+    /* ════ RESPONSIVE ════ */
     @@media (max-width: 768px) {
+        .setup-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .score-bar {
+            grid-template-columns: repeat(2,1fr);
+        }
+
+        .result-stats {
+            grid-template-columns: repeat(2,1fr);
+        }
+
+        .kana-main {
+            font-size: 3.5rem;
+        }
+
+        .diff-card-grid {
+            grid-template-columns: repeat(2,1fr);
+        }
+    }
+
+    @@media (max-width: 480px) {
         .kb-wrapper {
             padding: 20px 12px;
         }
@@ -920,57 +1272,24 @@
             padding: 24px 18px;
         }
 
-        .choice-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+        .kana-card {
+            padding: 24px 20px;
+            min-width: auto;
+            width: 100%;
         }
 
-        .options-grid {
-            grid-template-columns: 1fr;
+        .score-bar {
+            grid-template-columns: repeat(2,1fr);
+            gap: 8px;
+            padding: 12px;
         }
 
-        .question-kana {
-            font-size: 3rem;
-        }
-
-        .game-hud {
-            gap: 10px;
-        }
-
-        .hud-stat {
-            padding: 8px 12px;
-            min-width: 80px;
-        }
-
-            .hud-stat .hud-value {
-                font-size: 1.2rem;
-            }
-
-        .results-stats {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @@media (max-width: 480px) {
-        .arena-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .choice-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .question-card {
-            padding: 28px 16px;
-        }
-
-        .question-kana {
-            font-size: 2.5rem;
-        }
-
-        .results-card {
+        .result-card {
             padding: 28px 18px;
+        }
+
+        .result-stats {
+            grid-template-columns: repeat(2,1fr);
         }
     }
 </style>
@@ -978,715 +1297,997 @@
 <div class="kb-page">
     <div class="kb-wrapper">
 
-        <!-- ═══ Header ═══ -->
-        <div class="arena-header">
+        <!-- ══ Header ══ -->
+        <header class="arena-header" role="banner">
             <div class="arena-title-wrap">
-                <h2>⚔️ Solo Training</h2>
+                <h2>🏋️ KanaBlitz — Solo Arena</h2>
                 <div class="arena-meta">
-                    <span class="arena-tag black">KanaBlitz</span>
-                    <span class="arena-tag gold">Solo</span>
+                    <span class="arena-tag black">Solo</span>
+                    <span class="arena-tag gold" id="tag-diff">Normal</span>
+                    <span class="arena-tag blue" id="tag-alpha">Hiragana</span>
                 </div>
             </div>
-            <a href="/KanaBlitz" class="back-link" onclick="SoundFX.play('click')">← Back to Hub</a>
+            <a href="/KanaBlitz" class="back-link" aria-label="Back to mode selection">
+                ← Back to Hub
+            </a>
+        </header>
+
+        <!-- ══ Unlock Notice ══ -->
+        <div class="unlock-notice" id="unlock-notice" role="alert" aria-live="polite">
+            <span>🔒</span>
+            <span id="unlock-notice-text">This difficulty is locked. Keep training to unlock it!</span>
         </div>
 
-        <!-- ═══ Error Banner ═══ -->
-        <div id="error-banner" class="error-banner"></div>
+        <!-- ══ SETUP PANEL ══ -->
+        <section id="setup-panel" aria-label="Game setup">
+            <h3 class="setup-title">Configure Your Training</h3>
+            <p class="setup-sub">
+                Select your difficulty and alphabet, then begin. Harder modes unlock based on accuracy — keep training!
+            </p>
 
-        <!-- ═══ Setup Panel ═══ -->
-        <div id="setup-panel">
-            <!-- Difficulty Selection -->
-            <div class="section-label">Difficulty</div>
-            <div class="choice-grid" id="diff-grid">
-                <div class="choice-card" data-diff="easy" onclick="selectDifficulty('easy')">
-                    <span class="c-icon">🌱</span>
-                    <span class="c-label">Easy</span>
-                    <span class="c-sub">Single Characters</span>
-                    <span class="c-count" id="count-easy">Loading...</span>
-                </div>
-                <div class="choice-card active" data-diff="normal" onclick="selectDifficulty('normal')">
-                    <span class="c-icon">⚡</span>
-                    <span class="c-label">Normal</span>
-                    <span class="c-sub">Common Words</span>
-                    <span class="c-count" id="count-normal">Loading...</span>
-                </div>
-                <div class="choice-card" data-diff="hard" onclick="selectDifficulty('hard')">
-                    <span class="c-icon">🔥</span>
-                    <span class="c-label">Hard</span>
-                    <span class="c-sub">Compounds &amp; Yōon</span>
-                    <span class="c-count" id="count-hard">Loading...</span>
-                    <span class="lock-badge" id="lock-hard" style="display:none">🔒</span>
-                </div>
-                <div class="choice-card" data-diff="insanity" onclick="selectDifficulty('insanity')">
-                    <span class="c-icon">💀</span>
-                    <span class="c-label">Insanity</span>
-                    <span class="c-sub">Kanji + Furigana</span>
-                    <span class="c-count" id="count-insanity">Loading...</span>
-                    <span class="lock-badge" id="lock-insanity" style="display:none">🔒</span>
+            <!-- Difficulty Cards -->
+            <div style="margin-bottom:12px;">
+                <label style="display:block;font-size:0.76rem;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:var(--kb-muted);margin-bottom:10px;">
+                    Select Difficulty
+                </label>
+                <div class="diff-card-grid" role="group" aria-label="Difficulty selection">
+                    <div class="diff-card selected" data-diff="easy" tabindex="0" role="button" aria-pressed="true">
+                        <div class="diff-card-icon">🟢</div>
+                        <div class="diff-card-name">Easy</div>
+                        <div class="diff-card-desc">Single kana characters. Generous timer.</div>
+                    </div>
+                    <div class="diff-card" data-diff="normal" tabindex="0" role="button" aria-pressed="false">
+                        <div class="diff-card-icon">🔵</div>
+                        <div class="diff-card-name">Normal</div>
+                        <div class="diff-card-desc">Common words. Moderate pressure.</div>
+                    </div>
+                    <div class="diff-card" data-diff="hard" tabindex="0" role="button" aria-pressed="false" id="hard-diff-card">
+                        <div class="diff-card-icon">🟡</div>
+                        <div class="diff-card-name">Hard</div>
+                        <div class="diff-card-desc">Select missing kana. Faster timer.</div>
+                        <span class="diff-card-lock" id="hard-lock-badge" aria-label="Locked">🔒</span>
+                    </div>
+                    <div class="diff-card" data-diff="insanity" tabindex="0" role="button" aria-pressed="false" id="insanity-diff-card">
+                        <div class="diff-card-icon">🔴</div>
+                        <div class="diff-card-name">Insanity</div>
+                        <div class="diff-card-desc">Kanji + furigana. Multiple missing kana.</div>
+                        <span class="diff-card-lock" id="insanity-lock-badge" aria-label="Locked">🔒</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Alphabet Selection -->
-            <div class="section-label">Alphabet</div>
-            <div class="choice-grid" id="alpha-grid">
-                <div class="choice-card active" data-alpha="hiragana" onclick="selectAlphabet('hiragana')">
-                    <span class="c-icon">あ</span>
-                    <span class="c-label">Hiragana</span>
+            <!-- Alphabet Selector -->
+            <div class="setup-grid">
+                <div class="setup-field">
+                    <label for="sel-alphabet">Script / Alphabet</label>
+                    <select id="sel-alphabet" class="setup-select" aria-label="Select alphabet">
+                        <option value="hiragana">Hiragana (あいう)</option>
+                        <option value="katakana">Katakana (アイウ)</option>
+                        <option value="dakuten">Dakuten &amp; Special (がぎぐ)</option>
+                        <option value="mixed">Mixed — All Scripts</option>
+                    </select>
                 </div>
-                <div class="choice-card" data-alpha="katakana" onclick="selectAlphabet('katakana')">
-                    <span class="c-icon">ア</span>
-                    <span class="c-label">Katakana</span>
-                </div>
-                <div class="choice-card" data-alpha="dakuten" onclick="selectAlphabet('dakuten')">
-                    <span class="c-icon">が</span>
-                    <span class="c-label">Dakuten</span>
-                </div>
-                <div class="choice-card" data-alpha="mixed" onclick="selectAlphabet('mixed')">
-                    <span class="c-icon">🀄</span>
-                    <span class="c-label">Mixed</span>
+                <div class="setup-field">
+                    <label>Word Count Info</label>
+                    <div id="word-count-info" style="padding:11px 16px;background:var(--kb-surface);border:1.5px solid var(--kb-border);border-radius:var(--kb-radius-sm);font-size:0.88rem;font-weight:700;color:var(--kb-muted);">
+                        Loading word counts...
+                    </div>
                 </div>
             </div>
 
-            <!-- Start Button -->
-            <div style="text-align:center; margin-top:8px;">
-                <button class="start-btn" id="start-btn" onclick="startGame()">
-                    ⚔️ Start Training
-                </button>
-            </div>
+            <button class="start-btn" id="start-btn" type="button" aria-label="Start game">
+                <span>⚡</span> Start Training
+            </button>
+        </section>
+
+        <!-- ══ COUNTDOWN OVERLAY ══ -->
+        <div id="countdown-overlay" role="dialog" aria-modal="true" aria-label="Countdown">
+            <!-- injected dynamically -->
         </div>
 
-        <!-- ═══ Countdown Overlay ═══ -->
-        <div id="countdown-overlay">
-            <div id="countdown-display"></div>
-        </div>
+        <!-- ══ GAME ARENA ══ -->
+        <section id="game-arena" aria-label="Game arena" aria-live="polite">
 
-        <!-- ═══ Game Arena ═══ -->
-        <div id="game-arena">
-            <!-- HUD -->
-            <div class="game-hud">
-                <div class="hud-stat">
-                    <div class="hud-label">Score</div>
-                    <div class="hud-value score-val" id="hud-score">0</div>
+            <!-- Score Bar -->
+            <div class="score-bar" role="region" aria-label="Score board">
+                <div class="score-stat">
+                    <div class="score-stat-label">Score</div>
+                    <div class="score-stat-value" id="stat-score">0</div>
                 </div>
-                <div class="hud-stat">
-                    <div class="hud-label">Combo</div>
-                    <div class="hud-value combo-val" id="hud-combo">0×</div>
+                <div class="score-stat">
+                    <div class="score-stat-label">Correct</div>
+                    <div class="score-stat-value" id="stat-correct" style="color:var(--kb-green);">0</div>
                 </div>
-                <div class="hud-stat">
-                    <div class="hud-label">Round</div>
-                    <div class="hud-value round-val" id="hud-round">1/10</div>
+                <div class="score-stat">
+                    <div class="score-stat-label">Wrong</div>
+                    <div class="score-stat-value" id="stat-wrong" style="color:var(--kb-red);">0</div>
                 </div>
-                <div class="hud-stat">
-                    <div class="hud-label">Correct</div>
-                    <div class="hud-value green" style="color:var(--kb-green-lt)" id="hud-correct">0</div>
+                <div class="score-stat">
+                    <div class="score-stat-label">Accuracy</div>
+                    <div class="score-stat-value" id="stat-acc">—</div>
                 </div>
             </div>
+
+            <!-- Accuracy track -->
+            <div class="acc-track" aria-hidden="true"><div class="acc-bar" id="acc-bar" style="width:100%;"></div></div>
 
             <!-- Timer -->
-            <div class="timer-bar-track">
-                <div class="timer-bar-fill" id="timer-bar" style="width:100%"></div>
+            <div class="timer-track" role="progressbar" aria-label="Time remaining" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                <div class="timer-bar" id="timer-bar"></div>
             </div>
 
-            <!-- Question -->
-            <div class="question-card" id="question-card">
-                <div class="question-label" id="q-label">What is this kana?</div>
-                <div class="question-kana" id="q-kana">—</div>
-                <div class="question-category" id="q-category">—</div>
+            <!-- Combo Display -->
+            <div class="combo-display" aria-live="polite" aria-atomic="true">
+                <div class="combo-badge inactive" id="combo-badge">🔥 0 Combo</div>
+                <div class="multiplier-badge" id="multiplier-badge">×1.0</div>
             </div>
 
-            <!-- Options -->
-            <div class="options-grid" id="options-grid"></div>
-        </div>
+            <!-- Question counter -->
+            <div class="q-counter" aria-live="polite">
+                Question <strong id="q-num">1</strong> of <strong id="q-total">20</strong>
+            </div>
 
-        <!-- ═══ Results Screen ═══ -->
-        <div id="results-screen">
-            <div class="results-card">
-                <div class="results-icon" id="results-icon">🏆</div>
-                <div class="results-title" id="results-title">Training Complete!</div>
-                <div class="results-subtitle" id="results-subtitle">Great work on your kana practice!</div>
-
-                <div class="results-stats">
-                    <div class="result-stat">
-                        <div class="rs-label">Final Score</div>
-                        <div class="rs-value gold" id="rs-score">0</div>
-                    </div>
-                    <div class="result-stat">
-                        <div class="rs-label">Accuracy</div>
-                        <div class="rs-value blue" id="rs-accuracy">0%</div>
-                    </div>
-                    <div class="result-stat">
-                        <div class="rs-label">Best Combo</div>
-                        <div class="rs-value green" id="rs-combo">0×</div>
-                    </div>
-                    <div class="result-stat">
-                        <div class="rs-label">XP Earned</div>
-                        <div class="rs-value gold" id="rs-xp">+0</div>
-                    </div>
-                </div>
-
-                <div class="results-actions">
-                    <button class="result-btn primary" onclick="playAgain()">⚔️ Play Again</button>
-                    <button class="result-btn secondary" onclick="backToSetup()">⚙️ Change Settings</button>
-                    <a href="/KanaBlitz" class="result-btn secondary" style="text-decoration:none">← Back to Hub</a>
+            <!-- Kana Card -->
+            <div class="kana-display-wrap">
+                <div class="kana-card" id="kana-card" role="img" aria-label="Current kana to identify">
+                    <span class="kana-category" id="kana-cat" aria-hidden="true"></span>
+                    <span class="kana-main" id="kana-display" lang="ja">あ</span>
+                    <span class="kana-furigana" id="kana-furigana" style="display:none;" lang="ja"></span>
+                    <span class="kana-meaning" id="kana-meaning" aria-hidden="true"></span>
                 </div>
             </div>
+
+            <!-- NORMAL MODE INPUT -->
+            <div class="input-section" id="normal-input-section">
+                <div class="input-wrap">
+                    <input type="text"
+                           id="romaji-input"
+                           class="romaji-input"
+                           placeholder="Type rōmaji here..."
+                           autocomplete="off"
+                           autocorrect="off"
+                           autocapitalize="off"
+                           spellcheck="false"
+                           aria-label="Type the romaji reading"
+                           maxlength="30" />
+                </div>
+                <p class="input-hint">Press Enter to submit &bull; No hints given — know your kana!</p>
+            </div>
+
+            <!-- HARD MODE KANA SELECTOR -->
+            <div id="kana-selector-section" aria-label="Select missing kana">
+                <div class="kana-word-display" id="kana-word-partial" lang="ja" aria-live="polite"></div>
+                <p class="kana-selector-hint">Select the missing kana from the options below</p>
+                <div class="kana-option-grid" id="kana-option-grid" role="group" aria-label="Kana options"></div>
+                <button class="submit-word-btn" id="submit-word-btn" type="button" aria-label="Submit selected kana">
+                    ✓ Submit Answer
+                </button>
+            </div>
+
+            <!-- Feedback -->
+            <div class="feedback-bubble" id="feedback-bubble" role="alert" aria-live="assertive" aria-atomic="true"></div>
+
+        </section>
+
+        <!-- ══ RESULT OVERLAY ══ -->
+        <div id="result-overlay" role="dialog" aria-modal="true" aria-label="Game results">
+            <div class="result-card">
+                <span class="result-emoji" id="result-emoji" aria-hidden="true">🏆</span>
+                <h2 class="result-title" id="result-title">Round Complete!</h2>
+                <p class="result-sub" id="result-sub">Your performance this session</p>
+                <div class="xp-pill" id="xp-pill" aria-live="polite">⭐ +0 XP Earned</div>
+                <div class="result-stats">
+                    <div class="result-stat">
+                        <div class="result-stat-val" id="r-score">0</div>
+                        <div class="result-stat-lbl">Score</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="result-stat-val" id="r-correct">0</div>
+                        <div class="result-stat-lbl">Correct</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="result-stat-val" id="r-acc">0%</div>
+                        <div class="result-stat-lbl">Accuracy</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="result-stat-val" id="r-combo">0</div>
+                        <div class="result-stat-lbl">Max Combo</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="result-stat-val" id="r-time">0s</div>
+                        <div class="result-stat-lbl">Avg Time</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="result-stat-val" id="r-xp">0</div>
+                        <div class="result-stat-lbl">XP</div>
+                    </div>
+                </div>
+                <div class="result-actions">
+                    <button class="res-btn res-btn-primary" id="play-again-btn" type="button">🔄 Play Again</button>
+                    <button class="res-btn res-btn-gold" id="change-setup-btn" type="button">⚙️ Change Setup</button>
+                    <a href="/KanaBlitz" class="res-btn res-btn-secondary">← Hub</a>
+                </div>
+            </div>
         </div>
 
-        <!-- Feedback Toast -->
-        <div class="feedback-toast" id="feedback-toast"></div>
+    </div><!-- /.kb-wrapper -->
+</div><!-- /.kb-page -->
+@section Scripts {
+    <script>
+        (function () {
+            'use strict';
 
-    </div>
-</div>
+            /* ═══════════════════════════════════════════════════════════
+               NIPPONQUEST · KanaBlitz Solo Arena
+               Full game logic — database-backed word retrieval
+            ═══════════════════════════════════════════════════════════ */
 
-<script>
-    /* ══════════════════════════════════════════════════════════════
-       SoundFX Engine — Web Audio API Synthesized Sounds
-    ══════════════════════════════════════════════════════════════ */
-    const SoundFX = {
-        ctx: null,
-        init() {
-            try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
-        },
-        _ensure() {
-            if (!this.ctx) this.init();
-            if (!this.ctx) return false;
-            if (this.ctx.state === 'suspended') this.ctx.resume();
-            return true;
-        },
-        play(type) {
-            if (!this._ensure()) return;
-            const now = this.ctx.currentTime;
-            switch (type) {
-                case 'correct': {
-                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-                    o.connect(g); g.connect(this.ctx.destination);
-                    o.type = 'sine';
-                    o.frequency.setValueAtTime(523, now);
-                    o.frequency.linearRampToValueAtTime(784, now + 0.1);
-                    g.gain.setValueAtTime(0.15, now);
-                    g.gain.linearRampToValueAtTime(0, now + 0.2);
-                    o.start(now); o.stop(now + 0.2);
-                    break;
+            /* ── Audio Context (Web Audio API) ── */
+            let audioCtx = null;
+            function getAudioCtx() {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                return audioCtx;
+            }
+
+            function playTone(freq, dur, type = 'sine', vol = 0.18) {
+                try {
+                    const ctx = getAudioCtx();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.type = type; osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                    gain.gain.setValueAtTime(vol, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+                    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + dur);
+                } catch (e) { /* silent fail */ }
+            }
+
+            const SFX = {
+                correct:   () => { playTone(523, 0.08, 'sine', 0.15); setTimeout(() => playTone(659, 0.1, 'sine', 0.12), 60); },
+                wrong:     () => { playTone(220, 0.15, 'sawtooth', 0.12); },
+                combo:     () => { [523,659,784,1047].forEach((f,i) => setTimeout(() => playTone(f, 0.09, 'sine', 0.14), i * 60)); },
+                countdown: () => { playTone(440, 0.12, 'sine', 0.15); },
+                go:        () => { playTone(880, 0.18, 'sine', 0.2); },
+                victory:   () => { [523,659,784,1047,1319].forEach((f,i) => setTimeout(() => playTone(f, 0.15, 'sine', 0.18), i * 100)); },
+                click:     () => { playTone(800, 0.05, 'sine', 0.08); }
+            };
+
+            /* ── Kana Pools for Hard-Mode Options ── */
+            const HIRAGANA_POOL = ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を','ん','が','ぎ','ぐ','げ','ご','ざ','じ','ず','ぜ','ぞ','だ','で','ど','ば','び','ぶ','べ','ぼ','ぱ','ぴ','ぷ','ぺ','ぽ'];
+            const KATAKANA_POOL = ['ア','イ','ウ','エ','オ','カ','キ','ク','ケ','コ','サ','シ','ス','セ','ソ','タ','チ','ツ','テ','ト','ナ','ニ','ヌ','ネ','ノ','ハ','ヒ','フ','ヘ','ホ','マ','ミ','ム','メ','モ','ヤ','ユ','ヨ','ラ','リ','ル','レ','ロ','ワ','ヲ','ン','ガ','ギ','グ','ゲ','ゴ','ザ','ジ','ズ','ゼ','ゾ','ダ','デ','ド','バ','ビ','ブ','ベ','ボ','パ','ピ','プ','ペ','ポ'];
+
+            /* ── Game State ── */
+            const STATE = {
+                words:          [],
+                queue:          [],
+                currentWord:    null,
+                currentIndex:   0,
+                totalQuestions: 20,
+                score:          0,
+                correct:        0,
+                wrong:          0,
+                combo:          0,
+                maxCombo:       0,
+                multiplier:     1.0,
+                timerInterval:  null,
+                timeLeft:       0,
+                timePerQ:       8,
+                timings:        [],
+                difficulty:     'easy',
+                alphabet:       'hiragana',
+                isHardMode:     false,
+                hardBlanks:     [],    // { idx, char, filled } objects
+                hardAnswers:    [],    // user-selected chars per blank
+                hardOptionPool: [],    // option buttons
+                gameActive:     false,
+                unlocks:        { hard: false, insanity: false }
+            };
+
+            /* ── DOM Refs ── */
+            const $  = id => document.getElementById(id);
+            const setupPanel       = $('setup-panel');
+            const gameArena        = $('game-arena');
+            const resultOverlay    = $('result-overlay');
+            const countdownOverlay = $('countdown-overlay');
+            const startBtn         = $('start-btn');
+            const romajiInput      = $('romaji-input');
+            const kanaDisplay      = $('kana-display');
+            const kanaFurigana     = $('kana-furigana');
+            const kanaMeaning      = $('kana-meaning');
+            const kanaCat          = $('kana-cat');
+            const kanaCard         = $('kana-card');
+            const timerBar         = $('timer-bar');
+            const feedbackBubble   = $('feedback-bubble');
+            const comboBadge       = $('combo-badge');
+            const multiplierBadge  = $('multiplier-badge');
+            const statScore        = $('stat-score');
+            const statCorrect      = $('stat-correct');
+            const statWrong        = $('stat-wrong');
+            const statAcc          = $('stat-acc');
+            const accBar           = $('acc-bar');
+            const qNum             = $('q-num');
+            const qTotal           = $('q-total');
+            const normalSection    = $('normal-input-section');
+            const hardSection      = $('kana-selector-section');
+            const kanaWordPartial  = $('kana-word-partial');
+            const kanaOptionGrid   = $('kana-option-grid');
+            const submitWordBtn    = $('submit-word-btn');
+            const unlockNotice     = $('unlock-notice');
+            const unlockNoticeText = $('unlock-notice-text');
+            const selAlphabet      = $('sel-alphabet');
+            const wordCountInfo    = $('word-count-info');
+
+            /* ── Difficulty Cards ── */
+            document.querySelectorAll('.diff-card').forEach(card => {
+                card.addEventListener('click', () => selectDifficulty(card.dataset.diff));
+                card.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectDifficulty(card.dataset.diff); }
+                });
+            });
+
+            function selectDifficulty(diff) {
+                if (diff === 'hard' && !STATE.unlocks.hard) {
+                    showUnlockNotice('Hard Mode is locked. Achieve 90%+ accuracy in Normal across all alphabets to unlock.');
+                    return;
                 }
-                case 'incorrect': {
-                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-                    o.connect(g); g.connect(this.ctx.destination);
-                    o.type = 'sawtooth';
-                    o.frequency.setValueAtTime(300, now);
-                    o.frequency.linearRampToValueAtTime(150, now + 0.2);
-                    g.gain.setValueAtTime(0.1, now);
-                    g.gain.linearRampToValueAtTime(0, now + 0.3);
-                    o.start(now); o.stop(now + 0.3);
-                    break;
+                if (diff === 'insanity' && !STATE.unlocks.insanity) {
+                    showUnlockNotice('Insanity Mode is locked. Achieve 95%+ accuracy in Hard and reach Level 15.');
+                    return;
                 }
-                case 'combo': {
-                    [600, 800, 1000, 1200].forEach((f, i) => {
-                        const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-                        o.connect(g); g.connect(this.ctx.destination);
-                        o.type = 'sine';
-                        o.frequency.setValueAtTime(f, now + i * 0.06);
-                        g.gain.setValueAtTime(0.1, now + i * 0.06);
-                        g.gain.linearRampToValueAtTime(0, now + i * 0.06 + 0.1);
-                        o.start(now + i * 0.06); o.stop(now + i * 0.06 + 0.1);
-                    });
-                    break;
-                }
-                case 'victory': {
-                    [523, 659, 784, 1047].forEach((f, i) => {
-                        const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-                        o.connect(g); g.connect(this.ctx.destination);
-                        o.type = 'sine';
-                        o.frequency.setValueAtTime(f, now + i * 0.15);
-                        g.gain.setValueAtTime(0.12, now + i * 0.15);
-                        g.gain.linearRampToValueAtTime(0, now + i * 0.15 + 0.25);
-                        o.start(now + i * 0.15); o.stop(now + i * 0.15 + 0.25);
-                    });
-                    break;
-                }
-                case 'defeat': {
-                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-                    o.connect(g); g.connect(this.ctx.destination);
-                    o.type = 'sine';
-                    o.frequency.setValueAtTime(400, now);
-                    o.frequency.linearRampToValueAtTime(100, now + 0.6);
-                    g.gain.setValueAtTime(0.12, now);
-                    g.gain.linearRampToValueAtTime(0, now + 0.7);
-                    o.start(now); o.stop(now + 0.7);
-                    break;
-                }
-                case 'countdown': {
-                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-                    o.connect(g); g.connect(this.ctx.destination);
-                    o.type = 'sine';
-                    o.frequency.setValueAtTime(440, now);
-                    g.gain.setValueAtTime(0.1, now);
-                    g.gain.linearRampToValueAtTime(0, now + 0.12);
-                    o.start(now); o.stop(now + 0.12);
-                    break;
-                }
-                case 'click': {
-                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-                    o.connect(g); g.connect(this.ctx.destination);
-                    o.type = 'sine';
-                    o.frequency.setValueAtTime(800, now);
-                    g.gain.setValueAtTime(0.06, now);
-                    g.gain.linearRampToValueAtTime(0, now + 0.04);
-                    o.start(now); o.stop(now + 0.04);
-                    break;
-                }
-                case 'tick': {
-                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-                    o.connect(g); g.connect(this.ctx.destination);
-                    o.type = 'sine';
-                    o.frequency.setValueAtTime(1000, now);
-                    g.gain.setValueAtTime(0.04, now);
-                    g.gain.linearRampToValueAtTime(0, now + 0.03);
-                    o.start(now); o.stop(now + 0.03);
-                    break;
+                SFX.click();
+                document.querySelectorAll('.diff-card').forEach(c => { c.classList.remove('selected'); c.setAttribute('aria-pressed','false'); });
+                const card = document.querySelector(`.diff-card[data-diff="${diff}"]`);
+                if (card) { card.classList.add('selected'); card.setAttribute('aria-pressed','true'); }
+                STATE.difficulty = diff;
+                updateTagDiff(diff);
+                updateWordCountInfo();
+            }
+
+            function showUnlockNotice(msg) {
+                unlockNoticeText.textContent = msg;
+                unlockNotice.style.display = 'flex';
+                setTimeout(() => { unlockNotice.style.display = 'none'; }, 4000);
+            }
+
+            function updateTagDiff(diff) {
+                const tagEl = $('tag-diff');
+                const labels = { easy:'Easy', normal:'Normal', hard:'Hard ★', insanity:'Insanity ★★' };
+                const classes = { easy:'green', normal:'blue', hard:'gold', insanity:'red' };
+                tagEl.textContent = labels[diff] || diff;
+                tagEl.className = `arena-tag ${classes[diff] || 'gold'}`;
+            }
+
+            /* ── Alphabet select change ── */
+            selAlphabet.addEventListener('change', () => {
+                STATE.alphabet = selAlphabet.value;
+                $('tag-alpha').textContent = selAlphabet.options[selAlphabet.selectedIndex].text.split(' ')[0];
+                updateWordCountInfo();
+                SFX.click();
+            });
+
+            /* ── Fetch word counts for info panel ── */
+            async function updateWordCountInfo() {
+                try {
+                    const r = await fetch(`/KanaBlitz/GetArenaPayload?alphabet=${encodeURIComponent(STATE.alphabet)}&difficulty=${encodeURIComponent(STATE.difficulty)}`);
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    const data = await r.json();
+                    const total = data.wordCount ?? 0;
+                    wordCountInfo.innerHTML = `<span style="color:var(--kb-green);font-weight:900;">${total}</span> words available &bull; ${data.hardLocked ? '🔒 Hard locked' : '✅ Hard unlocked'} &bull; ${data.insanityLocked ? '🔒 Insanity locked' : '✅ Insanity unlocked'}`;
+
+                    // Update lock badges
+                    if (data.hardLocked === false) { $('hard-lock-badge').style.display = 'none'; STATE.unlocks.hard = true; }
+                    else                           { $('hard-lock-badge').style.display = 'inline-block'; }
+
+                    if (data.insanityLocked === false) { $('insanity-lock-badge').style.display = 'none'; STATE.unlocks.insanity = true; }
+                    else                               { $('insanity-lock-badge').style.display = 'inline-block'; }
+
+                } catch (e) {
+                    wordCountInfo.textContent = 'Could not load word counts. Please check your connection.';
                 }
             }
-        }
-    };
 
-    /* ══════════════════════════════════════════════════════════════
-       Game State
-    ══════════════════════════════════════════════════════════════ */
-    const G = {
-        difficulty: 'normal',
-        alphabet: 'hiragana',
-        words: [],
-        currentWord: null,
-        round: 0,
-        totalRounds: 10,
-        score: 0,
-        combo: 0,
-        maxCombo: 0,
-        correct: 0,
-        incorrect: 0,
-        timePerRound: 15,
-        timeLeft: 0,
-        timerInterval: null,
-        answered: false,
-        running: false
-    };
+            /* ── Fetch unlocks on load ── */
+            async function fetchUnlocks() {
+                try {
+                    const r = await fetch('/KanaBlitz/GetUnlocks');
+                    if (!r.ok) return;
+                    const data = await r.json();
+                    STATE.unlocks.hard = data.hard?.unlocked ?? false;
+                    STATE.unlocks.insanity = data.insanity?.unlocked ?? false;
+                    if (STATE.unlocks.hard)     { $('hard-lock-badge').style.display = 'none'; }
+                    if (STATE.unlocks.insanity) { $('insanity-lock-badge').style.display = 'none'; }
+                } catch (e) { /* anonymous user or network error */ }
+            }
 
-    /* ── Time limits per difficulty ── */
-    const TIME_MAP = { easy: 20, normal: 15, hard: 10, insanity: 7 };
+            /* ── Fetch words from DB ── */
+            async function fetchWords() {
+                const diff  = STATE.difficulty;
+                const alpha = STATE.alphabet;
 
-    /* ── Init: Load word counts ── */
-    document.addEventListener('DOMContentLoaded', () => {
-        loadWordCounts();
-    });
+                try {
+                    const url = `/KanaBlitz/GetWords?difficulty=${encodeURIComponent(diff)}&alphabet=${encodeURIComponent(alpha)}`;
+                    const r = await fetch(url);
+                    if (!r.ok) throw new Error(`HTTP ${r.status} from GetWords`);
+                    const data = await r.json();
 
-    async function loadWordCounts() {
-        const diffs = ['easy', 'normal', 'hard', 'insanity'];
-        const alphas = ['hiragana', 'katakana', 'dakuten', 'mixed'];
-
-        for (const d of diffs) {
-            try {
-                let total = 0;
-                for (const a of alphas) {
-                    const resp = await fetch(`/KanaBlitz/GetWords?difficulty=${d}&alphabet=${a}`);
-                    if (resp.ok) {
-                        const data = await resp.json();
-                        if (Array.isArray(data)) total += data.length;
+                    if (!Array.isArray(data) || data.length === 0) {
+                        throw new Error('No words returned from database');
                     }
+                    return data;
+                } catch (e) {
+                    console.error('[KanaBlitz] fetchWords error:', e);
+                    throw e;
                 }
-                const el = document.getElementById(`count-${d}`);
-                if (el) el.textContent = `${total} words`;
-            } catch (e) {
-                const el = document.getElementById(`count-${d}`);
-                if (el) el.textContent = 'Error loading';
-            }
-        }
-    }
-
-    /* ── Selection ── */
-    function selectDifficulty(diff) {
-        SoundFX.play('click');
-        document.querySelectorAll('#diff-grid .choice-card').forEach(c => c.classList.remove('active'));
-        document.querySelector(`#diff-grid .choice-card[data-diff="${diff}"]`).classList.add('active');
-        G.difficulty = diff;
-    }
-
-    function selectAlphabet(alpha) {
-        SoundFX.play('click');
-        document.querySelectorAll('#alpha-grid .choice-card').forEach(c => c.classList.remove('active'));
-        document.querySelector(`#alpha-grid .choice-card[data-alpha="${alpha}"]`).classList.add('active');
-        G.alphabet = alpha;
-    }
-
-    /* ── Show Error ── */
-    function showError(msg) {
-        const el = document.getElementById('error-banner');
-        el.textContent = msg;
-        el.style.display = 'block';
-        setTimeout(() => { el.style.display = 'none'; }, 5000);
-    }
-
-    /* ── Start Game ── */
-    async function startGame() {
-        SoundFX.play('click');
-        const btn = document.getElementById('start-btn');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="loading-spinner"></span> Loading...';
-
-        try {
-            const resp = await fetch(`/KanaBlitz/GetWords?difficulty=${G.difficulty}&alphabet=${G.alphabet}`);
-            if (!resp.ok) throw new Error('Failed to fetch words from database.');
-            const data = await resp.json();
-
-            if (!Array.isArray(data) || data.length < 4) {
-                throw new Error(`Not enough words available for ${G.difficulty}/${G.alphabet} (${data?.length || 0} found). Try a different combination.`);
             }
 
-            G.words = shuffleArray([...data]);
-            G.totalRounds = Math.min(10, G.words.length);
-            G.round = 0;
-            G.score = 0;
-            G.combo = 0;
-            G.maxCombo = 0;
-            G.correct = 0;
-            G.incorrect = 0;
-            G.timePerRound = TIME_MAP[G.difficulty] || 15;
-            G.running = true;
+            /* ── Shuffle array ── */
+            function shuffle(arr) {
+                const a = [...arr];
+                for (let i = a.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a;
+            }
 
-            btn.disabled = false;
-            btn.innerHTML = '⚔️ Start Training';
+            /* ── Get time per question by difficulty ── */
+            function getTimePerQ(diff) {
+                return { easy: 10, normal: 8, hard: 12, insanity: 10 }[diff] ?? 8;
+            }
 
-            document.getElementById('setup-panel').style.display = 'none';
-            document.getElementById('results-screen').style.display = 'none';
-            document.getElementById('game-arena').style.display = 'block';
+            /* ── Get question count ── */
+            function getQuestionCount(diff) {
+                return { easy: 20, normal: 20, hard: 15, insanity: 12 }[diff] ?? 20;
+            }
 
-            await showCountdown();
-            nextRound();
+            /* ── Start button ── */
+            startBtn.addEventListener('click', async () => {
+                SFX.click();
+                startBtn.disabled = true;
+                startBtn.innerHTML = '<span>⏳</span> Loading words...';
 
-        } catch (err) {
-            btn.disabled = false;
-            btn.innerHTML = '⚔️ Start Training';
-            showError(err.message);
-        }
-    }
+                try {
+                    const words = await fetchWords();
+                    STATE.words = words;
+                    STATE.difficulty = document.querySelector('.diff-card.selected')?.dataset.diff ?? 'easy';
+                    STATE.alphabet   = selAlphabet.value;
+                    STATE.isHardMode = STATE.difficulty === 'hard' || STATE.difficulty === 'insanity';
+                    STATE.totalQuestions = Math.min(getQuestionCount(STATE.difficulty), words.length);
+                    STATE.timePerQ = getTimePerQ(STATE.difficulty);
 
-    /* ── Countdown ── */
-    function showCountdown() {
-        return new Promise(resolve => {
-            const overlay = document.getElementById('countdown-overlay');
-            const display = document.getElementById('countdown-display');
-            overlay.style.display = 'flex';
+                    if (words.length < 5) {
+                        alert(`⚠️ Only ${words.length} word(s) found for this combination. Please try a different alphabet or difficulty.`);
+                        startBtn.disabled = false;
+                        startBtn.innerHTML = '<span>⚡</span> Start Training';
+                        return;
+                    }
 
-            let count = 3;
-            display.className = 'countdown-number';
-            display.textContent = count;
-            SoundFX.play('countdown');
+                    startBtn.innerHTML = '<span>⚡</span> Start Training';
+                    startBtn.disabled = false;
+                    showCountdown();
 
-            const iv = setInterval(() => {
-                count--;
-                if (count > 0) {
-                    display.textContent = count;
-                    display.style.animation = 'none';
-                    void display.offsetHeight;
-                    display.style.animation = '';
-                    SoundFX.play('countdown');
-                } else if (count === 0) {
-                    display.className = 'countdown-go';
-                    display.textContent = 'GO!';
-                    display.style.animation = 'none';
-                    void display.offsetHeight;
-                    display.style.animation = '';
-                    SoundFX.play('correct');
+                } catch (err) {
+                    console.error('[KanaBlitz] Start error:', err);
+                    alert('❌ Failed to load words. Please check your database connection and try again.\n\nError: ' + err.message);
+                    startBtn.disabled = false;
+                    startBtn.innerHTML = '<span>⚡</span> Start Training';
+                }
+            });
+
+            /* ── Countdown ── */
+            function showCountdown() {
+                countdownOverlay.style.display = 'flex';
+                countdownOverlay.style.flexDirection = 'column';
+                countdownOverlay.style.alignItems = 'center';
+                countdownOverlay.style.justifyContent = 'center';
+                countdownOverlay.style.position = 'fixed';
+                countdownOverlay.style.inset = '0';
+                countdownOverlay.style.background = 'rgba(255,255,255,0.92)';
+                countdownOverlay.style.backdropFilter = 'blur(8px)';
+                countdownOverlay.style.zIndex = '9000';
+
+                const counts = [3, 2, 1, '⚡ GO!'];
+                let i = 0;
+
+                const tick = () => {
+                    SFX.countdown();
+                    countdownOverlay.innerHTML = `
+                        <div class="countdown-number" style="font-size:${counts[i] === '⚡ GO!' ? '4rem' : '8rem'};font-weight:900;color:var(--kb-black);animation:kbCountdownPop 0.7s ease both;">
+                            ${counts[i]}
+                        </div>
+                        <div class="countdown-text" style="font-size:1rem;font-weight:800;color:var(--kb-muted);letter-spacing:0.15em;text-transform:uppercase;margin-top:12px;">
+                            ${i < 3 ? 'Get ready...' : 'Start typing!'}
+                        </div>
+                    `;
+                    i++;
+                    if (i < counts.length) {
+                        setTimeout(tick, 900);
+                    } else {
+                        SFX.go();
+                        setTimeout(() => {
+                            countdownOverlay.style.display = 'none';
+                            beginGame();
+                        }, 700);
+                    }
+                };
+                tick();
+            }
+
+            /* ── Begin game ── */
+            function beginGame() {
+                resetState();
+                STATE.queue = shuffle(STATE.words).slice(0, STATE.totalQuestions);
+                STATE.gameActive = true;
+
+                setupPanel.style.display = 'none';
+                gameArena.style.display = 'block';
+                resultOverlay.style.display = 'none';
+
+                qTotal.textContent = STATE.totalQuestions;
+                loadQuestion();
+            }
+
+            /* ── Reset state ── */
+            function resetState() {
+                clearInterval(STATE.timerInterval);
+                STATE.currentIndex = 0;
+                STATE.score        = 0;
+                STATE.correct      = 0;
+                STATE.wrong        = 0;
+                STATE.combo        = 0;
+                STATE.maxCombo     = 0;
+                STATE.multiplier   = 1.0;
+                STATE.timings      = [];
+                STATE.gameActive   = false;
+                updateScoreDisplay();
+                updateComboDisplay();
+            }
+
+            /* ── Load question ── */
+            function loadQuestion() {
+                clearInterval(STATE.timerInterval);
+                feedbackBubble.textContent = '';
+                feedbackBubble.className = 'feedback-bubble';
+                kanaCard.classList.remove('correct','wrong');
+
+                if (STATE.currentIndex >= STATE.totalQuestions) {
+                    endGame();
+                    return;
+                }
+
+                const word = STATE.queue[STATE.currentIndex];
+                STATE.currentWord = word;
+                qNum.textContent = STATE.currentIndex + 1;
+
+                /* Display kana */
+                kanaDisplay.textContent  = word.wordKana;
+                kanaMeaning.textContent  = word.meaningEnglish || '';
+                kanaCat.textContent      = word.categoryTag || '';
+
+                /* Furigana for insanity (kanji words contain furigana in parens) */
+                if (STATE.difficulty === 'insanity' && word.wordKana.includes('(')) {
+                    const m = word.wordKana.match(/\(([^)]+)\)/);
+                    if (m) {
+                        kanaFurigana.textContent = m[1];
+                        kanaFurigana.style.display = 'block';
+                    }
                 } else {
-                    clearInterval(iv);
-                    overlay.style.display = 'none';
-                    resolve();
+                    kanaFurigana.style.display = 'none';
                 }
-            }, 800);
-        });
-    }
 
-    /* ── Next Round ── */
-    function nextRound() {
-        if (G.round >= G.totalRounds || !G.running) {
-            endGame();
-            return;
-        }
+                /* Mode routing */
+                if (STATE.isHardMode) {
+                    buildHardMode(word);
+                } else {
+                    buildNormalMode();
+                }
 
-        G.answered = false;
-        G.currentWord = G.words[G.round];
-        G.round++;
-
-        // Update HUD
-        document.getElementById('hud-score').textContent = G.score;
-        document.getElementById('hud-combo').textContent = G.combo + '×';
-        document.getElementById('hud-round').textContent = G.round + '/' + G.totalRounds;
-        document.getElementById('hud-correct').textContent = G.correct;
-
-        // Display question
-        const qCard = document.getElementById('question-card');
-        qCard.style.animation = 'none';
-        void qCard.offsetHeight;
-        qCard.style.animation = 'kbScaleIn 0.3s ease both';
-
-        document.getElementById('q-kana').textContent = G.currentWord.wordKana || G.currentWord.WordKana || '—';
-        document.getElementById('q-category').textContent = G.currentWord.categoryTag || G.currentWord.CategoryTag || 'Kana';
-
-        // Build options — pick 3 wrong answers from the word pool
-        buildOptions();
-
-        // Start timer
-        startTimer();
-    }
-
-    /* ── Build Options ── */
-    function buildOptions() {
-        const correctRomaji = G.currentWord.wordRomaji || G.currentWord.WordRomaji || '';
-        const pool = G.words.filter(w => {
-            const r = w.wordRomaji || w.WordRomaji || '';
-            return r && r !== correctRomaji;
-        });
-
-        const wrongAnswers = shuffleArray([...pool]).slice(0, 3).map(w => w.wordRomaji || w.WordRomaji || '');
-        const allAnswers = shuffleArray([correctRomaji, ...wrongAnswers]);
-
-        const grid = document.getElementById('options-grid');
-        grid.innerHTML = '';
-
-        allAnswers.forEach((ans, i) => {
-            const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.textContent = ans || '—';
-            btn.dataset.answer = ans;
-            btn.style.animation = `kbFadeUp 0.3s ease ${i * 0.05}s both`;
-            btn.addEventListener('click', () => handleAnswer(ans, correctRomaji, btn));
-            grid.appendChild(btn);
-        });
-    }
-
-    /* ── Handle Answer ── */
-    function handleAnswer(selected, correct, btnEl) {
-        if (G.answered) return;
-        G.answered = true;
-        clearInterval(G.timerInterval);
-
-        const allBtns = document.querySelectorAll('.option-btn');
-        allBtns.forEach(b => b.disabled = true);
-
-        if (selected === correct) {
-            // Correct!
-            btnEl.classList.add('correct');
-            G.correct++;
-            G.combo++;
-            if (G.combo > G.maxCombo) G.maxCombo = G.combo;
-
-            const comboMultiplier = Math.min(G.combo, 5);
-            const timeBonus = Math.floor(G.timeLeft / G.timePerRound * 50);
-            const points = 100 * comboMultiplier + timeBonus;
-            G.score += points;
-
-            document.getElementById('hud-score').textContent = G.score;
-            document.getElementById('hud-combo').textContent = G.combo + '×';
-            document.getElementById('hud-correct').textContent = G.correct;
-
-            showXPFloat(btnEl, '+' + points);
-
-            if (G.combo >= 3) {
-                SoundFX.play('combo');
-                showToast(`${G.combo}× Combo!`, 'combo-toast');
-            } else {
-                SoundFX.play('correct');
-                showToast('Correct!', 'correct-toast');
+                startTimer();
             }
-        } else {
-            // Incorrect
-            btnEl.classList.add('incorrect');
-            G.incorrect++;
-            G.combo = 0;
 
-            document.getElementById('hud-combo').textContent = '0×';
+            /* ── Normal mode ── */
+            function buildNormalMode() {
+                normalSection.style.display = 'block';
+                hardSection.style.display   = 'none';
+                romajiInput.value           = '';
+                romajiInput.className       = 'romaji-input';
+                romajiInput.disabled        = false;
+                setTimeout(() => romajiInput.focus(), 50);
+            }
 
-            // Reveal the correct answer
-            allBtns.forEach(b => {
-                if (b.dataset.answer === correct) {
-                    b.classList.add('reveal-correct');
+            /* ── Hard mode — build blanks ── */
+            function buildHardMode(word) {
+                normalSection.style.display = 'none';
+                hardSection.style.display   = 'block';
+                submitWordBtn.disabled      = true;
+
+                /* Parse kana characters from the word (skip kanji/parens) */
+                const kana = extractKana(word.wordKana);
+                if (kana.length === 0) { buildNormalMode(); return; }
+
+                /* Choose how many blanks based on difficulty */
+                const numBlanks = STATE.difficulty === 'insanity'
+                    ? Math.min(3, Math.max(1, Math.floor(kana.length * 0.5)))
+                    : STATE.difficulty === 'hard'
+                        ? Math.min(2, Math.max(1, Math.floor(kana.length * 0.4)))
+                        : 1;
+
+                /* Pick random indices to blank */
+                const allIdx = Array.from({ length: kana.length }, (_, i) => i);
+                const blankIdx = shuffle(allIdx).slice(0, numBlanks).sort((a,b)=>a-b);
+
+                STATE.hardBlanks  = blankIdx.map(i => ({ idx: i, char: kana[i], filled: false, userAnswer: null }));
+                STATE.hardAnswers = [];
+
+                /* Render partial word */
+                renderPartialWord(kana, blankIdx);
+
+                /* Build option pool */
+                buildKanaOptions(word, kana, blankIdx);
+            }
+
+            /* Extract individual kana from a word string */
+            function extractKana(wordKana) {
+                /* For insanity mode, extract furigana from parens */
+                const furi = wordKana.match(/\(([^)]+)\)/);
+                const src = furi ? furi[1] : wordKana;
+                /* Split into individual characters, ignore kanji & latin */
+                return [...src].filter(c => {
+                    const cp = c.codePointAt(0);
+                    return (cp >= 0x3040 && cp <= 0x30FF) || (cp >= 0xFF65 && cp <= 0xFF9F);
+                });
+            }
+
+            /* Render the partially-blanked word */
+            function renderPartialWord(kana, blankIdx) {
+                kanaWordPartial.innerHTML = '';
+                kana.forEach((char, i) => {
+                    if (blankIdx.includes(i)) {
+                        const blank = document.createElement('span');
+                        blank.className = 'kana-blank';
+                        blank.dataset.blankIdx = String(blankIdx.indexOf(i));
+                        blank.textContent = '＿';
+                        blank.setAttribute('aria-label', 'Missing kana ' + (blankIdx.indexOf(i) + 1));
+                        kanaWordPartial.appendChild(blank);
+                    } else {
+                        const span = document.createElement('span');
+                        span.className = 'kana-char';
+                        span.textContent = char;
+                        span.setAttribute('lang','ja');
+                        kanaWordPartial.appendChild(span);
+                    }
+                });
+            }
+
+            /* Build the option buttons */
+            function buildKanaOptions(word, kana, blankIdx) {
+                kanaOptionGrid.innerHTML = '';
+
+                /* Always include the correct answers */
+                const correctChars = blankIdx.map(i => kana[i]);
+
+                /* Choose pool based on alphabet */
+                const pool = STATE.alphabet === 'katakana' ? KATAKANA_POOL : HIRAGANA_POOL;
+
+                /* Pick distractors */
+                const distractors = shuffle(pool.filter(c => !correctChars.includes(c))).slice(0, 8 - correctChars.length);
+                const options     = shuffle([...correctChars, ...distractors]);
+
+                options.forEach(char => {
+                    const btn = document.createElement('button');
+                    btn.className    = 'kana-option-btn';
+                    btn.textContent  = char;
+                    btn.lang         = 'ja';
+                    btn.dataset.char = char;
+                    btn.type         = 'button';
+                    btn.setAttribute('aria-label', `Select kana ${char}`);
+                    btn.addEventListener('click', () => handleKanaOptionClick(char, btn));
+                    kanaOptionGrid.appendChild(btn);
+                });
+            }
+
+            /* Handle option button click */
+            function handleKanaOptionClick(char, btn) {
+                if (!STATE.gameActive) return;
+                const nextBlank = STATE.hardBlanks.find(b => !b.filled);
+                if (!nextBlank) return;
+
+                SFX.click();
+                nextBlank.filled     = true;
+                nextBlank.userAnswer = char;
+                STATE.hardAnswers.push(char);
+
+                /* Update blank display */
+                const blankEl = kanaWordPartial.querySelector(`[data-blank-idx="${STATE.hardBlanks.indexOf(nextBlank)}"]`);
+                if (blankEl) {
+                    blankEl.textContent = char;
+                    blankEl.classList.add('filled');
+                }
+                btn.classList.add('used');
+                btn.disabled = true;
+
+                /* Check if all blanks filled */
+                if (STATE.hardBlanks.every(b => b.filled)) {
+                    submitWordBtn.disabled = false;
+                }
+            }
+
+            /* Submit hard answer */
+            submitWordBtn.addEventListener('click', checkHardAnswer);
+
+            function checkHardAnswer() {
+                clearInterval(STATE.timerInterval);
+                const correct = STATE.hardBlanks.every(b => b.userAnswer === b.char);
+
+                if (correct) {
+                    handleCorrect(true);
+                } else {
+                    handleWrong(true);
+                }
+            }
+
+            /* ── Normal mode — check on Enter ── */
+            romajiInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (!STATE.gameActive) return;
+                    checkNormalAnswer();
                 }
             });
 
-            SoundFX.play('incorrect');
-            showToast('Incorrect', 'incorrect-toast');
-        }
+            function checkNormalAnswer() {
+                const val    = romajiInput.value.trim().toLowerCase().replace(/\s+/g,'');
+                const answer = (STATE.currentWord?.wordRomaji ?? '').toLowerCase();
+                if (!val) return;
 
-        // Next round after delay
-        setTimeout(() => nextRound(), 1200);
-    }
+                clearInterval(STATE.timerInterval);
 
-    /* ── Timer ── */
-    function startTimer() {
-        G.timeLeft = G.timePerRound;
-        const bar = document.getElementById('timer-bar');
-        bar.style.width = '100%';
-        bar.className = 'timer-bar-fill';
-
-        const startTime = Date.now();
-        const duration = G.timePerRound * 1000;
-
-        G.timerInterval = setInterval(() => {
-            const elapsed = Date.now() - startTime;
-            const pct = Math.max(0, 1 - elapsed / duration) * 100;
-            bar.style.width = pct + '%';
-            G.timeLeft = Math.max(0, G.timePerRound - elapsed / 1000);
-
-            if (pct < 20) {
-                bar.className = 'timer-bar-fill danger';
-                if (Math.floor(G.timeLeft * 2) % 2 === 0) SoundFX.play('tick');
-            } else if (pct < 40) {
-                bar.className = 'timer-bar-fill warning';
-            } else {
-                bar.className = 'timer-bar-fill';
+                if (val === answer) {
+                    handleCorrect(false);
+                } else {
+                    handleWrong(false);
+                }
             }
 
-            if (pct <= 0) {
-                clearInterval(G.timerInterval);
-                handleTimeout();
+            /* ── Handle correct ── */
+            function handleCorrect(isHard) {
+                SFX.correct();
+                STATE.correct++;
+                STATE.combo++;
+                STATE.maxCombo = Math.max(STATE.maxCombo, STATE.combo);
+
+                /* Score calculation */
+                const baseScore = isHard ? 150 : 100;
+                const timeBonus = Math.round(STATE.timeLeft * 5);
+                const comboMult = Math.min(3.0, 1 + (STATE.combo - 1) * 0.25);
+                const earned    = Math.round((baseScore + timeBonus) * comboMult);
+                STATE.score    += earned;
+                STATE.multiplier = comboMult;
+
+                /* Feedback */
+                kanaCard.classList.add('correct');
+                romajiInput.classList.add('correct-state');
+                showFeedback('✅ Correct!', 'correct');
+                floatScore(earned, true);
+
+                /* Combo sound */
+                if (STATE.combo >= 3) SFX.combo();
+
+                updateScoreDisplay();
+                updateComboDisplay();
+
+                setTimeout(() => {
+                    kanaCard.classList.remove('correct');
+                    romajiInput.classList.remove('correct-state');
+                    STATE.currentIndex++;
+                    loadQuestion();
+                }, 600);
             }
-        }, 100);
-    }
 
-    function handleTimeout() {
-        if (G.answered) return;
-        G.answered = true;
-        G.incorrect++;
-        G.combo = 0;
+            /* ── Handle wrong ── */
+            function handleWrong(isHard) {
+                SFX.wrong();
+                STATE.wrong++;
+                STATE.combo = 0;
+                STATE.multiplier = 1.0;
 
-        const correctRomaji = G.currentWord.wordRomaji || G.currentWord.WordRomaji || '';
-        const allBtns = document.querySelectorAll('.option-btn');
-        allBtns.forEach(b => {
-            b.disabled = true;
-            if (b.dataset.answer === correctRomaji) {
-                b.classList.add('reveal-correct');
+                kanaCard.classList.add('wrong');
+                romajiInput.classList.add('wrong-state');
+                showFeedback(`❌ Wrong — answer: ${STATE.currentWord.wordRomaji}`, 'wrong');
+                floatScore(-10, false);
+
+                STATE.score = Math.max(0, STATE.score - 10);
+                updateScoreDisplay();
+                updateComboDisplay();
+
+                setTimeout(() => {
+                    kanaCard.classList.remove('wrong');
+                    romajiInput.classList.remove('wrong-state');
+                    STATE.currentIndex++;
+                    loadQuestion();
+                }, 1000);
             }
-        });
 
-        document.getElementById('hud-combo').textContent = '0×';
-        SoundFX.play('incorrect');
-        showToast('Time\'s Up!', 'incorrect-toast');
+            /* ── Timer ── */
+            function startTimer() {
+                STATE.timeLeft = STATE.timePerQ;
+                timerBar.style.width = '100%';
+                timerBar.className = 'timer-bar';
+                timerBar.parentElement.setAttribute('aria-valuenow', 100);
 
-        setTimeout(() => nextRound(), 1200);
-    }
+                const totalMs = STATE.timePerQ * 1000;
+                const startTs = Date.now();
 
-    /* ── End Game ── */
-    async function endGame() {
-        G.running = false;
-        clearInterval(G.timerInterval);
+                STATE.timerInterval = setInterval(() => {
+                    const elapsed = Date.now() - startTs;
+                    const pct     = Math.max(0, 1 - elapsed / totalMs);
+                    STATE.timeLeft = Math.max(0, STATE.timePerQ - elapsed / 1000);
+                    timerBar.style.width = (pct * 100).toFixed(1) + '%';
+                    timerBar.parentElement.setAttribute('aria-valuenow', Math.round(pct * 100));
 
-        const accuracy = G.totalRounds > 0 ? Math.round((G.correct / G.totalRounds) * 100) : 0;
-        const xpEarned = Math.floor(G.score * 0.5 + G.correct * 5);
+                    if (pct < 0.25)     timerBar.className = 'timer-bar danger';
+                    else if (pct < 0.5) timerBar.className = 'timer-bar warn';
+                    else                timerBar.className = 'timer-bar';
 
-        // Play sound
-        if (accuracy >= 80) {
-            SoundFX.play('victory');
-        } else {
-            SoundFX.play('defeat');
-        }
+                    if (elapsed >= totalMs) {
+                        clearInterval(STATE.timerInterval);
+                        handleTimeOut();
+                    }
+                }, 80);
+            }
 
-        // Submit score
-        try {
-            await fetch('/KanaBlitz/SubmitScore', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    score: G.score,
-                    difficulty: G.difficulty,
-                    alphabet: G.alphabet,
-                    correct: G.correct,
-                    total: G.totalRounds,
-                    maxCombo: G.maxCombo,
-                    xpEarned: xpEarned
-                })
+            function handleTimeOut() {
+                STATE.wrong++;
+                STATE.combo = 0;
+                STATE.multiplier = 1.0;
+                showFeedback(`⏰ Time! Answer: ${STATE.currentWord?.wordRomaji ?? ''}`, 'wrong');
+                SFX.wrong();
+                floatScore(-5, false);
+                STATE.score = Math.max(0, STATE.score - 5);
+                updateScoreDisplay();
+                updateComboDisplay();
+                timerBar.style.width = '0%';
+
+                setTimeout(() => {
+                    STATE.currentIndex++;
+                    loadQuestion();
+                }, 1000);
+            }
+
+            /* ── Update score display ── */
+            function updateScoreDisplay() {
+                statScore.textContent   = STATE.score.toLocaleString();
+                statCorrect.textContent = STATE.correct;
+                statWrong.textContent   = STATE.wrong;
+
+                const total = STATE.correct + STATE.wrong;
+                const acc   = total > 0 ? Math.round((STATE.correct / total) * 100) : 100;
+                statAcc.textContent = acc + '%';
+                accBar.style.width  = acc + '%';
+
+                /* Brief color flash on score */
+                statScore.classList.add('score-bump');
+                setTimeout(() => statScore.classList.remove('score-bump'), 400);
+            }
+
+            /* ── Update combo display ── */
+            function updateComboDisplay() {
+                comboBadge.textContent = `🔥 ${STATE.combo} Combo`;
+                multiplierBadge.textContent = `×${STATE.multiplier.toFixed(1)}`;
+                comboBadge.className = STATE.combo >= 3 ? 'combo-badge active' : 'combo-badge inactive';
+            }
+
+            /* ── Feedback bubble ── */
+            function showFeedback(text, type) {
+                feedbackBubble.textContent = text;
+                feedbackBubble.className   = `feedback-bubble ${type}`;
+            }
+
+            /* ── Floating score pop ── */
+            function floatScore(val, isGood) {
+                const el = document.createElement('div');
+                el.className = 'score-float' + (isGood ? '' : ' neg');
+                el.textContent = (isGood ? '+' : '') + val;
+                el.style.cssText = `
+                    left: ${40 + Math.random() * 20}%;
+                    top: ${30 + Math.random() * 20}%;
+                `;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 900);
+            }
+
+            /* ── End game ── */
+            function endGame() {
+                clearInterval(STATE.timerInterval);
+                STATE.gameActive = false;
+                SFX.victory();
+
+                const total    = STATE.correct + STATE.wrong;
+                const acc      = total > 0 ? Math.round((STATE.correct / total) * 100) : 0;
+                const xpEarned = Math.round(STATE.score * 0.5 + STATE.correct * 5);
+
+                /* Populate result card */
+                $('r-score').textContent   = STATE.score.toLocaleString();
+                $('r-correct').textContent = STATE.correct;
+                $('r-acc').textContent     = acc + '%';
+                $('r-combo').textContent   = STATE.maxCombo;
+                $('r-time').textContent    = getAvgTime() + 's';
+                $('r-xp').textContent      = xpEarned;
+
+                /* Result emoji / title */
+                let emoji = '🏆', title = 'Round Complete!', sub = '';
+                if (acc >= 95) { emoji = '🌟'; title = 'Exceptional!'; sub = 'Near-perfect accuracy — you are a kana master!'; }
+                else if (acc >= 80) { emoji = '⭐'; title = 'Excellent!'; sub = 'Great performance — keep pushing!'; }
+                else if (acc >= 60) { emoji = '👍'; title = 'Good Job!'; sub = 'Solid round — practice makes perfect!'; }
+                else { emoji = '💪'; title = 'Keep Training!'; sub = 'Focus on accuracy — you will get there!'; }
+
+                $('result-emoji').textContent = emoji;
+                $('result-title').textContent = title;
+                $('result-sub').textContent   = sub;
+                $('xp-pill').innerHTML        = `⭐ +${xpEarned} XP Earned`;
+
+                resultOverlay.style.display = 'flex';
+                resultOverlay.style.alignItems = 'center';
+                resultOverlay.style.justifyContent = 'center';
+                resultOverlay.style.position = 'fixed';
+                resultOverlay.style.inset = '0';
+                resultOverlay.style.background = 'rgba(255,255,255,0.94)';
+                resultOverlay.style.backdropFilter = 'blur(10px)';
+                resultOverlay.style.zIndex = '8000';
+
+                submitScore(xpEarned, acc, total);
+            }
+
+            function getAvgTime() {
+                if (!STATE.timings.length) return STATE.timePerQ;
+                return (STATE.timings.reduce((a,b) => a+b, 0) / STATE.timings.length).toFixed(1);
+            }
+
+            /* ── Submit score to server ── */
+            async function submitScore(xpEarned, acc, total) {
+                try {
+                    await fetch('/KanaBlitz/SubmitScore', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+                        body: JSON.stringify({
+                            score:      STATE.score,
+                            difficulty: STATE.difficulty,
+                            alphabet:   STATE.alphabet,
+                            correct:    STATE.correct,
+                            total:      total,
+                            maxCombo:   STATE.maxCombo,
+                            xpEarned:   xpEarned
+                        })
+                    });
+                } catch (e) { /* score submission not critical */ }
+            }
+
+            function getAntiForgeryToken() {
+                const el = document.querySelector('input[name="__RequestVerificationToken"]');
+                return el ? el.value : '';
+            }
+
+            /* ── Result buttons ── */
+            $('play-again-btn').addEventListener('click', () => {
+                SFX.click();
+                resultOverlay.style.display = 'none';
+                showCountdown();
             });
-        } catch (e) { /* silent fail */ }
 
-        // Show results
-        document.getElementById('game-arena').style.display = 'none';
-        document.getElementById('results-screen').style.display = 'block';
+            $('change-setup-btn').addEventListener('click', () => {
+                SFX.click();
+                resultOverlay.style.display = 'none';
+                gameArena.style.display     = 'none';
+                setupPanel.style.display    = 'block';
+            });
 
-        const icon = accuracy >= 90 ? '🏆' : accuracy >= 70 ? '⭐' : accuracy >= 50 ? '💪' : '📚';
-        const title = accuracy >= 90 ? 'Outstanding!' : accuracy >= 70 ? 'Great Job!' : accuracy >= 50 ? 'Keep Practicing!' : 'Don\'t Give Up!';
-        const sub = accuracy >= 90 ? 'You\'re a kana master!' : accuracy >= 70 ? 'Strong performance!' : accuracy >= 50 ? 'You\'re making progress!' : 'Every attempt makes you stronger!';
+            /* ── Init ── */
+            (async function init() {
+                await fetchUnlocks();
+                updateWordCountInfo();
+                selectDifficulty('easy');
+            })();
 
-        document.getElementById('results-icon').textContent = icon;
-        document.getElementById('results-title').textContent = title;
-        document.getElementById('results-subtitle').textContent = sub;
-        document.getElementById('rs-score').textContent = G.score;
-        document.getElementById('rs-accuracy').textContent = accuracy + '%';
-        document.getElementById('rs-combo').textContent = G.maxCombo + '×';
-        document.getElementById('rs-xp').textContent = '+' + xpEarned;
-    }
-
-    /* ── Play Again ── */
-    async function playAgain() {
-        SoundFX.play('click');
-        document.getElementById('results-screen').style.display = 'none';
-        try {
-            const resp = await fetch(`/KanaBlitz/GetWords?difficulty=${G.difficulty}&alphabet=${G.alphabet}`);
-            if (!resp.ok) throw new Error('Failed to fetch words.');
-            const data = await resp.json();
-            if (!Array.isArray(data) || data.length < 4) throw new Error('Not enough words.');
-            G.words = shuffleArray([...data]);
-            G.totalRounds = Math.min(10, G.words.length);
-            G.round = 0; G.score = 0; G.combo = 0; G.maxCombo = 0; G.correct = 0; G.incorrect = 0;
-            G.running = true;
-            document.getElementById('game-arena').style.display = 'block';
-            await showCountdown();
-            nextRound();
-        } catch (e) {
-            showError(e.message);
-            backToSetup();
-        }
-    }
-
-    function backToSetup() {
-        SoundFX.play('click');
-        G.running = false;
-        clearInterval(G.timerInterval);
-        document.getElementById('game-arena').style.display = 'none';
-        document.getElementById('results-screen').style.display = 'none';
-        document.getElementById('setup-panel').style.display = 'block';
-    }
-
-    /* ── Helpers ── */
-    function shuffleArray(arr) {
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-    }
-
-    function showToast(msg, cls) {
-        const t = document.getElementById('feedback-toast');
-        t.textContent = msg;
-        t.className = 'feedback-toast ' + cls + ' show';
-        setTimeout(() => { t.className = 'feedback-toast'; }, 800);
-    }
-
-    function showXPFloat(anchor, text) {
-        const el = document.createElement('div');
-        el.className = 'xp-float';
-        el.textContent = text;
-        const rect = anchor.getBoundingClientRect();
-        el.style.left = rect.left + rect.width / 2 + 'px';
-        el.style.top = rect.top + 'px';
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 1000);
-    }
-
-    /* Keyboard shortcuts: 1-4 for options */
-    document.addEventListener('keydown', e => {
-        if (!G.running || G.answered) return;
-        const num = parseInt(e.key);
-        if (num >= 1 && num <= 4) {
-            const btns = document.querySelectorAll('.option-btn');
-            if (btns[num - 1]) btns[num - 1].click();
-        }
-    });
-</script>
+        })();
+    </script>
+}

@@ -2,7 +2,8 @@
     ╔══════════════════════════════════════════════════════════════════╗
     ║  KanaBlitz_Index.cshtml  —  Mode Selection Hub                 ║
     ║  Controller : KanaBlitzController → Index()                     ║
-    ║  Route      : /KanaBlitz/Index  (or /KanaBlitz)                 ║
+    ║  Also used  : KanaBattleController → Index()                    ║
+    ║  Route      : /KanaBlitz  |  /KanaBattle/Index                  ║
     ║  Purpose    : Solo / Multiplayer mode picker with full info     ║
     ║  Aesthetic  : White background · Black / Gold / White / Blue    ║
     ╚══════════════════════════════════════════════════════════════════╝
@@ -13,10 +14,6 @@
 }
 
 <style>
-    /* ══════════════════════════════════════════════════════════════
-           NIPPONQUEST — KanaBlitz Mode Selection Hub
-           Palette : White bg · Black text · Gold accents · Blue action
-        ══════════════════════════════════════════════════════════════ */
     @@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
 
     :root {
@@ -78,7 +75,7 @@
         padding: 32px 16px;
     }
 
-    /* ── Keyframes ── */
+    /* ══ Keyframes ══ */
     @@keyframes kbFadeUp {
         0% {
             opacity: 0;
@@ -101,13 +98,23 @@
         }
     }
 
-    @@keyframes kbPulseGlow {
+    @@keyframes kbPulseGold {
         0%, 100% {
-            box-shadow: 0 0 0 0 rgba(245,158,11,0.3);
+            box-shadow: 0 0 0 0 rgba(217,119,6,0.25);
         }
 
         50% {
-            box-shadow: 0 0 20px 4px rgba(245,158,11,0.15);
+            box-shadow: 0 0 0 12px rgba(217,119,6,0);
+        }
+    }
+
+    @@keyframes kbPulseBlue {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(30,64,175,0.25);
+        }
+
+        50% {
+            box-shadow: 0 0 0 12px rgba(30,64,175,0);
         }
     }
 
@@ -139,15 +146,46 @@
         }
 
         50% {
-            transform: scale(1.03);
+            transform: scale(1.04);
         }
     }
 
-    /* ── Hero ── */
+    @@keyframes kbParticleDrift {
+        0% {
+            opacity: 0;
+            transform: translateY(10px) rotate(0deg);
+        }
+
+        20% {
+            opacity: 1;
+        }
+
+        80% {
+            opacity: 0.6;
+        }
+
+        100% {
+            opacity: 0;
+            transform: translateY(-60px) rotate(180deg);
+        }
+    }
+
+    @@keyframes kbGlowPulse {
+        0%, 100% {
+            opacity: 0.4;
+        }
+
+        50% {
+            opacity: 1;
+        }
+    }
+
+    /* ══ Hero ══ */
     .kb-hero {
         text-align: center;
-        padding: 28px 0 40px;
+        padding: 32px 0 44px;
         animation: kbFadeUp 0.6s ease both;
+        position: relative;
     }
 
     .kb-hero-badge {
@@ -157,13 +195,13 @@
         background: var(--kb-gold-bg);
         border: 1.5px solid var(--kb-gold-bd);
         border-radius: 100px;
-        padding: 6px 20px;
+        padding: 6px 22px;
         font-size: 0.68rem;
         font-weight: 900;
         letter-spacing: 0.18em;
         color: var(--kb-gold);
         text-transform: uppercase;
-        margin-bottom: 18px;
+        margin-bottom: 20px;
         animation: kbFloat 3s ease-in-out infinite;
     }
 
@@ -173,7 +211,7 @@
         letter-spacing: 0.02em;
         color: var(--kb-black);
         line-height: 1.12;
-        margin-bottom: 12px;
+        margin-bottom: 14px;
     }
 
         .kb-hero h1 .gold {
@@ -184,27 +222,52 @@
             color: var(--kb-blue-lt);
         }
 
-    .kb-hero p {
+    .kb-hero-sub {
         color: var(--kb-muted);
-        font-size: 1rem;
-        max-width: 540px;
-        margin: 0 auto;
-        line-height: 1.7;
+        font-size: 1.02rem;
+        max-width: 560px;
+        margin: 0 auto 28px;
+        line-height: 1.72;
     }
 
-    /* ── Mode Grid ── */
+    .kb-hero-stats {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+
+    .kb-hero-stat {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--kb-muted);
+        background: var(--kb-surface);
+        border: 1px solid var(--kb-border);
+        border-radius: 100px;
+        padding: 5px 14px;
+    }
+
+        .kb-hero-stat .stat-icon {
+            font-size: 1rem;
+        }
+
+    /* ══ Mode Grid ══ */
     .mode-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-        gap: 24px;
-        margin: 36px 0 40px;
+        gap: 28px;
+        margin: 20px 0 48px;
     }
 
     .mode-card {
         background: var(--kb-bg);
         border: 2px solid var(--kb-border);
         border-radius: var(--kb-radius-lg);
-        padding: 36px 28px 32px;
+        padding: 36px 30px 32px;
         cursor: pointer;
         transition: var(--kb-trans);
         position: relative;
@@ -212,16 +275,16 @@
         text-decoration: none;
         display: flex;
         flex-direction: column;
-        min-height: 480px;
+        min-height: 560px;
         animation: kbScaleIn 0.5s ease both;
     }
 
         .mode-card:nth-child(1) {
-            animation-delay: 0.1s;
+            animation-delay: 0.08s;
         }
 
         .mode-card:nth-child(2) {
-            animation-delay: 0.2s;
+            animation-delay: 0.18s;
         }
 
         .mode-card::before {
@@ -235,306 +298,525 @@
             transition: opacity 0.3s ease;
         }
 
+        .mode-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            border-radius: var(--kb-radius-lg);
+        }
+
         .mode-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 16px 48px rgba(15,23,42,0.14);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 56px rgba(15,23,42,0.14);
         }
 
             .mode-card:hover::before {
                 opacity: 1;
             }
 
-        .mode-card.solo-card::before {
-            background: linear-gradient(90deg, var(--kb-gold), var(--kb-gold-lt));
-        }
-
-        .mode-card.solo-card:hover {
-            border-color: var(--kb-gold);
-        }
-
-            .mode-card.solo-card:hover .mode-icon {
-                background: var(--kb-gold-bg);
-                color: var(--kb-gold);
-                animation: kbBreathe 2s ease-in-out infinite;
+            .mode-card:hover::after {
+                opacity: 1;
             }
 
-        .mode-card.multi-card::before {
-            background: linear-gradient(90deg, var(--kb-red-lt), var(--kb-gold));
+    /* Solo Card */
+    .solo-card::before {
+        background: linear-gradient(90deg, var(--kb-gold), var(--kb-gold-lt), var(--kb-gold));
+    }
+
+    .solo-card::after {
+        background: radial-gradient(ellipse at top, rgba(217,119,6,0.04) 0%, transparent 70%);
+    }
+
+    .solo-card:hover {
+        border-color: var(--kb-gold);
+        animation: kbPulseGold 2s ease-in-out infinite;
+    }
+
+        .solo-card:hover .mode-icon {
+            background: var(--kb-gold-bg);
+            color: var(--kb-gold);
+            animation: kbBreathe 1.8s ease-in-out infinite;
         }
 
-        .mode-card.multi-card:hover {
-            border-color: var(--kb-red-lt);
-        }
+    /* Multi Card */
+    .multi-card::before {
+        background: linear-gradient(90deg, var(--kb-red-lt), var(--kb-gold), var(--kb-blue-lt));
+    }
 
-            .mode-card.multi-card:hover .mode-icon {
-                background: var(--kb-red-bg);
-                color: var(--kb-red-lt);
-                animation: kbBreathe 2s ease-in-out infinite;
-            }
+    .multi-card::after {
+        background: radial-gradient(ellipse at top, rgba(239,68,68,0.04) 0%, transparent 70%);
+    }
+
+    .multi-card:hover {
+        border-color: var(--kb-red-lt);
+        animation: kbPulseBlue 2s ease-in-out infinite;
+    }
+
+        .multi-card:hover .mode-icon {
+            background: var(--kb-red-bg);
+            color: var(--kb-red-lt);
+            animation: kbBreathe 1.8s ease-in-out infinite;
+        }
 
     .mode-icon {
-        width: 68px;
-        height: 68px;
-        border-radius: 18px;
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
         background: var(--kb-surface);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2rem;
-        margin-bottom: 20px;
+        font-size: 2.1rem;
+        margin-bottom: 22px;
         transition: var(--kb-trans);
         color: var(--kb-charcoal);
+        border: 1.5px solid var(--kb-border);
+    }
+
+    .mode-label {
+        font-size: 0.68rem;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--kb-faint);
+        margin-bottom: 6px;
     }
 
     .mode-card h2 {
-        font-size: 1.6rem;
+        font-size: 1.75rem;
         font-weight: 900;
         color: var(--kb-black);
         margin-bottom: 6px;
         letter-spacing: 0.01em;
     }
 
-    .mode-card .mode-subtitle {
-        font-size: 0.78rem;
-        font-weight: 800;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--kb-faint);
-        margin-bottom: 16px;
+    .mode-card .mode-tagline {
+        font-size: 0.88rem;
+        color: var(--kb-muted);
+        font-weight: 700;
+        margin-bottom: 18px;
+        font-style: italic;
     }
 
     .mode-card .mode-desc {
-        font-size: 0.9rem;
+        font-size: 0.91rem;
         color: var(--kb-dark);
-        line-height: 1.7;
-        margin-bottom: 20px;
+        line-height: 1.75;
+        margin-bottom: 22px;
         flex: 1;
     }
 
+    /* Feature pills */
     .mode-features {
         list-style: none;
         padding: 0;
-        margin: 0 0 16px;
+        margin: 0 0 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
     }
 
         .mode-features li {
             display: flex;
             align-items: flex-start;
             gap: 10px;
-            font-size: 0.82rem;
+            font-size: 0.84rem;
             color: var(--kb-dark);
-            margin-bottom: 10px;
+            font-weight: 600;
             line-height: 1.5;
         }
 
             .mode-features li .feat-icon {
-                width: 22px;
-                height: 22px;
-                border-radius: 6px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 0.7rem;
+                font-size: 1rem;
                 flex-shrink: 0;
-                margin-top: 2px;
+                margin-top: 1px;
             }
 
-    .solo-card .feat-icon {
-        background: var(--kb-gold-bg);
-        color: var(--kb-gold);
-    }
-
-    .multi-card .feat-icon {
-        background: var(--kb-red-bg);
-        color: var(--kb-red-lt);
-    }
-
-    /* ── Spell/Ability Info ── */
-    .spell-section {
-        background: var(--kb-surface);
-        border: 1px solid var(--kb-border);
-        border-radius: var(--kb-radius-sm);
-        padding: 14px 16px;
-        margin-bottom: 20px;
-    }
-
-        .spell-section .spell-title {
-            font-size: 0.65rem;
-            font-weight: 900;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--kb-faint);
-            margin-bottom: 10px;
-        }
-
-    .spell-item {
+    /* Difficulty badges */
+    .diff-badges {
         display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 6px 0;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
     }
 
-        .spell-item + .spell-item {
-            border-top: 1px solid var(--kb-border);
+    .diff-badge {
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 0.66rem;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        border: 1.5px solid transparent;
+    }
+
+        .diff-badge.easy {
+            background: #ecfdf5;
+            color: #065f46;
+            border-color: #6ee7b7;
         }
 
-    .spell-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
+        .diff-badge.normal {
+            background: #eff6ff;
+            color: #1e40af;
+            border-color: #93c5fd;
+        }
+
+        .diff-badge.hard {
+            background: #fef3c7;
+            color: #d97706;
+            border-color: #fcd34d;
+        }
+
+        .diff-badge.insanity {
+            background: #fff1f2;
+            color: #991b1b;
+            border-color: #fca5a5;
+        }
+
+    /* CTA Buttons */
+    .mode-cta {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-        flex-shrink: 0;
-    }
-
-    .solo-card .spell-icon {
-        background: var(--kb-gold-bg);
-    }
-
-    .multi-card .spell-icon {
-        background: var(--kb-red-bg);
-    }
-
-    .spell-info {
-        flex: 1;
-    }
-
-        .spell-info .spell-name {
-            font-size: 0.8rem;
-            font-weight: 800;
-            color: var(--kb-charcoal);
-        }
-
-        .spell-info .spell-desc {
-            font-size: 0.7rem;
-            color: var(--kb-muted);
-            line-height: 1.4;
-        }
-
-    /* ── CTA Buttons ── */
-    .mode-btn {
-        display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
-        padding: 14px 28px;
-        border-radius: 12px;
+        width: 100%;
+        padding: 14px 24px;
+        border-radius: var(--kb-radius);
+        font-size: 0.94rem;
         font-weight: 900;
-        font-size: 0.88rem;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: var(--kb-trans);
         border: none;
         cursor: pointer;
-        transition: var(--kb-trans);
-        text-decoration: none;
-        width: 100%;
-        text-align: center;
         position: relative;
         overflow: hidden;
     }
 
-        .mode-btn::after {
+        .mode-cta::after {
             content: '';
             position: absolute;
             top: -50%;
             left: -60%;
             width: 30%;
             height: 200%;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.25);
             transform: rotate(30deg);
-            transition: left 0.6s ease;
+            transition: left 0.4s ease;
         }
 
-        .mode-btn:hover::after {
-            left: 140%;
+        .mode-cta:hover::after {
+            left: 130%;
         }
 
-        .mode-btn.btn-gold {
-            background: linear-gradient(135deg, var(--kb-gold), var(--kb-gold-lt));
+    .cta-solo {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #fff;
+        box-shadow: 0 6px 20px rgba(15,23,42,0.25);
+    }
+
+        .cta-solo:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(15,23,42,0.32);
             color: #fff;
-            box-shadow: 0 6px 20px rgba(217,119,6,0.3);
         }
 
-            .mode-btn.btn-gold:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 10px 30px rgba(217,119,6,0.4);
-            }
+    .cta-multi {
+        background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%);
+        color: #fff;
+        box-shadow: 0 6px 20px rgba(153,27,27,0.3);
+    }
 
-        .mode-btn.btn-red {
-            background: linear-gradient(135deg, var(--kb-red-lt), var(--kb-gold));
+        .cta-multi:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(153,27,27,0.4);
             color: #fff;
-            box-shadow: 0 6px 20px rgba(239,68,68,0.3);
         }
 
-            .mode-btn.btn-red:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 10px 30px rgba(239,68,68,0.4);
-            }
+    /* ══ Combo / Mechanic Info Section ══ */
+    .kb-section-title {
+        font-size: 1.25rem;
+        font-weight: 900;
+        color: var(--kb-black);
+        margin-bottom: 6px;
+        letter-spacing: 0.02em;
+    }
 
-    /* ── Info Banner ── */
-    .info-banner {
+    .kb-section-sub {
+        font-size: 0.88rem;
+        color: var(--kb-muted);
+        margin-bottom: 20px;
+    }
+
+    .mechanic-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-bottom: 48px;
+        animation: kbFadeUp 0.7s ease 0.3s both;
+    }
+
+    .mechanic-card {
+        background: var(--kb-surface);
+        border: 1.5px solid var(--kb-border);
+        border-radius: var(--kb-radius);
+        padding: 20px 18px;
+        transition: var(--kb-trans);
+    }
+
+        .mechanic-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--kb-shadow);
+            border-color: var(--kb-border2);
+        }
+
+    .mechanic-icon {
+        font-size: 1.6rem;
+        margin-bottom: 10px;
+    }
+
+    .mechanic-card h4 {
+        font-size: 0.88rem;
+        font-weight: 900;
+        color: var(--kb-black);
+        margin-bottom: 5px;
+        letter-spacing: 0.02em;
+    }
+
+    .mechanic-card p {
+        font-size: 0.8rem;
+        color: var(--kb-muted);
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* ══ Difficulty Section ══ */
+    .diff-section {
         background: var(--kb-surface);
         border: 1.5px solid var(--kb-border);
         border-radius: var(--kb-radius-lg);
-        padding: 24px 28px;
-        margin-top: 16px;
-        display: flex;
-        align-items: flex-start;
-        gap: 16px;
-        animation: kbFadeUp 0.6s ease 0.3s both;
+        padding: 28px;
+        margin-bottom: 48px;
+        animation: kbFadeUp 0.7s ease 0.4s both;
     }
 
-        .info-banner .info-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: var(--kb-blue-bg);
-            border: 1px solid var(--kb-blue-bd);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            flex-shrink: 0;
+    .diff-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 14px;
+        margin-top: 18px;
+    }
+
+    .diff-info-card {
+        background: var(--kb-bg);
+        border: 1.5px solid var(--kb-border);
+        border-radius: var(--kb-radius);
+        padding: 16px;
+        transition: var(--kb-trans);
+    }
+
+        .diff-info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--kb-shadow);
         }
 
-        .info-banner h3 {
-            font-size: 1rem;
+        .diff-info-card .diff-name {
+            font-size: 0.78rem;
             font-weight: 900;
-            color: var(--kb-black);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
             margin-bottom: 6px;
         }
 
-        .info-banner p {
-            font-size: 0.85rem;
+    .diff-easy .diff-name {
+        color: var(--kb-green);
+    }
+
+    .diff-normal .diff-name {
+        color: var(--kb-blue);
+    }
+
+    .diff-hard .diff-name {
+        color: var(--kb-gold);
+    }
+
+    .diff-insanity .diff-name {
+        color: var(--kb-red);
+    }
+
+    .diff-info-card p {
+        font-size: 0.78rem;
+        color: var(--kb-muted);
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* ══ Kana Alphabet Scrollbar ══ */
+    .kana-scroll-row {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 8px 0 14px;
+        margin-bottom: 48px;
+        animation: kbFadeUp 0.7s ease 0.5s both;
+        scrollbar-width: thin;
+        scrollbar-color: var(--kb-border2) transparent;
+    }
+
+        .kana-scroll-row::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .kana-scroll-row::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .kana-scroll-row::-webkit-scrollbar-thumb {
+            background: var(--kb-border2);
+            border-radius: 10px;
+        }
+
+    .kana-chip {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        padding: 10px 14px;
+        background: var(--kb-surface);
+        border: 1.5px solid var(--kb-border);
+        border-radius: var(--kb-radius-sm);
+        font-size: 1.4rem;
+        color: var(--kb-black);
+        flex-shrink: 0;
+        transition: var(--kb-trans);
+        cursor: default;
+    }
+
+        .kana-chip span {
+            font-size: 0.62rem;
+            font-weight: 800;
             color: var(--kb-muted);
-            line-height: 1.6;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .kana-chip:hover {
+            border-color: var(--kb-gold-bd);
+            background: var(--kb-gold-bg);
+            transform: translateY(-2px);
+        }
+
+    /* ══ Spell / Combo Section ══ */
+    .spell-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+        margin-bottom: 48px;
+        animation: kbFadeUp 0.7s ease 0.35s both;
+    }
+
+    .spell-card {
+        background: var(--kb-bg);
+        border: 1.5px solid var(--kb-border);
+        border-radius: var(--kb-radius);
+        padding: 20px;
+        transition: var(--kb-trans);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .spell-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .spell-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--kb-shadow-lg);
+        }
+
+        .spell-card.combo::before {
+            background: linear-gradient(90deg, #d97706, #f59e0b);
+        }
+
+        .spell-card.streak::before {
+            background: linear-gradient(90deg, #1e40af, #3b82f6);
+        }
+
+        .spell-card.burst::before {
+            background: linear-gradient(90deg, #991b1b, #ef4444);
+        }
+
+        .spell-card.perfect::before {
+            background: linear-gradient(90deg, #065f46, #10b981);
+        }
+
+        .spell-card h4 {
+            font-size: 0.92rem;
+            font-weight: 900;
+            color: var(--kb-black);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .spell-card p {
+            font-size: 0.8rem;
+            color: var(--kb-muted);
+            line-height: 1.65;
             margin: 0;
         }
 
-    /* ── Responsive ── */
+    /* ══ Floating Particles ══ */
+    .kb-particles {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 0;
+    }
+
+    .kb-particle {
+        position: absolute;
+        font-size: 1.4rem;
+        opacity: 0;
+        animation: kbParticleDrift 6s ease-in-out infinite;
+    }
+
+    /* ══ Responsive ══ */
     @@media (max-width: 768px) {
         .mode-grid {
             grid-template-columns: 1fr;
-            gap: 18px;
         }
 
         .mode-card {
             min-height: auto;
-            padding: 28px 22px 26px;
         }
 
-        .kb-hero {
-            padding: 20px 0 28px;
+        .kb-hero h1 {
+            font-size: 2rem;
         }
 
-            .kb-hero h1 {
-                font-size: 2rem;
-            }
+        .mechanic-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
 
-        .info-banner {
-            flex-direction: column;
-            padding: 20px;
+        .diff-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .spell-grid {
+            grid-template-columns: 1fr;
         }
     }
 
@@ -543,207 +825,342 @@
             padding: 20px 12px;
         }
 
-        .mode-card {
-            padding: 22px 16px 22px;
+        .mechanic-grid {
+            grid-template-columns: 1fr;
         }
 
-        .mode-icon {
-            width: 56px;
-            height: 56px;
-            font-size: 1.6rem;
+        .diff-row {
+            grid-template-columns: 1fr;
         }
 
-        .mode-card h2 {
-            font-size: 1.35rem;
+        .kb-hero-stats {
+            gap: 10px;
         }
     }
 </style>
 
 <div class="kb-page">
-    <div class="kb-wrapper">
 
-        <!-- ═══ Hero ═══ -->
-        <div class="kb-hero">
-            <div class="kb-hero-badge">⚡ Game Arena</div>
-            <h1>Choose Your <span class="gold">Path</span></h1>
-            <p>Select a game mode to begin your training. Earn XP, build streaks, and master every kana character through immersive challenges.</p>
-        </div>
+    <!-- Floating particles (kana characters) -->
+    <div class="kb-particles" aria-hidden="true" id="kb-particles"></div>
 
-        <!-- ═══ Mode Cards ═══ -->
-        <div class="mode-grid">
+    <div class="kb-wrapper" style="position:relative; z-index:1;">
 
-            <!-- ── Solo Mode Card ── -->
-            <div class="mode-card solo-card" onclick="SoundFX.play('click'); window.location.href='/KanaBlitz/Play'" tabindex="0" role="button" aria-label="Launch Solo Training">
-                <div class="mode-icon">⚔️</div>
-                <h2>Solo Training</h2>
-                <div class="mode-subtitle">KanaBlitz · Single Player</div>
-                <p class="mode-desc">
-                    Sharpen your kana recognition at your own pace. Choose your difficulty and alphabet, then answer as many questions as you can. Build combos, beat your high score, and earn XP to level up your profile.
-                </p>
+        <!-- ══ Hero ══ -->
+        <section class="kb-hero">
+            <div class="kb-hero-badge">
+                ⚔️ <span>NipponQuest · KanaBlitz</span>
+            </div>
+            <h1>Master the <span class="gold">Kana</span><br>Conquer the <span class="blue">Arena</span></h1>
+            <p class="kb-hero-sub">
+                A fast-paced Japanese kana recognition game. Race the clock, build combos,
+                defeat AI opponents, and level up your reading speed — one character at a time.
+            </p>
+            <div class="kb-hero-stats">
+                <div class="kb-hero-stat"><span class="stat-icon">📚</span> 500+ Words</div>
+                <div class="kb-hero-stat"><span class="stat-icon">🎌</span> Hiragana · Katakana · Kanji</div>
+                <div class="kb-hero-stat"><span class="stat-icon">🤖</span> AI Opponent</div>
+                <div class="kb-hero-stat"><span class="stat-icon">🏆</span> Score &amp; XP System</div>
+            </div>
+        </section>
 
-                <ul class="mode-features">
-                    <li>
-                        <span class="feat-icon">🎯</span>
-                        <span>4 Difficulty tiers — Easy, Normal, Hard, and Insanity — each with unique word pools drawn from your database.</span>
-                    </li>
-                    <li>
-                        <span class="feat-icon">🔤</span>
-                        <span>4 Alphabet modes — Hiragana, Katakana, Dakuten, and Mixed — covering the full kana syllabary.</span>
-                    </li>
-                    <li>
-                        <span class="feat-icon">🔥</span>
-                        <span>Combo Streak system — consecutive correct answers multiply your score up to 5×.</span>
-                    </li>
-                    <li>
-                        <span class="feat-icon">⏱️</span>
-                        <span>Timed rounds — faster answers earn bonus points, keeping you on your toes.</span>
-                    </li>
-                    <li>
-                        <span class="feat-icon">📊</span>
-                        <span>Progress tracking — accuracy stats, highest scores, and unlock tracking saved to your profile.</span>
-                    </li>
-                </ul>
+        <!-- ══ Mode Selection Cards ══ -->
+        <section aria-label="Game mode selection">
+            <div class="mode-grid">
 
-                <div class="spell-section">
-                    <div class="spell-title">Spells &amp; Abilities</div>
-                    <div class="spell-item">
-                        <div class="spell-icon">🔥</div>
-                        <div class="spell-info">
-                            <div class="spell-name">Combo Blaze</div>
-                            <div class="spell-desc">Each consecutive correct answer increases your multiplier. Reach 5× for maximum points!</div>
-                        </div>
+                <!-- SOLO CARD -->
+                <a href="/KanaBlitz/Play" class="mode-card solo-card" id="solo-mode-card" aria-label="Start Solo Mode">
+                    <div class="mode-label">Solo Training</div>
+                    <div class="mode-icon" aria-hidden="true">🏋️</div>
+                    <h2>Solo Mode</h2>
+                    <div class="mode-tagline">"Train alone. Master everything."</div>
+                    <p class="mode-desc">
+                        Face kana characters and words at your own pace. Type the correct rōmaji reading
+                        before time runs out. Unlock harder difficulty tiers as your accuracy climbs.
+                        Build unstoppable combos. Beat your own high scores.
+                    </p>
+
+                    <ul class="mode-features" aria-label="Solo mode features">
+                        <li><span class="feat-icon">⌨️</span> Type rōmaji to match displayed kana</li>
+                        <li><span class="feat-icon">⏱️</span> Countdown timer — type fast or lose points</li>
+                        <li><span class="feat-icon">🔥</span> Combo streaks multiply your score</li>
+                        <li><span class="feat-icon">📖</span> Hard mode: select missing kana from cards</li>
+                        <li><span class="feat-icon">漢</span> Insanity mode: Kanji with furigana readings</li>
+                        <li><span class="feat-icon">⭐</span> Earn XP and unlock new difficulty tiers</li>
+                        <li><span class="feat-icon">📊</span> Accuracy tracking per alphabet and mode</li>
+                    </ul>
+
+                    <div class="diff-badges" aria-label="Available difficulties">
+                        <span class="diff-badge easy">Easy</span>
+                        <span class="diff-badge normal">Normal</span>
+                        <span class="diff-badge hard">Hard ★</span>
+                        <span class="diff-badge insanity">Insanity ★★</span>
                     </div>
-                    <div class="spell-item">
-                        <div class="spell-icon">⚡</div>
-                        <div class="spell-info">
-                            <div class="spell-name">Quick Draw</div>
-                            <div class="spell-desc">Answer within the first 3 seconds for a time bonus. Speed is rewarded!</div>
-                        </div>
+
+                    <span class="mode-cta cta-solo" aria-hidden="true">
+                        🏋️ Start Solo Training
+                    </span>
+                </a>
+
+                <!-- MULTIPLAYER CARD -->
+                <a href="/KanaBattle/Index" class="mode-card multi-card" id="multi-mode-card" aria-label="Start Multiplayer Battle">
+                    <div class="mode-label">AI Battle Arena</div>
+                    <div class="mode-icon" aria-hidden="true">⚔️</div>
+                    <h2>Multiplayer</h2>
+                    <div class="mode-tagline">"Battle the machine. Prove your speed."</div>
+                    <p class="mode-desc">
+                        Go head-to-head against an AI opponent that adapts to your chosen difficulty.
+                        Kana words drop into the arena — type the correct rōmaji first to deal damage.
+                        The AI fights back with speed, accuracy, and aggression scaled to its difficulty tier.
+                    </p>
+
+                    <ul class="mode-features" aria-label="Multiplayer mode features">
+                        <li><span class="feat-icon">🤖</span> AI scales: speed, accuracy &amp; aggression</li>
+                        <li><span class="feat-icon">❤️</span> HP-based battle — reduce enemy HP to zero</li>
+                        <li><span class="feat-icon">⚡</span> Correct answers attack · Wrong answers penalise</li>
+                        <li><span class="feat-icon">💥</span> Combos deal bonus damage</li>
+                        <li><span class="feat-icon">🧠</span> AI thinks, reacts, and counters</li>
+                        <li><span class="feat-icon">📈</span> Difficulty scales AI typing speed and reaction</li>
+                        <li><span class="feat-icon">🎖️</span> Victory earns bonus XP</li>
+                    </ul>
+
+                    <div class="diff-badges" aria-label="AI difficulty levels">
+                        <span class="diff-badge easy">Easy AI</span>
+                        <span class="diff-badge normal">Normal AI</span>
+                        <span class="diff-badge hard">Hard AI ★</span>
+                        <span class="diff-badge insanity">Insanity AI ★★</span>
                     </div>
-                    <div class="spell-item">
-                        <div class="spell-icon">🌟</div>
-                        <div class="spell-info">
-                            <div class="spell-name">Perfect Round</div>
-                            <div class="spell-desc">Achieve 100% accuracy in a round for a massive XP bonus and unlock progress.</div>
-                        </div>
-                    </div>
+
+                    <span class="mode-cta cta-multi" aria-hidden="true">
+                        ⚔️ Enter Battle Arena
+                    </span>
+                </a>
+
+            </div>
+        </section>
+
+        <!-- ══ Game Mechanics ══ -->
+        <section aria-labelledby="mechanics-title">
+            <h3 class="kb-section-title" id="mechanics-title">⚙️ How It Works</h3>
+            <p class="kb-section-sub">Master these systems to dominate the arena</p>
+            <div class="mechanic-grid">
+                <div class="mechanic-card">
+                    <div class="mechanic-icon">📖</div>
+                    <h4>Normal Mode</h4>
+                    <p>Kana characters or words appear on screen. Type the correct rōmaji reading before the timer runs out. Perfect for building recognition speed.</p>
                 </div>
-
-                <button class="mode-btn btn-gold" onclick="event.stopPropagation(); SoundFX.play('click'); window.location.href='/KanaBlitz/Play'">
-                    ⚔️ Launch Solo Training
-                </button>
-            </div>
-
-            <!-- ── Multiplayer / AI Battle Card ── -->
-            <div class="mode-card multi-card" onclick="SoundFX.play('click'); window.location.href='/KanaBattle/MainView'" tabindex="0" role="button" aria-label="Launch AI Battle">
-                <div class="mode-icon">🗡️</div>
-                <h2>AI Battle Arena</h2>
-                <div class="mode-subtitle">KanaBattle · vs AI Opponent</div>
-                <p class="mode-desc">
-                    Face off against an intelligent AI opponent in a head-to-head kana battle. Answer correctly to deal damage, answer fast for critical hits. Deplete the AI's health bar before it drains yours. Difficulty scales the AI's health, speed, and accuracy.
-                </p>
-
-                <ul class="mode-features">
-                    <li>
-                        <span class="feat-icon">🤖</span>
-                        <span>Adaptive AI opponent — difficulty changes the AI's health pool, answering speed, and accuracy.</span>
-                    </li>
-                    <li>
-                        <span class="feat-icon">❤️</span>
-                        <span>Health-based combat — correct answers deal damage. First to zero HP loses the battle.</span>
-                    </li>
-                    <li>
-                        <span class="feat-icon">💥</span>
-                        <span>Critical hits — fast answers deal bonus damage. Combo streaks unlock devastating strikes.</span>
-                    </li>
-                    <li>
-                        <span class="feat-icon">🛡️</span>
-                        <span>Shield system — consecutive correct answers build a shield that reduces incoming damage.</span>
-                    </li>
-                    <li>
-                        <span class="feat-icon">🏆</span>
-                        <span>Victory rewards — defeat the AI to earn bonus XP and progress toward harder challenges.</span>
-                    </li>
-                </ul>
-
-                <div class="spell-section">
-                    <div class="spell-title">Spells &amp; Abilities</div>
-                    <div class="spell-item">
-                        <div class="spell-icon">⚡</div>
-                        <div class="spell-info">
-                            <div class="spell-name">Quick Slash</div>
-                            <div class="spell-desc">Answer within 2 seconds to deal double damage. Strike fast and hard!</div>
-                        </div>
-                    </div>
-                    <div class="spell-item">
-                        <div class="spell-icon">🛡️</div>
-                        <div class="spell-info">
-                            <div class="spell-name">Perfect Guard</div>
-                            <div class="spell-desc">3 consecutive correct answers activate a shield, reducing AI damage by 50%.</div>
-                        </div>
-                    </div>
-                    <div class="spell-item">
-                        <div class="spell-icon">💀</div>
-                        <div class="spell-info">
-                            <div class="spell-name">Execution Blow</div>
-                            <div class="spell-desc">A 5× combo streak unleashes a devastating attack dealing triple damage!</div>
-                        </div>
-                    </div>
+                <div class="mechanic-card">
+                    <div class="mechanic-icon">🧩</div>
+                    <h4>Hard Mode — Fill the Gap</h4>
+                    <p>Words appear with one or more kana missing (e.g. た_し). Select the correct missing kana from option cards. No typing — pure kana knowledge.</p>
                 </div>
-
-                <button class="mode-btn btn-red" onclick="event.stopPropagation(); SoundFX.play('click'); window.location.href='/KanaBattle/MainView'">
-                    🗡️ Enter AI Battle Arena
-                </button>
+                <div class="mechanic-card">
+                    <div class="mechanic-icon">漢</div>
+                    <h4>Insanity Mode — Kanji</h4>
+                    <p>Kanji words displayed with furigana readings. Type the romaji (normal) or select missing kana (hard). Highest scoring multipliers.</p>
+                </div>
+                <div class="mechanic-card">
+                    <div class="mechanic-icon">🔥</div>
+                    <h4>Combo System</h4>
+                    <p>Chain correct answers to build combos. Each consecutive correct answer increases your multiplier. One miss resets your streak.</p>
+                </div>
+                <div class="mechanic-card">
+                    <div class="mechanic-icon">🤖</div>
+                    <h4>AI Opponent</h4>
+                    <p>The battle AI adjusts typing speed, accuracy, reaction delay, and aggressiveness based on selected difficulty. Harder AIs rarely miss.</p>
+                </div>
+                <div class="mechanic-card">
+                    <div class="mechanic-icon">⭐</div>
+                    <h4>XP &amp; Progression</h4>
+                    <p>Every match awards XP. Difficulty unlocks are gated by accuracy thresholds. Hit 90%+ accuracy in Normal to unlock Hard mode.</p>
+                </div>
             </div>
+        </section>
 
-        </div>
-
-        <!-- ═══ Info Banner ═══ -->
-        <div class="info-banner">
-            <div class="info-icon">💡</div>
-            <div>
-                <h3>About KanaBlitz &amp; KanaBattle</h3>
-                <p>
-                    KanaBlitz and KanaBattle are gamified learning modules within NipponQuest designed to make kana mastery engaging and effective.
-                    Words and characters are drawn directly from the database, covering Hiragana, Katakana, and Dakuten across multiple difficulty tiers.
-                    Your progress, accuracy stats, and unlock achievements are tracked and saved to your profile. Earn XP to level up and unlock harder challenges!
-                </p>
+        <!-- ══ Spell / Combo Explanations ══ -->
+        <section aria-labelledby="spells-title">
+            <h3 class="kb-section-title" id="spells-title">💥 Combos &amp; Special States</h3>
+            <p class="kb-section-sub">Chain correct answers to activate powerful bonuses</p>
+            <div class="spell-grid">
+                <div class="spell-card combo">
+                    <h4>🔥 Combo Multiplier</h4>
+                    <p>Chain 3+ correct answers in a row. Each additional correct answer adds +0.25x to your score multiplier. Combos reset on any wrong answer or timeout.</p>
+                </div>
+                <div class="spell-card streak">
+                    <h4>⚡ Blitz Streak</h4>
+                    <p>Answer 5 in a row correctly within 2 seconds each. Activates a timed bonus window where all correct answers score double points.</p>
+                </div>
+                <div class="spell-card burst">
+                    <h4>💥 Burst Damage (Battle)</h4>
+                    <p>In battle mode, landing 3 combos in a row triggers a burst that deals 1.5× damage to the AI opponent's HP bar in one strike.</p>
+                </div>
+                <div class="spell-card perfect">
+                    <h4>✅ Perfect Round</h4>
+                    <p>Complete an entire round without a single mistake. Earn a Perfect Round bonus — bonus XP and a score multiplier upgrade for the next round.</p>
+                </div>
+                <div class="spell-card combo">
+                    <h4>⏱️ Speed Bonus</h4>
+                    <p>Answering within 1.5 seconds awards a speed bonus on top of your base score. The faster you answer, the higher the bonus.</p>
+                </div>
+                <div class="spell-card streak">
+                    <h4>🛡️ AI Counter (Battle)</h4>
+                    <p>If you miss in battle mode, the AI gains an attack window. Higher-difficulty AIs will punish misses more aggressively and consistently.</p>
+                </div>
             </div>
-        </div>
+        </section>
 
-    </div>
-</div>
+        <!-- ══ Difficulty Breakdown ══ -->
+        <section class="diff-section" aria-labelledby="difficulty-title">
+            <h3 class="kb-section-title" id="difficulty-title">🎯 Difficulty Levels</h3>
+            <p class="kb-section-sub">Choose your challenge — each difficulty unlocks based on proven mastery</p>
+            <div class="diff-row">
+                <div class="diff-info-card diff-easy">
+                    <div class="diff-name">🟢 Easy</div>
+                    <p>Single kana characters only. Generous timer. Perfect for beginners learning the basic syllabary. Covers Hiragana, Katakana, and Dakuten.</p>
+                </div>
+                <div class="diff-info-card diff-normal">
+                    <div class="diff-name">🔵 Normal</div>
+                    <p>Common Japanese words (2–5 kana). Moderate timer pressure. Covers vocabulary across 15+ categories. Must achieve 90% to unlock Hard.</p>
+                </div>
+                <div class="diff-info-card diff-hard">
+                    <div class="diff-name">🟡 Hard ★</div>
+                    <p>Yōon, sokuon compounds and loanwords. Missing kana gameplay activated. Multiple kana may be missing from the word. Faster timers.</p>
+                </div>
+                <div class="diff-info-card diff-insanity">
+                    <div class="diff-name">🔴 Insanity ★★</div>
+                    <p>Full kanji words with furigana. Aggressive timer. Multiple missing kana. Requires Level 15+ and 95% Hard accuracy across all alphabets.</p>
+                </div>
+            </div>
+        </section>
 
-<script>
-    /* ═══ SoundFX Engine (Web Audio API) ═══ */
-    const SoundFX = {
-        ctx: null,
-        init() {
-            try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
-        },
-        play(type) {
-            if (!this.ctx) { this.init(); }
-            if (!this.ctx) return;
-            if (this.ctx.state === 'suspended') this.ctx.resume();
-            const now = this.ctx.currentTime;
-            switch(type) {
-                case 'click': {
-                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-                    o.connect(g); g.connect(this.ctx.destination);
-                    o.frequency.setValueAtTime(800, now);
-                    g.gain.setValueAtTime(0.08, now);
-                    g.gain.linearRampToValueAtTime(0, now + 0.05);
-                    o.start(now); o.stop(now + 0.05);
-                    break;
-                }
+        <!-- ══ Kana Preview Scroll ══ -->
+        <section aria-labelledby="kana-preview-title">
+            <h3 class="kb-section-title" id="kana-preview-title">🎌 You Will Learn These</h3>
+            <p class="kb-section-sub">A sample of the kana you will recognise and master</p>
+            <div class="kana-scroll-row" role="list" aria-label="Sample kana characters">
+                <div class="kana-chip" role="listitem">あ<span>a</span></div>
+                <div class="kana-chip" role="listitem">い<span>i</span></div>
+                <div class="kana-chip" role="listitem">う<span>u</span></div>
+                <div class="kana-chip" role="listitem">え<span>e</span></div>
+                <div class="kana-chip" role="listitem">お<span>o</span></div>
+                <div class="kana-chip" role="listitem">か<span>ka</span></div>
+                <div class="kana-chip" role="listitem">き<span>ki</span></div>
+                <div class="kana-chip" role="listitem">く<span>ku</span></div>
+                <div class="kana-chip" role="listitem">け<span>ke</span></div>
+                <div class="kana-chip" role="listitem">こ<span>ko</span></div>
+                <div class="kana-chip" role="listitem">さ<span>sa</span></div>
+                <div class="kana-chip" role="listitem">し<span>shi</span></div>
+                <div class="kana-chip" role="listitem">す<span>su</span></div>
+                <div class="kana-chip" role="listitem">た<span>ta</span></div>
+                <div class="kana-chip" role="listitem">ち<span>chi</span></div>
+                <div class="kana-chip" role="listitem">ア<span>A</span></div>
+                <div class="kana-chip" role="listitem">イ<span>I</span></div>
+                <div class="kana-chip" role="listitem">ウ<span>U</span></div>
+                <div class="kana-chip" role="listitem">カ<span>KA</span></div>
+                <div class="kana-chip" role="listitem">キ<span>KI</span></div>
+                <div class="kana-chip" role="listitem">サ<span>SA</span></div>
+                <div class="kana-chip" role="listitem">が<span>ga</span></div>
+                <div class="kana-chip" role="listitem">ぎ<span>gi</span></div>
+                <div class="kana-chip" role="listitem">ば<span>ba</span></div>
+                <div class="kana-chip" role="listitem">学<span>gaku</span></div>
+                <div class="kana-chip" role="listitem">校<span>kou</span></div>
+                <div class="kana-chip" role="listitem">心<span>koro</span></div>
+                <div class="kana-chip" role="listitem">夢<span>yume</span></div>
+            </div>
+        </section>
+
+        <!-- ══ Footer CTA ══ -->
+        <section style="text-align:center; padding: 12px 0 0;" aria-label="Quick start options">
+            <p style="font-size:0.9rem; color:var(--kb-muted); margin-bottom:20px; font-weight:600;">
+                Ready to train? Choose your mode above or jump straight in:
+            </p>
+            <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+                <a href="/KanaBlitz/Play" class="mode-cta cta-solo" style="max-width:220px; display:inline-flex;">
+                    🏋️ Quick Solo
+                </a>
+                <a href="/KanaBattle/Battle" class="mode-cta cta-multi" style="max-width:220px; display:inline-flex;">
+                    ⚔️ Quick Battle
+                </a>
+            </div>
+        </section>
+
+    </div><!-- /.kb-wrapper -->
+</div><!-- /.kb-page -->
+@section Scripts {
+    <script>
+        (function () {
+            'use strict';
+
+            /* ── Floating kana particles ── */
+            const kanaPool = ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','な','に','は','ひ','ま','み','も','や','ゆ','よ','ら','り','る','ア','イ','ウ','カ','サ','タ','ナ','ハ','マ','ら','学','心','夢','力','道'];
+            const container = document.getElementById('kb-particles');
+
+            if (container) {
+                const createParticle = () => {
+                    const el = document.createElement('div');
+                    el.className = 'kb-particle';
+                    el.textContent = kanaPool[Math.floor(Math.random() * kanaPool.length)];
+                    el.style.cssText = [
+                        `left:${Math.random() * 100}%`,
+                        `top:${60 + Math.random() * 40}%`,
+                        `animation-duration:${5 + Math.random() * 6}s`,
+                        `animation-delay:${Math.random() * 4}s`,
+                        `font-size:${0.9 + Math.random() * 1.2}rem`,
+                        `opacity:0`,
+                        `color:${Math.random() > 0.5 ? 'rgba(217,119,6,0.2)' : 'rgba(30,64,175,0.15)'}`,
+                    ].join(';');
+                    container.appendChild(el);
+                    setTimeout(() => el.remove(), 12000);
+                };
+
+                // Initial burst
+                for (let i = 0; i < 12; i++) setTimeout(createParticle, i * 300);
+                // Ongoing
+                setInterval(createParticle, 1800);
             }
-        }
-    };
 
-    /* Keyboard accessibility for mode cards */
-    document.querySelectorAll('.mode-card').forEach(card => {
-        card.addEventListener('keydown', e => {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
-        });
-    });
-</script>
+            /* ── Mode card keyboard navigation ── */
+            const cards = document.querySelectorAll('.mode-card');
+            cards.forEach(card => {
+                card.setAttribute('tabindex', '0');
+                card.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        card.click();
+                    }
+                });
+            });
+
+            /* ── Ripple effect on CTA buttons ── */
+            document.querySelectorAll('.mode-cta').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    ripple.style.cssText = `
+                        position:absolute;
+                        width:${size}px; height:${size}px;
+                        left:${e.clientX - rect.left - size/2}px;
+                        top:${e.clientY - rect.top - size/2}px;
+                        background:rgba(255,255,255,0.3);
+                        border-radius:50%;
+                        transform:scale(0);
+                        animation:kbRipple 0.5s ease-out forwards;
+                        pointer-events:none;
+                    `;
+                    this.appendChild(ripple);
+                    setTimeout(() => ripple.remove(), 600);
+                });
+            });
+
+            /* Inject ripple keyframe */
+            if (!document.querySelector('#kb-ripple-style')) {
+                const s = document.createElement('style');
+                s.id = 'kb-ripple-style';
+                s.textContent = '@@keyframes kbRipple{to{transform:scale(2);opacity:0;}}';
+                document.head.appendChild(s);
+            }
+
+        })();
+    </script>
+}
